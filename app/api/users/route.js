@@ -4,23 +4,16 @@ import { createServiceClient } from "@/lib/supabase/server";
 
 const ADMIN_EMAIL = "admin@mundo-crm.local";
 
-async function isAdmin() {
-  const supabase = await createServiceClient();
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
-
-  if (error || !user) return false;
+function isAdmin(user) {
+  if (!user) return false;
   if (user.email === ADMIN_EMAIL) return true;
   return user.user_metadata?.role === "admin";
 }
 
 export async function GET() {
   try {
-    await requireAuth();
-
-    if (!(await isAdmin())) {
+    const session = await requireAuth();
+    if (!isAdmin(session.user)) {
       return NextResponse.json({ error: "No autorizado" }, { status: 403 });
     }
 
@@ -50,40 +43,65 @@ export async function GET() {
 
 export async function POST(request) {
   try {
-    await requireAuth();
+    const session = await requireAuth();
 
-    if (!(await isAdmin())) {
+    if (!isAdmin(session.user)) {
       return NextResponse.json(
         { error: "Solo el administrador puede crear usuarios" },
         { status: 403 }
       );
     }
 
-    const { username, password, role = "user" } = await request.json();
+    const { email, username, password, role = "user" } = await request.json();
 
-    if (!username || !password) {
+    // Support both email and username for backwards compatibility
+    const userEmail =
+      email || (username ? (username.includes("@") ? username : `${username}@mundo-crm.local`) : null);
+
+    if (!userEmail) {
       return NextResponse.json(
-        { error: "Usuario y contraseña son obligatorios" },
+        { error: "El correo es obligatorio" },
         { status: 400 }
       );
     }
-
-    if (password.length < 6) {
-      return NextResponse.json(
-        { error: "La contraseña debe tener al menos 6 caracteres" },
-        { status: 400 }
-      );
-    }
-
-    const email = username.includes("@") ? username : `${username}@mundo-crm.local`;
 
     const supabase = createServiceClient();
-    const { data, error } = await supabase.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,
-      user_metadata: { role },
-    });
+
+    if (password) {
+      // Create user with password directly
+      if (password.length < 6) {
+        return NextResponse.json(
+          { error: "La contraseña debe tener al menos 6 caracteres" },
+          { status: 400 }
+        );
+      }
+
+      const { data, error } = await supabase.auth.admin.createUser({
+        email: userEmail,
+        password,
+        email_confirm: true,
+        user_metadata: { role },
+      });
+
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+
+      return NextResponse.json({
+        id: data.user.id,
+        email: data.user.email,
+        role,
+        invited: false,
+      });
+    }
+
+    // No password: send email invitation
+    const { data, error } = await supabase.auth.admin.inviteUserByEmail(
+      userEmail,
+      {
+        data: { role },
+      }
+    );
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
@@ -93,6 +111,7 @@ export async function POST(request) {
       id: data.user.id,
       email: data.user.email,
       role,
+      invited: true,
     });
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
