@@ -607,17 +607,57 @@ export default function DashboardClient({ initialLeads, username }) {
     }
   };
 
-  const handlePhotoUpload = (e) => {
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
+
+  const handlePhotoUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const dataUrl = ev.target.result;
-      setSellerPhoto(dataUrl);
-      localStorage.setItem("seller_photo", dataUrl);
+
+    setUploadingPhoto(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", "seller");
+
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || "Error al subir foto");
+
+      setSellerPhoto(data.url);
+      localStorage.setItem("seller_photo", data.url);
       showToast("Foto subida correctamente");
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      showToast(err.message || "Error al subir foto");
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const handleVideoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploadingVideo(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", "videos");
+
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || "Error al subir video");
+
+      setBgVideoUrl(data.url);
+      localStorage.setItem("bg_video_url", data.url);
+      showToast("Video de fondo subido correctamente");
+    } catch (err) {
+      showToast(err.message || "Error al subir video");
+    } finally {
+      setUploadingVideo(false);
+    }
   };
 
   const showToast = (msg) => {
@@ -1880,17 +1920,17 @@ export default function DashboardClient({ initialLeads, username }) {
                     <label style={{
                       padding: "8px 16px",
                       borderRadius: "10px",
-                      background: `${T.accent}20`,
+                      background: uploadingPhoto ? "rgba(255,255,255,0.06)" : `${T.accent}20`,
                       border: `1px solid ${T.accent}40`,
-                      color: T.accent,
+                      color: uploadingPhoto ? T.muted : T.accent,
                       fontWeight: 700,
                       fontSize: "13px",
-                      cursor: "pointer",
+                      cursor: uploadingPhoto ? "not-allowed" : "pointer",
                       transition: "all 0.2s",
                     }}>
-                      <i className="bi bi-upload" style={{ marginRight: 6 }}></i>
-                      Subir Foto
-                      <input type="file" accept="image/*" onChange={handlePhotoUpload} style={{ display: "none" }} />
+                      <i className={`bi ${uploadingPhoto ? "bi-arrow-clockwise" : "bi-upload"}`} style={{ marginRight: 6 }}></i>
+                      {uploadingPhoto ? "Subiendo..." : "Subir Foto"}
+                      <input type="file" accept="image/*" disabled={uploadingPhoto} onChange={handlePhotoUpload} style={{ display: "none" }} />
                     </label>
                   </div>
                 </div>
@@ -2150,11 +2190,31 @@ export default function DashboardClient({ initialLeads, username }) {
                       outline: "none",
                       fontFamily: "monospace",
                     }}
-                    placeholder="/bg-loop.mp4  o  https://ejemplo.com/video.mp4"
+                    placeholder="https://[tu-proyecto].supabase.co/storage/v1/object/public/assets/videos/..."
                   />
                   <span style={{ fontSize: "11px", color: T.muted, marginTop: 6, display: "block" }}>
                     Se muestra en loop, sin sonido, solo en la primera sección de la landing.
                   </span>
+
+                  <label style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    marginTop: 10,
+                    padding: "8px 16px",
+                    borderRadius: "10px",
+                    background: uploadingVideo ? "rgba(255,255,255,0.06)" : `${T.accent}20`,
+                    border: `1px solid ${T.accent}40`,
+                    color: uploadingVideo ? T.muted : T.accent,
+                    fontWeight: 700,
+                    fontSize: "13px",
+                    cursor: uploadingVideo ? "not-allowed" : "pointer",
+                    transition: "all 0.2s",
+                  }}>
+                    <i className={`bi ${uploadingVideo ? "bi-arrow-clockwise" : "bi-upload"}`} />
+                    {uploadingVideo ? "Subiendo video..." : "Subir video desde mi PC"}
+                    <input type="file" accept="video/mp4,video/webm" disabled={uploadingVideo} onChange={handleVideoUpload} style={{ display: "none" }} />
+                  </label>
 
                   {/* Preview del video */}
                   {bgVideoUrl && (

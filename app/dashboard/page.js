@@ -15,5 +15,10 @@ export default async function DashboardPage() {
     orderBy: { createdAt: "desc" },
   });
 
-  return <DashboardClient initialLeads={leads} username={session.username} />;
+  return (
+    <DashboardClient
+      initialLeads={leads}
+      username={session.user?.user_metadata?.name || session.user?.email || "Admin"}
+    />
+  );
 }

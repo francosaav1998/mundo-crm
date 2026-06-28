@@ -1,5 +1,4 @@
 import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -16,20 +15,6 @@ function randomEmail(name) {
 }
 
 async function main() {
-  const existing = await prisma.admin.findUnique({
-    where: { username: "admin" },
-  });
-
-  if (!existing) {
-    const password = await bcrypt.hash("mundo2026", 10);
-    await prisma.admin.create({
-      data: { username: "admin", password },
-    });
-    console.log("Usuario admin creado: admin / mundo2026");
-  } else {
-    console.log("Usuario admin ya existe");
-  }
-
   const count = await prisma.lead.count();
   if (count === 0) {
     await prisma.lead.createMany({

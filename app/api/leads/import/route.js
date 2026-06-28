@@ -31,7 +31,7 @@ export async function POST(request) {
     const leadsToCreate = [];
     let skipped = 0;
 
-    rows.forEach((row, idx) => {
+    rows.forEach((row) => {
       const name = String(row["Nombre"] || row["name"] || row["NOMBRE"] || "").trim();
       const phone = String(row["Telefono"] || row["phone"] || row["TELEFONO"] || row["Teléfono"] || row["Tel"] || "").trim();
       const email = String(row["Email"] || row["email"] || row["Correo"] || row["E-mail"] || "").trim();

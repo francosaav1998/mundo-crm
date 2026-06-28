@@ -42,7 +42,7 @@ export default function LandingPage() {
   const [footerText, setFooterText] = useState(
     "Tu asesora comercial autorizada de Mundo. Gestión ágil, directa y transparente de tus planes de internet fibra, televisión digital y telefonía móvil."
   );
-  const [bgVideoUrl, setBgVideoUrl] = useState("/bg-loop.mp4");
+  const [bgVideoUrl, setBgVideoUrl] = useState("");
   const [sellerName, setSellerName] = useState(SELLER_CONFIG.name);
   const [sellerDefaultMessage, setSellerDefaultMessage] = useState(SELLER_CONFIG.defaultMessage);
 
