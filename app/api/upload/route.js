@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
-import { createServiceClient } from "@/lib/supabase";
+import { createServiceClient } from "@/lib/supabase/server";
 
 const BUCKET = "assets";
 
