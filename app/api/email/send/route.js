@@ -1,39 +1,46 @@
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
+import { rateLimit, getClientKey } from "@/lib/rate-limit";
 import nodemailer from "nodemailer";
 
 export async function POST(request) {
   try {
     await requireAuth();
-    const { to, subject, body, fromName, provider, host, port, user, pass, from } = await request.json();
+
+    // Rate limit email sends: 30 per minute per IP
+    const limit = rateLimit({
+      windowMs: 60 * 1000,
+      maxRequests: 30,
+      key: `email-send:${getClientKey(request)}`,
+    });
+
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { error: "Demasiados correos enviados. Inténtalo más tarde." },
+        { status: 429, headers: { "Retry-After": String(limit.retryAfter) } }
+      );
+    }
+
+    const { to, subject, body, fromName } = await request.json();
 
     if (!to || !subject || !body) {
-      return NextResponse.json({ error: "Faltan destinatario, asunto o cuerpo" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Faltan destinatario, asunto o cuerpo" },
+        { status: 400 }
+      );
     }
 
-    let smtpHost = host;
-    let smtpPort = parseInt(port || "587", 10);
-    let smtpUser = user;
-    let smtpPass = pass;
-    let smtpFrom = from;
-
-    // Presets de proveedores populares
-    if (provider && provider !== "custom") {
-      const presets = {
-        gmail: { host: "smtp.gmail.com", port: 587 },
-        outlook: { host: "smtp.office365.com", port: 587 },
-        yahoo: { host: "smtp.mail.yahoo.com", port: 587 },
-        zoho: { host: "smtp.zoho.com", port: 587 },
-      };
-      const p = presets[provider];
-      if (p) {
-        smtpHost = p.host;
-        smtpPort = p.port;
-      }
-    }
+    const smtpHost = process.env.SMTP_HOST;
+    const smtpPort = parseInt(process.env.SMTP_PORT || "587", 10);
+    const smtpUser = process.env.SMTP_USER;
+    const smtpPass = process.env.SMTP_PASS;
+    const smtpFrom = process.env.SMTP_FROM || smtpUser;
 
     if (!smtpHost || !smtpUser || !smtpPass) {
-      return NextResponse.json({ error: "Faltan datos SMTP. Selecciona un proveedor e ingresa usuario y contraseña." }, { status: 400 });
+      return NextResponse.json(
+        { error: "SMTP no está configurado en el servidor." },
+        { status: 503 }
+      );
     }
 
     const transporter = nodemailer.createTransport({
@@ -44,7 +51,7 @@ export async function POST(request) {
     });
 
     const info = await transporter.sendMail({
-      from: `"${fromName || "Mundo"}" <${smtpFrom || smtpUser}>`,
+      from: `"${fromName || "Mundo"}" <${smtpFrom}>`,
       to,
       subject,
       text: body,
@@ -52,6 +59,9 @@ export async function POST(request) {
 
     return NextResponse.json({ ok: true, messageId: info.messageId });
   } catch (error) {
-    return NextResponse.json({ error: error.message || "Error enviando correo" }, { status: 500 });
+    return NextResponse.json(
+      { error: error.message || "Error enviando correo" },
+      { status: 500 }
+    );
   }
 }

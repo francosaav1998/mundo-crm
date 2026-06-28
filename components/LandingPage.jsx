@@ -1,15 +1,17 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import Image from "next/image";
 import { SELLER_CONFIG, sendWhatsAppMessage, updateSellerConfig } from "@/lib/seller";
 
 function useTheme() {
-  const [theme, setThemeState] = useState("light");
+  const [theme, setThemeState] = useState(() => {
+    if (typeof window === "undefined") return "light";
+    return localStorage.getItem("landing_theme") || "light";
+  });
   useEffect(() => {
-    const saved = localStorage.getItem("landing_theme") || "light";
-    setThemeState(saved);
-    document.documentElement.setAttribute("data-landing-theme", saved);
-  }, []);
+    document.documentElement.setAttribute("data-landing-theme", theme);
+  }, [theme]);
   const setTheme = (t) => {
     setThemeState(t);
     localStorage.setItem("landing_theme", t);
@@ -247,7 +249,7 @@ export default function LandingPage() {
         <div className="container">
           <nav className="main-nav">
             <a href="#inicio" className="logo" onClick={(e) => { e.preventDefault(); scrollToSection("inicio"); }}>
-              <img src="https://www.tumundo.cl/wp-content/uploads/2022/12/logo-mundo-negative.svg" alt="Mundo Logo" />
+              <Image src="https://www.tumundo.cl/wp-content/uploads/2022/12/logo-mundo-negative.svg" alt="Mundo Logo" width={120} height={32} />
             </a>
             <ul className={`nav-links ${menuOpen ? "mobile-active" : ""}`}>
               <li><a href="#inicio" onClick={(e) => { e.preventDefault(); scrollToSection("inicio"); }}>Inicio</a></li>
@@ -325,7 +327,7 @@ export default function LandingPage() {
           <div className="container">
             <div className="seller-card">
               <div className="seller-avatar-wrapper">
-                <img src={sellerPhotoUrl} alt="Asesora de Ventas Mundo" loading="lazy" />
+                <Image src={sellerPhotoUrl} alt="Asesora de Ventas Mundo" fill style={{ objectFit: "cover" }} />
                 <span className="seller-badge">Asesora Oficial</span>
               </div>
               <div className="seller-info">
@@ -506,7 +508,7 @@ export default function LandingPage() {
         <div className="container">
           <div className="footer-layout">
             <div className="footer-about">
-              <img src="https://www.tumundo.cl/wp-content/uploads/2022/12/logo-mundo.svg" alt="Mundo Logo Footer" />
+              <Image src="https://www.tumundo.cl/wp-content/uploads/2022/12/logo-mundo.svg" alt="Mundo Logo Footer" width={120} height={32} />
               <p>{footerText}</p>
             </div>
             <div className="footer-links">

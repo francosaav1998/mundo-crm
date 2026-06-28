@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { normalizeWhatsAppNumber } from "@/lib/seller";
 
 const STATUSES = [
@@ -60,12 +61,13 @@ const STATUS_CONFIG = {
 };
 
 function useTheme() {
-  const [theme, setThemeState] = useState("light");
+  const [theme, setThemeState] = useState(() => {
+    if (typeof window === "undefined") return "light";
+    return localStorage.getItem("theme") || "light";
+  });
   useEffect(() => {
-    const saved = localStorage.getItem("theme") || "light";
-    setThemeState(saved);
-    document.documentElement.setAttribute("data-theme", saved);
-  }, []);
+    document.documentElement.setAttribute("data-theme", theme);
+  }, [theme]);
   const setTheme = (t) => {
     setThemeState(t);
     localStorage.setItem("theme", t);
@@ -126,10 +128,13 @@ const NEON_THEME = {
 };
 
 function useMediaQuery(query) {
-  const [matches, setMatches] = useState(false);
+  const [matches, setMatches] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia(query).matches;
+  });
   useEffect(() => {
+    if (typeof window === "undefined") return;
     const mql = window.matchMedia(query);
-    setMatches(mql.matches);
     const handler = (e) => setMatches(e.matches);
     mql.addEventListener("change", handler);
     return () => mql.removeEventListener("change", handler);
@@ -143,7 +148,10 @@ export default function DashboardClient({ initialLeads, username }) {
   const [filter, setFilter] = useState("Todos");
   const [search, setSearch] = useState("");
   const [updating, setUpdating] = useState(null);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return window.innerWidth > 768;
+  });
   const isMobile = useMediaQuery("(max-width: 768px)");
   const isTablet = useMediaQuery("(max-width: 1024px)");
   const { theme: currentTheme, toggle: toggleTheme } = useTheme();
@@ -197,24 +205,7 @@ export default function DashboardClient({ initialLeads, username }) {
   const [emailCityFilter, setEmailCityFilter] = useState("Todas");
   const [emailSearch, setEmailSearch] = useState("");
   const [emailSending, setEmailSending] = useState(false);
-  const [emailProvider, setEmailProvider] = useState("gmail");
-  const [emailSmtpHost, setEmailSmtpHost] = useState("");
-  const [emailSmtpPort, setEmailSmtpPort] = useState("587");
-  const [emailSmtpUser, setEmailSmtpUser] = useState("");
-  const [emailSmtpPass, setEmailSmtpPass] = useState("");
-  const [emailFrom, setEmailFrom] = useState("");
   const [emailUseSmtp, setEmailUseSmtp] = useState(false);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const p = localStorage.getItem("crm_email_provider"); if (p) setEmailProvider(p);
-      const u = localStorage.getItem("crm_email_user"); if (u) setEmailSmtpUser(u);
-      const f = localStorage.getItem("crm_email_from"); if (f) setEmailFrom(f);
-      const h = localStorage.getItem("crm_email_host"); if (h) setEmailSmtpHost(h);
-      const port = localStorage.getItem("crm_email_port"); if (port) setEmailSmtpPort(port);
-      const s = localStorage.getItem("crm_email_use_smtp"); if (s) setEmailUseSmtp(s === "1");
-    }
-  }, []);
 
   const selectedLead = leads.find((l) => l.id === selectedClientId) || null;
 
@@ -372,12 +363,6 @@ export default function DashboardClient({ initialLeads, username }) {
               subject: subj,
               body,
               fromName: sellerName,
-              provider: emailProvider,
-              host: emailSmtpHost,
-              port: emailSmtpPort,
-              user: emailSmtpUser,
-              pass: emailSmtpPass,
-              from: emailFrom,
             }),
           });
           if (res.ok) ok++; else fail++;
@@ -527,6 +512,7 @@ export default function DashboardClient({ initialLeads, username }) {
         if (settings.whatsapp_number) setWhatsappNumber(normalizeWhatsAppNumber(settings.whatsapp_number));
         if (settings.meta_pixel_id !== undefined) setMetaPixelId(settings.meta_pixel_id);
         if (settings.bg_video_url !== undefined) setBgVideoUrl(settings.bg_video_url);
+        if (settings.crm_email_use_smtp !== undefined) setEmailUseSmtp(settings.crm_email_use_smtp === "1" || settings.crm_email_use_smtp === true);
       } catch {
         // Fallback to localStorage if DB is unavailable
         if (typeof window !== "undefined") {
@@ -550,21 +536,13 @@ export default function DashboardClient({ initialLeads, username }) {
           if (localPixel) setMetaPixelId(localPixel);
           const localVideo = localStorage.getItem("bg_video_url");
           if (localVideo) setBgVideoUrl(localVideo);
+          const localEmailUseSmtp = localStorage.getItem("crm_email_use_smtp");
+          if (localEmailUseSmtp) setEmailUseSmtp(localEmailUseSmtp === "1");
         }
       }
     }
     loadSettings();
   }, []);
-
-  // Auto-close sidebar on mobile
-  useEffect(() => {
-    if (isMobile) setSidebarOpen(false);
-  }, [isMobile]);
-
-  // Close sidebar on mobile when navigating
-  useEffect(() => {
-    if (isMobile) setSidebarOpen(false);
-  }, [activeMenu, isMobile]);
 
   const saveSettings = async (e) => {
     e.preventDefault();
@@ -580,15 +558,10 @@ export default function DashboardClient({ initialLeads, username }) {
       whatsapp_number: normalizedWhatsapp,
       meta_pixel_id: metaPixelId.trim(),
       bg_video_url: bgVideoUrl.trim(),
-      crm_email_provider: emailProvider,
-      crm_email_user: emailSmtpUser,
-      crm_email_from: emailFrom,
-      crm_email_host: emailSmtpHost,
-      crm_email_port: emailSmtpPort,
       crm_email_use_smtp: emailUseSmtp ? "1" : "0",
     };
 
-    // Keep localStorage as local cache/backup
+    // Keep localStorage as local cache/backup (non-sensitive settings only)
     Object.entries(settings).forEach(([key, value]) => {
       localStorage.setItem(key, value);
     });
@@ -918,9 +891,11 @@ export default function DashboardClient({ initialLeads, username }) {
             minHeight: 80,
           }}
         >
-          <img
+          <Image
             src="https://www.tumundo.cl/wp-content/uploads/2022/12/logo-mundo-negative.svg"
             alt="Mundo"
+            width={120}
+            height={32}
             style={{
               height: 32,
               width: "auto",
@@ -1738,32 +1713,12 @@ export default function DashboardClient({ initialLeads, username }) {
                   <button onClick={() => setEmailUseSmtp(true)} style={{ padding: "6px 12px", borderRadius: "8px", fontSize: 12, fontWeight: 700, cursor: "pointer", border: `1px solid ${emailUseSmtp ? T.accent : T.border}`, background: emailUseSmtp ? T.accent : "transparent", color: emailUseSmtp ? T.bg : T.muted }}>SMTP corporativo</button>
                 </div>
 
-                {/* Config SMTP */}
+                {/* Info SMTP */}
                 {emailUseSmtp && (
                   <div style={{ marginBottom: 18, padding: 16, borderRadius: "12px", background: T.inputBg, border: `1px solid ${T.border}` }}>
-                    <label style={{ fontSize: "11px", fontWeight: 700, color: T.muted, textTransform: "uppercase", letterSpacing: "0.05em" }}>Proveedor</label>
-                    <select
-                      value={emailProvider}
-                      onChange={(e) => setEmailProvider(e.target.value)}
-                      style={{ width: "100%", marginTop: 6, marginBottom: 12, padding: "9px 12px", borderRadius: "8px", background: T.bgCard, border: `1px solid ${T.border}`, color: T.text, fontSize: 13 }}
-                    >
-                      <option value="gmail">Gmail</option>
-                      <option value="outlook">Outlook / Microsoft 365</option>
-                      <option value="yahoo">Yahoo Mail</option>
-                      <option value="zoho">Zoho Mail</option>
-                      <option value="custom">SMTP personalizado</option>
-                    </select>
-                    {emailProvider === "custom" && (
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
-                        <input type="text" placeholder="Host SMTP" value={emailSmtpHost} onChange={(e) => setEmailSmtpHost(e.target.value)} style={{ padding: "9px 12px", borderRadius: "8px", background: T.bgCard, border: `1px solid ${T.border}`, color: T.text, fontSize: 13 }} />
-                        <input type="text" placeholder="Puerto" value={emailSmtpPort} onChange={(e) => setEmailSmtpPort(e.target.value)} style={{ padding: "9px 12px", borderRadius: "8px", background: T.bgCard, border: `1px solid ${T.border}`, color: T.text, fontSize: 13 }} />
-                      </div>
-                    )}
-                    <input type="email" placeholder="Usuario / Email" value={emailSmtpUser} onChange={(e) => setEmailSmtpUser(e.target.value)} style={{ width: "100%", marginBottom: 10, padding: "9px 12px", borderRadius: "8px", background: T.bgCard, border: `1px solid ${T.border}`, color: T.text, fontSize: 13 }} />
-                    <input type="password" placeholder="Contraseña o clave de app" value={emailSmtpPass} onChange={(e) => setEmailSmtpPass(e.target.value)} style={{ width: "100%", marginBottom: 10, padding: "9px 12px", borderRadius: "8px", background: T.bgCard, border: `1px solid ${T.border}`, color: T.text, fontSize: 13 }} />
-                    <input type="email" placeholder="Email remitente" value={emailFrom} onChange={(e) => setEmailFrom(e.target.value)} style={{ width: "100%", padding: "9px 12px", borderRadius: "8px", background: T.bgCard, border: `1px solid ${T.border}`, color: T.text, fontSize: 13 }} />
-                    <p style={{ fontSize: 11, color: T.muted, marginTop: 10, lineHeight: 1.5 }}>
-                      Guarda la configuración en Configuraciones. Para Gmail usa una <b>contraseña de aplicación</b>.
+                    <p style={{ fontSize: 12, color: T.muted, lineHeight: 1.5 }}>
+                      El SMTP se configura de forma segura en las variables de entorno del servidor.
+                      Si no está configurado, el envío fallará y podrás usar el modo Mailto.
                     </p>
                   </div>
                 )}
@@ -1908,9 +1863,10 @@ export default function DashboardClient({ initialLeads, username }) {
                       background: "rgba(255,255,255,0.05)",
                       border: `1px solid ${T.border}`,
                       flexShrink: 0,
+                      position: "relative",
                     }}>
                       {sellerPhoto ? (
-                        <img src={sellerPhoto} alt="Vendedor" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        <Image src={sellerPhoto} alt="Vendedor" fill style={{ objectFit: "cover" }} />
                       ) : (
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: T.muted, fontSize: 24 }}>
                           <i className="bi bi-person-fill" />
@@ -2122,10 +2078,12 @@ export default function DashboardClient({ initialLeads, username }) {
                   </span>
                   {/* Vista previa QR */}
                   <div style={{ display: "flex", justifyContent: "center", marginTop: 14 }}>
-                    <img
+                    <Image
                       src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent("https://wa.me/" + normalizeWhatsAppNumber(whatsappNumber))}`}
                       alt="QR WhatsApp"
-                      style={{ borderRadius: "14px", width: 180, height: 180 }}
+                      width={180}
+                      height={180}
+                      style={{ borderRadius: "14px" }}
                     />
                   </div>
                   <span style={{ fontSize: "11px", color: T.muted, marginTop: 6, display: "block", textAlign: "center" }}>
@@ -2162,7 +2120,7 @@ export default function DashboardClient({ initialLeads, username }) {
                     required
                   />
 <span style={{ fontSize: "11px", color: T.muted, marginTop: 6, display: "block" }}>
-                    Este texto aparece abajo de la landing en la sección "Sobre el asesor".
+                    Este texto aparece abajo de la landing en la sección {`"Sobre el asesor"`}.
                   </span>
                 </div>
 
@@ -2289,82 +2247,23 @@ export default function DashboardClient({ initialLeads, username }) {
                     <i className="bi bi-envelope-gear-fill" style={{ marginRight: 6 }}></i>
                     Correo Masivo (SMTP)
                   </h3>
-                  <label style={{ display: "block", fontSize: "11px", fontWeight: 700, color: T.muted, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "8px" }}>
-                    Proveedor de correo
-                  </label>
-                  <select
-                    value={emailProvider}
-                    onChange={(e) => setEmailProvider(e.target.value)}
-                    style={{
-                      width: "100%",
-                      padding: "12px 16px",
-                      background: T.inputBg,
-                      border: `1px solid ${T.border}`,
-                      borderRadius: "12px",
-                      color: T.text,
-                      fontSize: "14px",
-                      outline: "none",
-                      marginBottom: 12,
-                    }}
-                  >
-                    <option value="gmail">Gmail</option>
-                    <option value="outlook">Outlook / Microsoft 365</option>
-                    <option value="yahoo">Yahoo Mail</option>
-                    <option value="zoho">Zoho Mail</option>
-                    <option value="custom">SMTP personalizado</option>
-                  </select>
-                  {emailProvider === "custom" && (
-                    <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 10, marginBottom: 12 }}>
+                  <div style={{ padding: 14, borderRadius: "12px", background: T.inputBg, border: `1px solid ${T.border}` }}>
+                    <p style={{ fontSize: "12px", color: T.muted, lineHeight: 1.5, marginBottom: 10 }}>
+                      El servidor SMTP se configura de forma segura mediante variables de entorno
+                      (<code>SMTP_HOST</code>, <code>SMTP_PORT</code>, <code>SMTP_USER</code>,
+                      <code>SMTP_PASS</code>, <code>SMTP_FROM</code>). No se almacenan credenciales
+                      en el navegador ni se envían al frontend.
+                    </p>
+                    <label style={{ display: "flex", alignItems: "center", gap: 10, fontSize: "13px", fontWeight: 600, color: T.text, cursor: "pointer" }}>
                       <input
-                        type="text"
-                        value={emailSmtpHost}
-                        onChange={(e) => setEmailSmtpHost(e.target.value)}
-                        placeholder="smtp.tudominio.com"
-                        style={{
-                          width: "100%", padding: "12px 16px", background: T.inputBg, border: `1px solid ${T.border}`, borderRadius: "12px", color: T.text, fontSize: "14px", outline: "none",
-                        }}
+                        type="checkbox"
+                        checked={emailUseSmtp}
+                        onChange={(e) => setEmailUseSmtp(e.target.checked)}
+                        style={{ width: 18, height: 18, accentColor: T.accent }}
                       />
-                      <input
-                        type="text"
-                        value={emailSmtpPort}
-                        onChange={(e) => setEmailSmtpPort(e.target.value)}
-                        placeholder="587"
-                        style={{
-                          width: "100%", padding: "12px 16px", background: T.inputBg, border: `1px solid ${T.border}`, borderRadius: "12px", color: T.text, fontSize: "14px", outline: "none",
-                        }}
-                      />
-                    </div>
-                  )}
-                  <input
-                    type="email"
-                    value={emailSmtpUser}
-                    onChange={(e) => setEmailSmtpUser(e.target.value)}
-                    placeholder="Usuario / email"
-                    style={{
-                      width: "100%", marginBottom: 10, padding: "12px 16px", background: T.inputBg, border: `1px solid ${T.border}`, borderRadius: "12px", color: T.text, fontSize: "14px", outline: "none",
-                    }}
-                  />
-                  <input
-                    type="password"
-                    value={emailSmtpPass}
-                    onChange={(e) => setEmailSmtpPass(e.target.value)}
-                    placeholder="Contraseña o clave de aplicación"
-                    style={{
-                      width: "100%", marginBottom: 10, padding: "12px 16px", background: T.inputBg, border: `1px solid ${T.border}`, borderRadius: "12px", color: T.text, fontSize: "14px", outline: "none",
-                    }}
-                  />
-                  <input
-                    type="email"
-                    value={emailFrom}
-                    onChange={(e) => setEmailFrom(e.target.value)}
-                    placeholder="Email remitente (opcional)"
-                    style={{
-                      width: "100%", marginBottom: 10, padding: "12px 16px", background: T.inputBg, border: `1px solid ${T.border}`, borderRadius: "12px", color: T.text, fontSize: "14px", outline: "none",
-                    }}
-                  />
-                  <span style={{ fontSize: "11px", color: T.muted, marginTop: 6, display: "block" }}>
-                    Estos datos se guardan en tu navegador y se usan en la pestaña Correos. Para Gmail usa una <b>contraseña de aplicación</b>.
-                  </span>
+                      Usar SMTP server-side en lugar de Mailto
+                    </label>
+                  </div>
                 </div>
 
                 {/* Meta Pixel */}
@@ -2895,7 +2794,7 @@ export default function DashboardClient({ initialLeads, username }) {
                   <div style={{ marginTop: 16, padding: "12px 16px", borderRadius: "12px", background: "rgba(253, 220, 2, 0.08)", border: `1px solid ${T.secondary}30`, display: "flex", alignItems: "flex-start", gap: 10 }}>
                     <i className="bi bi-exclamation-triangle-fill" style={{ color: T.secondary, fontSize: 16, marginTop: 2 }}></i>
                     <span style={{ fontSize: "12px", color: T.muted, lineHeight: 1.5 }}>
-                      <strong style={{ color: T.text }}>Importante:</strong> se abrirá una pestaña nueva por cada cliente con el mensaje ya cargado. Permite los pop-ups emergentes en tu navegador para que funcione. WhatsApp no envía el mensaje automáticamente — tú debes pulsar "Enviar" en cada chat.
+                      <strong style={{ color: T.text }}>Importante:</strong> se abrirá una pestaña nueva por cada cliente con el mensaje ya cargado. Permite los pop-ups emergentes en tu navegador para que funcione. WhatsApp no envía el mensaje automáticamente — tú debes pulsar {`"Enviar"`} en cada chat.
                     </span>
                   </div>
                 </div>

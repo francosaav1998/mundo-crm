@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -215,9 +216,9 @@ export default function LoginPage() {
           </form>
 
           <div style={{ marginTop: "24px", paddingTop: "20px", borderTop: "1px solid #E2E8F0", textAlign: "center" }}>
-            <a href="/" style={{ fontSize: "13px", fontWeight: 700, color: "#00748E", textDecoration: "none" }}>
+            <Link href="/" style={{ fontSize: "13px", fontWeight: 700, color: "#00748E", textDecoration: "none" }}>
               ← Volver a la landing
-            </a>
+            </Link>
           </div>
         </div>
       </div>

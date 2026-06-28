@@ -3,6 +3,21 @@ import { requireAuth } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase/server";
 
 const BUCKET = "assets";
+const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
+const ALLOWED_TYPES = [
+  // Images
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "image/svg+xml",
+  // Videos
+  "video/mp4",
+  "video/webm",
+  "video/quicktime",
+  // Documents
+  "application/pdf",
+];
 
 function sanitizeFilename(name) {
   return name
@@ -20,7 +35,24 @@ export async function POST(request) {
     const folder = formData.get("folder") || "uploads";
 
     if (!file) {
-      return NextResponse.json({ error: "No se encontró el archivo" }, { status: 400 });
+      return NextResponse.json(
+        { error: "No se encontró el archivo" },
+        { status: 400 }
+      );
+    }
+
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      return NextResponse.json(
+        { error: "Tipo de archivo no permitido" },
+        { status: 400 }
+      );
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json(
+        { error: "El archivo excede el tamaño máximo de 50 MB" },
+        { status: 413 }
+      );
     }
 
     const bytes = await file.arrayBuffer();
