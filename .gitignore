@@ -46,6 +46,10 @@ dev.log
 iniciar.bat
 iniciar-dashboard.bat
 
+# local sqlite db
+/prisma/dev.db
+/prisma/dev.db-journal
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
