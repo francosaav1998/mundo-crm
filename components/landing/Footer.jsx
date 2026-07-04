@@ -66,6 +66,14 @@ export default function Footer({ footerText, onScrollTo }) {
             propiedad exclusiva de Mundo Pacífico S.A. y sus filiales. Este sitio tiene propósitos
             informativos y de captación comercial por parte de una ejecutiva oficial independiente.
           </p>
+          <p style={{ marginTop: "0.75rem" }}>
+            <a
+              href="/politica-de-privacidad"
+              className="text-[#00748E] hover:text-[#005A6F] hover:underline font-medium"
+            >
+              Política de Privacidad y Cookies
+            </a>
+          </p>
         </div>
       </div>
     </footer>
