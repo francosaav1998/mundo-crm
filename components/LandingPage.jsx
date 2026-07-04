@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { SELLER_CONFIG, sendWhatsAppMessage, updateSellerConfig } from "@/lib/seller";
+import MetaPixel from "./landing/MetaPixel";
 import Header from "./landing/Header";
 import Hero from "./landing/Hero";
 import SellerSection from "./landing/SellerSection";
@@ -34,6 +35,7 @@ export default function LandingPage() {
   );
   const [bgVideoUrl, setBgVideoUrl] = useState("");
   const [sellerName, setSellerName] = useState(SELLER_CONFIG.name);
+  const [metaPixelId, setMetaPixelId] = useState("");
 
   useEffect(() => {
     async function loadSettings() {
@@ -53,6 +55,10 @@ export default function LandingPage() {
         if (settings.seller_photo) setSellerPhotoUrl(settings.seller_photo);
         if (settings.footer_text !== undefined) setFooterText(settings.footer_text);
         if (settings.bg_video_url !== undefined) setBgVideoUrl(settings.bg_video_url || "");
+        if (settings.meta_pixel_id !== undefined) setMetaPixelId(settings.meta_pixel_id);
+        if (settings.landing_theme) {
+          document.documentElement.setAttribute("data-landing-theme", settings.landing_theme);
+        }
       } catch {
         // Fallback: keep defaults if the API fails
       }
@@ -134,6 +140,7 @@ export default function LandingPage() {
 
   return (
     <>
+      <MetaPixel pixelId={metaPixelId} />
       <Header menuOpen={menuOpen} setMenuOpen={setMenuOpen} onScrollTo={scrollToSection} />
       <main>
         <Hero bgVideoUrl={bgVideoUrl} onScrollTo={scrollToSection} onSelectPlan={handlePlanClick} />

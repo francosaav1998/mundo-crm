@@ -165,6 +165,7 @@ export async function POST(request) {
         city: sanitizeString(city, MAX_LENGTHS.city),
         address: sanitizeString(address, MAX_LENGTHS.address),
         plan: sanitizeString(plan, MAX_LENGTHS.plan),
+        assignedTo: process.env.ADMIN_EMAIL || "",
       },
     });
 

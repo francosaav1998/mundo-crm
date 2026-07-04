@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth, isAdmin } from "@/lib/auth";
 import DashboardClient from "@/components/DashboardClient";
 
+export const dynamic = "force-dynamic";
+
 const INITIAL_LIMIT = 25;
 
 export default async function DashboardPage() {

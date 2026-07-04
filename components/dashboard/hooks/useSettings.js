@@ -98,6 +98,7 @@ export function useSettings() {
       seller_phone: settingsToSave.sellerPhone,
       seller_msg: settingsToSave.sellerMsg,
       seller_bio: settingsToSave.sellerBio,
+      seller_photo: settingsToSave.sellerPhoto ? settingsToSave.sellerPhoto.trim() : "",
       landing_theme: settingsToSave.landingTheme,
       footer_text: settingsToSave.footerText,
       whatsapp_number: normalizedWhatsapp,
