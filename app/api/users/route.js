@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase/server";
+import { rateLimit, getClientKey } from "@/lib/rate-limit";
 
-const ADMIN_EMAIL = "admin@mundo-crm.local";
+// El email de admin puede configurarse por entorno; conserva fallback para compatibilidad.
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@mundo-crm.local";
+const VALID_ROLES = new Set(["admin", "user"]);
 
 function isAdmin(user) {
   if (!user) return false;
@@ -10,8 +13,40 @@ function isAdmin(user) {
   return user.user_metadata?.role === "admin";
 }
 
-export async function GET() {
+function sanitizeEmail(input) {
+  return String(input).toLowerCase().trim().slice(0, 254);
+}
+
+function sanitizeUsername(input) {
+  return String(input).trim().slice(0, 100);
+}
+
+function sanitizeRole(input) {
+  const role = String(input).trim().toLowerCase();
+  return VALID_ROLES.has(role) ? role : "user";
+}
+
+function checkUsersRateLimit(request) {
+  const limit = rateLimit({
+    windowMs: 60 * 1000,
+    maxRequests: 10,
+    key: `users:${getClientKey(request)}`,
+  });
+
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: "Demasiadas peticiones. Inténtalo más tarde." },
+      { status: 429, headers: { "Retry-After": String(limit.retryAfter) } }
+    );
+  }
+  return null;
+}
+
+export async function GET(request) {
   try {
+    const rateLimitResponse = checkUsersRateLimit(request);
+    if (rateLimitResponse) return rateLimitResponse;
+
     const session = await requireAuth();
     if (!isAdmin(session.user)) {
       return NextResponse.json({ error: "No autorizado" }, { status: 403 });
@@ -37,12 +72,16 @@ export async function GET() {
 
     return NextResponse.json(simplified);
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const status = error.message === "Unauthorized" ? 401 : 500;
+    return NextResponse.json({ error: error.message }, { status });
   }
 }
 
 export async function POST(request) {
   try {
+    const rateLimitResponse = checkUsersRateLimit(request);
+    if (rateLimitResponse) return rateLimitResponse;
+
     const session = await requireAuth();
 
     if (!isAdmin(session.user)) {
@@ -52,19 +91,26 @@ export async function POST(request) {
       );
     }
 
-    const { email, username, password, role = "user" } = await request.json();
+    const body = await request.json();
+    const { email, username, password, role = "user" } = body;
 
     // Support both email and username for backwards compatibility
     const userEmail =
-      email || (username ? (username.includes("@") ? username : `${username}@mundo-crm.local`) : null);
+      sanitizeEmail(email) ||
+      (username
+        ? sanitizeUsername(username).includes("@")
+          ? sanitizeUsername(username)
+          : `${sanitizeUsername(username)}@mundo-crm.local`
+        : null);
 
-    if (!userEmail) {
+    if (!userEmail || !userEmail.includes("@")) {
       return NextResponse.json(
         { error: "El correo es obligatorio" },
         { status: 400 }
       );
     }
 
+    const sanitizedRole = sanitizeRole(role);
     const supabase = createServiceClient();
 
     if (password) {
@@ -80,7 +126,7 @@ export async function POST(request) {
         email: userEmail,
         password,
         email_confirm: true,
-        user_metadata: { role },
+        user_metadata: { role: sanitizedRole },
       });
 
       if (error) {
@@ -90,7 +136,7 @@ export async function POST(request) {
       return NextResponse.json({
         id: data.user.id,
         email: data.user.email,
-        role,
+        role: sanitizedRole,
         invited: false,
       });
     }
@@ -99,7 +145,7 @@ export async function POST(request) {
     const { data, error } = await supabase.auth.admin.inviteUserByEmail(
       userEmail,
       {
-        data: { role },
+        data: { role: sanitizedRole },
       }
     );
 
@@ -110,10 +156,11 @@ export async function POST(request) {
     return NextResponse.json({
       id: data.user.id,
       email: data.user.email,
-      role,
+      role: sanitizedRole,
       invited: true,
     });
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const status = error.message === "Unauthorized" ? 401 : 500;
+    return NextResponse.json({ error: error.message }, { status });
   }
 }

@@ -58,9 +58,28 @@
 
 ## Cambios Importantes Antes de Escalar
 
-- [ ] Migrar la autenticación a **Supabase Auth** en lugar del JWT casero.
-- [ ] Subir foto y video a **Supabase Storage**, no a localStorage.
-- [ ] Proteger bien los endpoints (`/api/settings`, `/api/leads`) con Supabase.
+- [x] Migrar la autenticación a **Supabase Auth** en lugar del JWT casero.
+- [x] Subir foto y video a **Supabase Storage**, no a localStorage.
+- [x] Proteger bien los endpoints (`/api/settings`, `/api/leads`) con Supabase.
+
+### 🔒 Seguridad Implementada (Julio 2026)
+
+- [x] Lista blanca de claves permitidas en settings + sanitización anti-XSS.
+- [x] Rate limiting en `/api/users`, `/api/leads/import`, `/api/upload` y `/api/leads/[id]`.
+- [x] Validación de email y sanitización de inputs en leads, importación y email.
+- [x] Cookies de sesión con `secure`, `sameSite: lax`, `path: /` y `maxAge`.
+- [x] Validación de variables de entorno críticas en clientes de Supabase.
+- [x] Verificación de admin configurable vía `ADMIN_EMAIL`.
+
+### 🏗️ Refactorización Dashboard (Julio 2026)
+
+- [x] `DashboardClient.jsx` reducido de ~3.370 a ~220 líneas.
+- [x] Componentes separados: layout, KPIs, gráficos, tabla, filtros, paginación.
+- [x] Componentes de funcionalidad: WhatsApp bulk, email bulk, importación, usuarios, settings.
+- [x] Hooks reutilizables: `useTheme`, `useMediaQuery`, `useSettings`, `useLeads`, `useStats`.
+- [x] Paginación server-side en `/api/leads` (25 por página).
+- [x] Endpoint `/api/leads/stats` para estadísticas filtradas.
+- [x] Filtros de búsqueda, estado y fecha movidos al servidor.
 
 ---
 
@@ -83,6 +102,6 @@
 - [ ] Variables de entorno cargadas en Vercel
 - [ ] Primer deploy exitoso
 - [ ] Seed de admin ejecutado en producción
-- [ ] Autenticación migrada a Supabase Auth
-- [ ] Uploads de archivos migrados a Supabase Storage
-- [ ] Endpoints protegidos con Supabase
+- [x] Autenticación migrada a Supabase Auth
+- [x] Uploads de archivos migrados a Supabase Storage
+- [x] Endpoints protegidos con Supabase

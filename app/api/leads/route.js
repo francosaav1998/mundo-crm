@@ -3,15 +3,120 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { rateLimit, getClientKey } from "@/lib/rate-limit";
 
-export async function GET() {
+const MAX_LENGTHS = {
+  name: 200,
+  phone: 100,
+  email: 200,
+  city: 100,
+  address: 300,
+  plan: 100,
+};
+
+function sanitizeString(input, maxLength) {
+  return String(input)
+    .trim()
+    .slice(0, maxLength)
+    .replace(/[<>]/g, "");
+}
+
+function isValidEmail(email) {
+  if (!email) return true;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email).trim());
+}
+
+function getDateRange(filter, customDate) {
+  const now = new Date();
+  const startOfDay = (date) => {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  };
+  const endOfDay = (date) => {
+    const d = new Date(date);
+    d.setHours(23, 59, 59, 999);
+    return d;
+  };
+
+  switch (filter) {
+    case "hoy":
+      return { gte: startOfDay(now), lte: endOfDay(now) };
+    case "ayer": {
+      const yesterday = new Date(now);
+      yesterday.setDate(now.getDate() - 1);
+      return { gte: startOfDay(yesterday), lte: endOfDay(yesterday) };
+    }
+    case "semana": {
+      const weekAgo = new Date(now);
+      weekAgo.setDate(now.getDate() - 7);
+      return { gte: startOfDay(weekAgo), lte: endOfDay(now) };
+    }
+    case "mes": {
+      const monthAgo = new Date(now);
+      monthAgo.setDate(now.getDate() - 30);
+      return { gte: startOfDay(monthAgo), lte: endOfDay(now) };
+    }
+    case "custom": {
+      if (!customDate) return undefined;
+      const selected = new Date(customDate + "T12:00:00");
+      if (isNaN(selected.getTime())) return undefined;
+      return { gte: startOfDay(selected), lte: endOfDay(selected) };
+    }
+    default:
+      return undefined;
+  }
+}
+
+export async function GET(request) {
   try {
     await requireAuth();
-    const leads = await prisma.lead.findMany({
-      orderBy: { createdAt: "desc" },
+
+    const { searchParams } = new URL(request.url);
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "25", 10)));
+    const search = sanitizeString(searchParams.get("search") || "", 200).toLowerCase();
+    const status = sanitizeString(searchParams.get("status") || "", 100);
+    const dateFilter = sanitizeString(searchParams.get("dateFilter") || "todos", 20);
+    const customDate = sanitizeString(searchParams.get("customDate") || "", 10);
+
+    const where = {};
+
+    if (status && status !== "Todos") {
+      where.status = status;
+    }
+
+    const dateRange = getDateRange(dateFilter, customDate);
+    if (dateRange) {
+      where.createdAt = dateRange;
+    }
+
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: "insensitive" } },
+        { phone: { contains: search, mode: "insensitive" } },
+        { city: { contains: search, mode: "insensitive" } },
+        { plan: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    const [leads, total] = await prisma.$transaction([
+      prisma.lead.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.lead.count({ where }),
+    ]);
+
+    return NextResponse.json({
+      leads,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
     });
-    return NextResponse.json(leads);
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 401 });
+    const status = error.message === "Unauthorized" ? 401 : 500;
+    return NextResponse.json({ error: error.message }, { status });
   }
 }
 
@@ -41,14 +146,21 @@ export async function POST(request) {
       );
     }
 
+    if (!isValidEmail(email)) {
+      return NextResponse.json(
+        { error: "El correo electrónico no es válido" },
+        { status: 400 }
+      );
+    }
+
     const lead = await prisma.lead.create({
       data: {
-        name: String(name).slice(0, 200),
-        phone: String(phone).slice(0, 100),
-        email: email ? String(email).slice(0, 200) : "",
-        city: String(city).slice(0, 100),
-        address: String(address).slice(0, 300),
-        plan: String(plan).slice(0, 100),
+        name: sanitizeString(name, MAX_LENGTHS.name),
+        phone: sanitizeString(phone, MAX_LENGTHS.phone),
+        email: email ? sanitizeString(email, MAX_LENGTHS.email) : "",
+        city: sanitizeString(city, MAX_LENGTHS.city),
+        address: sanitizeString(address, MAX_LENGTHS.address),
+        plan: sanitizeString(plan, MAX_LENGTHS.plan),
       },
     });
 

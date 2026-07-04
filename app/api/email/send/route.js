@@ -3,6 +3,20 @@ import { requireAuth } from "@/lib/auth";
 import { rateLimit, getClientKey } from "@/lib/rate-limit";
 import nodemailer from "nodemailer";
 
+const MAX_SUBJECT_LENGTH = 200;
+const MAX_BODY_LENGTH = 50000;
+
+function sanitizeEmailString(input, maxLength) {
+  return String(input)
+    .trim()
+    .slice(0, maxLength)
+    .replace(/[<>]/g, "");
+}
+
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email).trim());
+}
+
 export async function POST(request) {
   try {
     await requireAuth();
@@ -21,11 +35,19 @@ export async function POST(request) {
       );
     }
 
-    const { to, subject, body, fromName } = await request.json();
+    const body = await request.json();
+    const { to, subject, body: emailBody, fromName } = body;
 
-    if (!to || !subject || !body) {
+    if (!to || !subject || !emailBody) {
       return NextResponse.json(
         { error: "Faltan destinatario, asunto o cuerpo" },
+        { status: 400 }
+      );
+    }
+
+    if (!isValidEmail(to)) {
+      return NextResponse.json(
+        { error: "El correo del destinatario no es válido" },
         { status: 400 }
       );
     }
@@ -51,17 +73,18 @@ export async function POST(request) {
     });
 
     const info = await transporter.sendMail({
-      from: `"${fromName || "Mundo"}" <${smtpFrom}>`,
-      to,
-      subject,
-      text: body,
+      from: `"${sanitizeEmailString(fromName || "Mundo", 100)}" <${smtpFrom}>`,
+      to: sanitizeEmailString(to, 254),
+      subject: sanitizeEmailString(subject, MAX_SUBJECT_LENGTH),
+      text: sanitizeEmailString(emailBody, MAX_BODY_LENGTH),
     });
 
     return NextResponse.json({ ok: true, messageId: info.messageId });
   } catch (error) {
+    const status = error.message === "Unauthorized" ? 401 : 500;
     return NextResponse.json(
       { error: error.message || "Error enviando correo" },
-      { status: 500 }
+      { status }
     );
   }
 }

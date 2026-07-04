@@ -1,36 +1,88 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Mundo CRM
 
-## Getting Started
+Landing page de captación + dashboard interno para ejecutivas de ventas autorizadas de Mundo (Chile).
 
-First, run the development server:
+## Qué hace
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Landing pública**: muestra planes de internet fibra, TV y telefonía móvil, captura leads y los envía por WhatsApp.
+- **Dashboard privado**: gestión de leads, envío masivo de WhatsApp/email, importación Excel, administración de usuarios y personalización de la landing.
+
+## Stack
+
+- Next.js 16 (App Router)
+- React 19
+- Tailwind CSS v4
+- Prisma + PostgreSQL (Supabase)
+- Supabase Auth
+- Supabase Storage
+- Nodemailer (SMTP opcional)
+
+## Variables de entorno
+
+Copiar `.env.example` a `.env` y completar:
+
+```env
+DATABASE_URL="postgresql://..."
+NEXT_PUBLIC_SUPABASE_URL="https://..."
+NEXT_PUBLIC_SUPABASE_ANON_KEY="..."
+SUPABASE_SERVICE_ROLE_KEY="..."
+ADMIN_EMAIL="admin@mundo-crm.local"  # opcional
+SMTP_HOST=""
+SMTP_PORT="587"
+SMTP_USER=""
+SMTP_PASS=""
+SMTP_FROM=""
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Comandos
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+```bash
+# Instalar dependencias
+npm install
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Configurar Supabase (bucket + usuario admin admin/mundo2026)
+npx dotenv-cli -e .env -- node scripts/setup-supabase.js
 
-## Learn More
+# Correr migraciones de Prisma
+npx prisma migrate deploy
 
-To learn more about Next.js, take a look at the following resources:
+# Desarrollo (abre landing)
+npm run dev
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Desarrollo (abre dashboard)
+npm run dev:dashboard
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# Seed de leads de ejemplo
+npm run seed
+```
 
-## Deploy on Vercel
+## Seguridad
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Autenticación vía Supabase Auth.
+- Middleware protege rutas de `/dashboard`.
+- Rate limiting en endpoints públicos y sensibles.
+- Sanitización de inputs para mitigar XSS.
+- Cookies de sesión con flags de seguridad.
+- Validación de tipos de archivo y tamaño en uploads.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Estructura clave
+
+```
+/app/api                 → endpoints REST
+/app/dashboard           → dashboard protegido
+/components
+  /dashboard
+    /hooks               → useTheme, useSettings, useLeads, useStats
+    /ui                  → KPIs, gráficos, tabla, filtros, paginación
+    /features            → WhatsApp bulk, email bulk, import, usuarios, settings
+  LandingPage.jsx
+  DashboardClient.jsx
+/lib/dashboard           → constants, utils
+/lib                     → auth, prisma, supabase, rate-limit
+/prisma                  → schema y migraciones
+/scripts                 → setup, seed, utilidades
+```
+
+## Próximos pasos recomendados
+
+Ver `PLAN-STACK-FUTURO.md` para el plan de escalado y refactorizaciones pendientes.
