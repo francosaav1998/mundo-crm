@@ -16,6 +16,7 @@ Landing page de captación + dashboard interno para ejecutivas de ventas autoriz
 - Supabase Auth
 - Supabase Storage
 - Nodemailer (SMTP opcional)
+- exceljs (importación Excel)
 
 ## Variables de entorno
 
@@ -27,6 +28,8 @@ NEXT_PUBLIC_SUPABASE_URL="https://..."
 NEXT_PUBLIC_SUPABASE_ANON_KEY="..."
 SUPABASE_SERVICE_ROLE_KEY="..."
 ADMIN_EMAIL="admin@mundo-crm.local"  # opcional
+UPSTASH_REDIS_REST_URL=""            # opcional, recomendado en producción
+UPSTASH_REDIS_REST_TOKEN=""          # opcional, recomendado en producción
 SMTP_HOST=""
 SMTP_PORT="587"
 SMTP_USER=""
@@ -54,6 +57,9 @@ npm run dev:dashboard
 
 # Seed de leads de ejemplo
 npm run seed
+
+# Correr tests
+npm run test
 ```
 
 ## Seguridad
@@ -82,6 +88,13 @@ npm run seed
 /prisma                  → schema y migraciones
 /scripts                 → setup, seed, utilidades
 ```
+
+## Producción y escalado
+
+- **Connection Pooler de Supabase**: en Vercel serverless usá la URL del pooler (`...pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1`) para no agotar conexiones de PostgreSQL.
+- **Upstash Redis**: configurá `UPSTASH_REDIS_REST_URL` y `UPSTASH_REDIS_REST_TOKEN` para que el rate limiting sea global entre todas las instancias serverless. Sin esto, cada función tiene su propia memoria y el rate limit es local.
+- **Meta Pixel**: configurá el `meta_pixel_id` desde el dashboard; se inyecta automáticamente en la landing.
+- **CI/CD**: el workflow de GitHub Actions corre lint, tests y build en cada push/PR.
 
 ## Próximos pasos recomendados
 

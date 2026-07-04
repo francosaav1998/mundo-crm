@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth";
 import { rateLimit, getClientKey } from "@/lib/rate-limit";
-import { parseLeadsFromExcel } from "@/lib/parse-leads-excel";
+import { parseLeadsFromExcel } from "@/lib/parse-leads-excel.mjs";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 const MAX_ROWS = 5000;
