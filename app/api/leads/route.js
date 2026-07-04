@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAuth } from "@/lib/auth";
+import { requireAuth, isAdmin } from "@/lib/auth";
 import { rateLimit, getClientKey } from "@/lib/rate-limit";
 
 const MAX_LENGTHS = {
@@ -68,7 +68,7 @@ function getDateRange(filter, customDate) {
 
 export async function GET(request) {
   try {
-    await requireAuth();
+    const session = await requireAuth();
 
     const { searchParams } = new URL(request.url);
     const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
@@ -79,6 +79,10 @@ export async function GET(request) {
     const customDate = sanitizeString(searchParams.get("customDate") || "", 10);
 
     const where = {};
+
+    if (!isAdmin(session.user)) {
+      where.assignedTo = session.user.email;
+    }
 
     if (status && status !== "Todos") {
       where.status = status;
@@ -123,7 +127,7 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     // Rate limit public lead submissions: 5 per minute per IP
-    const limit = rateLimit({
+    const limit = await rateLimit({
       windowMs: 60 * 1000,
       maxRequests: 5,
       key: `lead-submit:${getClientKey(request)}`,

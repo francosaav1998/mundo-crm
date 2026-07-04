@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAuth } from "@/lib/auth";
+import { requireAuth, isAdmin } from "@/lib/auth";
 
 function getDateRange(filter, customDate) {
   const now = new Date();
@@ -46,7 +46,7 @@ function getDateRange(filter, customDate) {
 
 export async function GET(request) {
   try {
-    await requireAuth();
+    const session = await requireAuth();
 
     const { searchParams } = new URL(request.url);
     const search = String(searchParams.get("search") || "").trim().toLowerCase();
@@ -55,6 +55,10 @@ export async function GET(request) {
     const customDate = String(searchParams.get("customDate") || "").trim();
 
     const where = {};
+
+    if (!isAdmin(session.user)) {
+      where.assignedTo = session.user.email;
+    }
 
     if (status && status !== "Todos") {
       where.status = status;

@@ -5,7 +5,7 @@ import LeadFilters from "./ui/LeadFilters";
 import LeadTable from "./ui/LeadTable";
 import Pagination from "./ui/Pagination";
 
-export default function LeadsView({ leads, total, page, totalPages, search, setSearch, statusFilter, setStatusFilter, onPageChange, onUpdateStatus, updating, T, isMobile }) {
+export default function LeadsView({ leads, total, page, totalPages, search, setSearch, statusFilter, setStatusFilter, onPageChange, onUpdateStatus, updating, T, isMobile, isAdmin = false }) {
   return (
     <div
       style={{
@@ -31,6 +31,7 @@ export default function LeadsView({ leads, total, page, totalPages, search, setS
         updating={updating}
         T={T}
         isMobile={isMobile}
+        isAdmin={isAdmin}
       />
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 20, flexWrap: "wrap", gap: 12 }}>

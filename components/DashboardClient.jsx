@@ -25,7 +25,7 @@ const PAGE_TITLES = {
   settings: "Configuración",
 };
 
-export default function DashboardClient({ initialLeads = [], initialTotal = 0, initialStats = null, username }) {
+export default function DashboardClient({ initialLeads = [], initialTotal = 0, initialStats = null, username, isAdmin = false }) {
   const { theme, toggle: toggleTheme } = useTheme();
   const T = NEON_THEME[theme];
 
@@ -144,6 +144,7 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
           updating={updating}
           T={T}
           isMobile={isMobile || isTablet}
+          isAdmin={isAdmin}
         />
       )}
 

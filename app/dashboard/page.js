@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { requireAuth } from "@/lib/auth";
+import { requireAuth, isAdmin } from "@/lib/auth";
 import DashboardClient from "@/components/DashboardClient";
 
 const INITIAL_LIMIT = 25;
@@ -27,6 +27,7 @@ export default async function DashboardPage() {
       initialLeads={initialLeads}
       initialTotal={initialTotal}
       username={session.user?.user_metadata?.name || session.user?.email || "Admin"}
+      isAdmin={isAdmin(session.user)}
     />
   );
 }

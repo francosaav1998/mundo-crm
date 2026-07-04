@@ -1,9 +1,84 @@
 "use client";
 
+import { useState } from "react";
 import StatusIcons from "./StatusIcons";
 import { formatDate, formatTime } from "@/lib/dashboard/utils";
 
-export default function LeadTable({ leads, onUpdateStatus, updating, T, isMobile }) {
+function AssignedCell({ lead, isAdmin, T }) {
+  const [value, setValue] = useState(lead.assignedTo || "");
+  const [saving, setSaving] = useState(false);
+
+  const handleBlur = async () => {
+    if (value === (lead.assignedTo || "")) return;
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/leads/${lead.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ assignedTo: value }),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      setValue(lead.assignedTo || "");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.target.blur();
+    }
+  };
+
+  if (!isAdmin) {
+    return (
+      <span style={{ fontSize: "12px", color: T.muted }}>
+        {lead.assignedTo || <span style={{ fontStyle: "italic" }}>Sin asignar</span>}
+      </span>
+    );
+  }
+
+  return (
+    <div style={{ position: "relative" }}>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
+        disabled={saving}
+        placeholder="email vendedor"
+        style={{
+          width: 140,
+          padding: "6px 10px",
+          background: T.inputBg,
+          border: `1px solid ${T.border}`,
+          borderRadius: "8px",
+          color: T.text,
+          fontSize: "12px",
+          outline: "none",
+        }}
+      />
+      {saving && (
+        <i
+          className="bi bi-arrow-clockwise"
+          style={{
+            position: "absolute",
+            right: 8,
+            top: "50%",
+            transform: "translateY(-50%)",
+            fontSize: 10,
+            color: T.muted,
+            animation: "spin 1s linear infinite",
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+export default function LeadTable({ leads, onUpdateStatus, updating, T, isMobile, isAdmin = false }) {
   if (leads.length === 0) {
     return (
       <div style={{ padding: "60px 0", textAlign: "center", color: T.muted }}>
@@ -12,6 +87,8 @@ export default function LeadTable({ leads, onUpdateStatus, updating, T, isMobile
       </div>
     );
   }
+
+  const desktopHeaders = ["Fecha", "Cliente", "Teléfono", "Email", "Ciudad/Comuna", "Dirección", "Plan Solicitado", "Asignado a", "Acción/Estado"];
 
   return (
     <div style={{ overflowX: "auto" }}>
@@ -24,7 +101,7 @@ export default function LeadTable({ leads, onUpdateStatus, updating, T, isMobile
                     {h}
                   </th>
                 ))
-              : ["Fecha", "Cliente", "Teléfono", "Email", "Ciudad/Comuna", "Dirección", "Plan Solicitado", "Acción/Estado"].map((h) => (
+              : desktopHeaders.map((h) => (
                   <th key={h} style={{ padding: "14px 20px", fontSize: "11px", fontWeight: 800, color: T.muted, textTransform: "uppercase", letterSpacing: "0.08em" }}>
                     {h}
                   </th>
@@ -79,6 +156,9 @@ export default function LeadTable({ leads, onUpdateStatus, updating, T, isMobile
                   <span style={{ fontSize: "12px", fontWeight: 700, padding: "4px 10px", borderRadius: "8px", background: `${T.accent}20`, color: T.accent }}>
                     {lead.plan}
                   </span>
+                </td>
+                <td style={{ padding: "20px" }}>
+                  <AssignedCell lead={lead} isAdmin={isAdmin} T={T} />
                 </td>
                 <td style={{ padding: "20px" }}>{statusIcons}</td>
               </tr>

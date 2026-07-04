@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAuth } from "@/lib/auth";
+import { requireAuth, isAdmin } from "@/lib/auth";
 import { rateLimit, getClientKey } from "@/lib/rate-limit";
 
 const VALID_STATUSES = [
@@ -31,10 +31,10 @@ function sanitizeString(input, maxLength) {
 
 export async function PATCH(request, { params }) {
   try {
-    await requireAuth();
+    const session = await requireAuth();
 
     // Rate limit updates: 30 por minuto por IP
-    const limit = rateLimit({
+    const limit = await rateLimit({
       windowMs: 60 * 1000,
       maxRequests: 30,
       key: `lead-update:${getClientKey(request)}`,
@@ -49,15 +49,22 @@ export async function PATCH(request, { params }) {
 
     const { id } = await params;
     const body = await request.json();
-    const { status, notes, name, phone, email, city, address, plan } = body;
+    const { status, notes, name, phone, email, city, address, plan, assignedTo } = body;
+    const userIsAdmin = isAdmin(session.user);
+
+    const existing = await prisma.lead.findUnique({ where: { id } });
+    if (!existing) {
+      return NextResponse.json({ error: "Lead no encontrado" }, { status: 404 });
+    }
+
+    if (!userIsAdmin && existing.assignedTo !== session.user.email) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 403 });
+    }
 
     const data = {};
     if (status !== undefined) {
       if (!VALID_STATUSES.includes(status)) {
-        return NextResponse.json(
-          { error: "Estado no válido" },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: "Estado no válido" }, { status: 400 });
       }
       data.status = status;
     }
@@ -77,6 +84,9 @@ export async function PATCH(request, { params }) {
     if (city !== undefined) data.city = sanitizeString(city, MAX_LENGTHS.city);
     if (address !== undefined) data.address = sanitizeString(address, MAX_LENGTHS.address);
     if (plan !== undefined) data.plan = sanitizeString(plan, MAX_LENGTHS.plan);
+    if (assignedTo !== undefined && userIsAdmin) {
+      data.assignedTo = sanitizeString(assignedTo, 254);
+    }
 
     if (Object.keys(data).length === 0) {
       return NextResponse.json(
