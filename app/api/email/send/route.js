@@ -22,7 +22,7 @@ export async function POST(request) {
     await requireAdmin();
 
     // Rate limit email sends: 30 per minute per IP
-    const limit = rateLimit({
+    const limit = await rateLimit({
       windowMs: 60 * 1000,
       maxRequests: 30,
       key: `email-send:${getClientKey(request)}`,

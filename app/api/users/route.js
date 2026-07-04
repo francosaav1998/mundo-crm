@@ -18,8 +18,8 @@ function sanitizeRole(input) {
   return VALID_ROLES.has(role) ? role : "user";
 }
 
-function checkUsersRateLimit(request) {
-  const limit = rateLimit({
+async function checkUsersRateLimit(request) {
+  const limit = await rateLimit({
     windowMs: 60 * 1000,
     maxRequests: 10,
     key: `users:${getClientKey(request)}`,
@@ -36,7 +36,7 @@ function checkUsersRateLimit(request) {
 
 export async function GET(request) {
   try {
-    const rateLimitResponse = checkUsersRateLimit(request);
+    const rateLimitResponse = await checkUsersRateLimit(request);
     if (rateLimitResponse) return rateLimitResponse;
 
     await requireAdmin();
@@ -69,7 +69,7 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const rateLimitResponse = checkUsersRateLimit(request);
+    const rateLimitResponse = await checkUsersRateLimit(request);
     if (rateLimitResponse) return rateLimitResponse;
 
     await requireAdmin();

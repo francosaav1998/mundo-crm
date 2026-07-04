@@ -42,7 +42,7 @@ export async function POST(request) {
     await requireAdmin();
 
     // Rate limit imports: 5 por minuto por IP
-    const limit = rateLimit({
+    const limit = await rateLimit({
       windowMs: 60 * 1000,
       maxRequests: 5,
       key: `lead-import:${getClientKey(request)}`,

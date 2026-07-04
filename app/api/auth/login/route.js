@@ -5,7 +5,7 @@ import { rateLimit, getClientKey } from "@/lib/rate-limit";
 export async function POST(request) {
   try {
     // Rate limit login attempts: 5 per minute per IP
-    const limit = rateLimit({
+    const limit = await rateLimit({
       windowMs: 60 * 1000,
       maxRequests: 5,
       key: `auth-login:${getClientKey(request)}`,

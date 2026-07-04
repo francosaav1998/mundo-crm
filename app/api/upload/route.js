@@ -54,7 +54,7 @@ export async function POST(request) {
     await requireAdmin();
 
     // Rate limit uploads: 10 por minuto por IP
-    const limit = rateLimit({
+    const limit = await rateLimit({
       windowMs: 60 * 1000,
       maxRequests: 10,
       key: `upload:${getClientKey(request)}`,
