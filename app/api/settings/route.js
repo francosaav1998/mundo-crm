@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAuth } from "@/lib/auth";
+import { requireAuth, requireAdmin } from "@/lib/auth";
 
 // Lista blanca de claves permitidas para evitar almacenamiento arbitrario.
 const ALLOWED_KEYS = new Set([
   "seller_name",
   "seller_phone",
   "seller_msg",
+  "seller_photo",
   "seller_bio",
   "landing_theme",
   "footer_text",
@@ -49,7 +50,7 @@ export async function GET() {
 
 export async function POST(request) {
   try {
-    await requireAuth();
+    await requireAdmin();
     const body = await request.json();
 
     if (!body || typeof body !== "object") {
@@ -76,7 +77,8 @@ export async function POST(request) {
     );
     return NextResponse.json(config);
   } catch (error) {
-    const status = error.message === "Unauthorized" ? 401 : 500;
+    const status =
+      error.message === "Unauthorized" ? 401 : error.message === "Forbidden" ? 403 : 500;
     return NextResponse.json({ error: error.message }, { status });
   }
 }

@@ -1,17 +1,9 @@
 import { NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase/server";
 import { rateLimit, getClientKey } from "@/lib/rate-limit";
 
-// El email de admin puede configurarse por entorno; conserva fallback para compatibilidad.
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@mundo-crm.local";
 const VALID_ROLES = new Set(["admin", "user"]);
-
-function isAdmin(user) {
-  if (!user) return false;
-  if (user.email === ADMIN_EMAIL) return true;
-  return user.user_metadata?.role === "admin";
-}
 
 function sanitizeEmail(input) {
   return String(input).toLowerCase().trim().slice(0, 254);
@@ -47,10 +39,7 @@ export async function GET(request) {
     const rateLimitResponse = checkUsersRateLimit(request);
     if (rateLimitResponse) return rateLimitResponse;
 
-    const session = await requireAuth();
-    if (!isAdmin(session.user)) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 403 });
-    }
+    await requireAdmin();
 
     const supabase = createServiceClient();
     const {
@@ -72,7 +61,8 @@ export async function GET(request) {
 
     return NextResponse.json(simplified);
   } catch (error) {
-    const status = error.message === "Unauthorized" ? 401 : 500;
+    const status =
+      error.message === "Unauthorized" ? 401 : error.message === "Forbidden" ? 403 : 500;
     return NextResponse.json({ error: error.message }, { status });
   }
 }
@@ -82,14 +72,7 @@ export async function POST(request) {
     const rateLimitResponse = checkUsersRateLimit(request);
     if (rateLimitResponse) return rateLimitResponse;
 
-    const session = await requireAuth();
-
-    if (!isAdmin(session.user)) {
-      return NextResponse.json(
-        { error: "Solo el administrador puede crear usuarios" },
-        { status: 403 }
-      );
-    }
+    await requireAdmin();
 
     const body = await request.json();
     const { email, username, password, role = "user" } = body;
@@ -160,7 +143,8 @@ export async function POST(request) {
       invited: true,
     });
   } catch (error) {
-    const status = error.message === "Unauthorized" ? 401 : 500;
+    const status =
+      error.message === "Unauthorized" ? 401 : error.message === "Forbidden" ? 403 : 500;
     return NextResponse.json({ error: error.message }, { status });
   }
 }

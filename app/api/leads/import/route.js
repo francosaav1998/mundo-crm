@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAuth } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { rateLimit, getClientKey } from "@/lib/rate-limit";
 import * as XLSX from "xlsx";
 
@@ -39,7 +39,7 @@ function isValidEmail(email) {
 
 export async function POST(request) {
   try {
-    await requireAuth();
+    await requireAdmin();
 
     // Rate limit imports: 5 por minuto por IP
     const limit = rateLimit({
@@ -149,7 +149,8 @@ export async function POST(request) {
       total: rows.length,
     }, { status: 201 });
   } catch (error) {
-    const status = error.message === "Unauthorized" ? 401 : 500;
+    const status =
+      error.message === "Unauthorized" ? 401 : error.message === "Forbidden" ? 403 : 500;
     return NextResponse.json({ error: error.message || "Error al importar el archivo" }, { status });
   }
 }

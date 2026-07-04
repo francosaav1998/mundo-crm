@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { rateLimit, getClientKey } from "@/lib/rate-limit";
 import nodemailer from "nodemailer";
 
@@ -19,7 +19,7 @@ function isValidEmail(email) {
 
 export async function POST(request) {
   try {
-    await requireAuth();
+    await requireAdmin();
 
     // Rate limit email sends: 30 per minute per IP
     const limit = rateLimit({
@@ -81,7 +81,8 @@ export async function POST(request) {
 
     return NextResponse.json({ ok: true, messageId: info.messageId });
   } catch (error) {
-    const status = error.message === "Unauthorized" ? 401 : 500;
+    const status =
+      error.message === "Unauthorized" ? 401 : error.message === "Forbidden" ? 403 : 500;
     return NextResponse.json(
       { error: error.message || "Error enviando correo" },
       { status }
