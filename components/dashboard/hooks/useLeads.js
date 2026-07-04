@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export function useLeads(initialLeads = [], initialTotal = 0) {
   const [leads, setLeads] = useState(initialLeads);
@@ -15,6 +15,7 @@ export function useLeads(initialLeads = [], initialTotal = 0) {
   const [error, setError] = useState(null);
 
   const filtersRef = useRef({ search: "", statusFilter: "Todos", dateFilter: "todos", customDate: "" });
+  const searchTimeoutRef = useRef(null);
 
   const buildQuery = useCallback((pageNum, overrides = {}) => {
     const current = filtersRef.current;
@@ -73,7 +74,12 @@ export function useLeads(initialLeads = [], initialTotal = 0) {
   const setSearch = useCallback((value) => {
     setSearchState(value);
     filtersRef.current.search = value;
-    fetchLeads(1, { search: value });
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    searchTimeoutRef.current = setTimeout(() => {
+      fetchLeads(1, { search: value });
+    }, 300);
   }, [fetchLeads]);
 
   const setStatusFilter = useCallback((value) => {
@@ -111,6 +117,14 @@ export function useLeads(initialLeads = [], initialTotal = 0) {
   const addLeads = useCallback((newLeads) => {
     setLeads((prev) => [...newLeads, ...prev]);
     setTotal((prev) => prev + newLeads.length);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
   }, []);
 
   return {
