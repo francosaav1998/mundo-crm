@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export function useStats({ search, statusFilter, dateFilter, customDate, initialStats = null }) {
   const [stats, setStats] = useState(initialStats);
@@ -27,6 +27,13 @@ export function useStats({ search, statusFilter, dateFilter, customDate, initial
       setLoading(false);
     }
   }, [search, statusFilter, dateFilter, customDate]);
+
+  useEffect(() => {
+    if (!stats) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      refresh();
+    }
+  }, [stats, refresh]);
 
   return { stats, loading, error, refresh };
 }
