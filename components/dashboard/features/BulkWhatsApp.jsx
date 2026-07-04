@@ -28,7 +28,7 @@ const StatusBadge = ({ status, T }) => (
 
 const Avatar = ({ name, T, size = 36 }) => (
   <div style={{ width: size, height: size, borderRadius: "50%", background: `${T.accent}20`, color: T.accent, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "13px", flexShrink: 0 }}>
-    {name.charAt(0).toUpperCase()}
+    {name ? name.charAt(0).toUpperCase() : "?"}
   </div>
 );
 

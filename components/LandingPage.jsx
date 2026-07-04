@@ -263,7 +263,7 @@ export default function LandingPage() {
                 <i className="bi bi-geo-fill"></i> Evaluar Factibilidad
               </button>
             </div>
-            <button className="menu-toggle" aria-label="Abrir MenÃº" onClick={() => setMenuOpen(!menuOpen)}>
+            <button className="menu-toggle" aria-label="Abrir Menú" onClick={() => setMenuOpen(!menuOpen)}>
               <i className={menuOpen ? "bi bi-x-lg" : "bi bi-list"}></i>
             </button>
           </nav>
@@ -374,7 +374,7 @@ export default function LandingPage() {
             <div className="planes-grid">
               {filteredPlans.map((plan, index) => (
                 <div
-                  key={plan.title}
+                  key={plan.value}
                   className={`plan-card scroll-animate fade-in-up delay-${(index % 3) + 1} ${plan.featured ? "featured" : ""}`}
                 >
                   <div className="plan-header">

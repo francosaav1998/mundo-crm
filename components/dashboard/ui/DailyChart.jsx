@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
+import { useId, useMemo } from "react";
 import { calculateDailyIntake } from "@/lib/dashboard/utils";
 
 export default function DailyChart({ leads, data, T }) {
+  const baseId = useId();
   const dailyIntakeData = useMemo(() => {
     if (data) return data;
     return calculateDailyIntake(leads);
@@ -53,7 +54,7 @@ export default function DailyChart({ leads, data, T }) {
         {layout.items.length > 0 && (
           <svg viewBox={`0 0 ${layout.width} ${layout.height}`} style={{ width: "100%", height: "100%", overflow: "visible" }}>
             <defs>
-              <filter id="neonGlow" x="-50%" y="-50%" width="200%" height="200%">
+              <filter id={`${baseId}-neonGlow`} x="-50%" y="-50%" width="200%" height="200%">
                 <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur1" />
                 <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur2" />
                 <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="blur3" />
@@ -64,7 +65,7 @@ export default function DailyChart({ leads, data, T }) {
                   <feMergeNode in="SourceGraphic" />
                 </feMerge>
               </filter>
-              <filter id="neonGlowYellow" x="-50%" y="-50%" width="200%" height="200%">
+              <filter id={`${baseId}-neonGlowYellow`} x="-50%" y="-50%" width="200%" height="200%">
                 <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur1" />
                 <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur2" />
                 <feGaussianBlur in="SourceGraphic" stdDeviation="16" result="blur3" />
@@ -75,12 +76,12 @@ export default function DailyChart({ leads, data, T }) {
                   <feMergeNode in="SourceGraphic" />
                 </feMerge>
               </filter>
-              <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id={`${baseId}-barGrad`} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor={T.accent} stopOpacity="1" />
                 <stop offset="50%" stopColor={T.accent} stopOpacity="0.7" />
                 <stop offset="100%" stopColor={T.accent2} stopOpacity="0.3" />
               </linearGradient>
-              <linearGradient id="barGradYellow" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id={`${baseId}-barGradYellow`} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor={T.secondary} stopOpacity="1" />
                 <stop offset="50%" stopColor={T.secondary} stopOpacity="0.7" />
                 <stop offset="100%" stopColor="#D9A300" stopOpacity="0.3" />
@@ -114,7 +115,7 @@ export default function DailyChart({ leads, data, T }) {
                     ry="8"
                     fill={isMax ? T.secondary : T.accent}
                     opacity="0.3"
-                    filter={`url(${isMax ? "#neonGlowYellow" : "#neonGlow"})`}
+                    filter={`url(#${baseId}-${isMax ? "neonGlowYellow" : "neonGlow"})`}
                   />
                   <rect
                     x={bar.x}
@@ -123,7 +124,7 @@ export default function DailyChart({ leads, data, T }) {
                     height={bar.barHeight}
                     rx="6"
                     ry="6"
-                    fill={`url(${isMax ? "#barGradYellow" : "#barGrad"})`}
+                    fill={`url(#${baseId}-${isMax ? "barGradYellow" : "barGrad"})`}
                     style={{ transition: "all 0.3s", cursor: "pointer" }}
                   />
                   <text
@@ -133,7 +134,7 @@ export default function DailyChart({ leads, data, T }) {
                     fontSize="12px"
                     fontWeight="900"
                     textAnchor="middle"
-                    filter={isMax ? "url(#neonGlowYellow)" : "none"}
+                    filter={isMax ? `url(#${baseId}-neonGlowYellow)` : "none"}
                   >
                     {bar.count}
                   </text>

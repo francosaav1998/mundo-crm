@@ -137,7 +137,7 @@ export default function ImportData({ leads, T, isMobile, showToast, onImportSucc
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
               <span style={{ fontSize: "16px", fontWeight: 700, color: T.text }}>Haz clic para subir tu archivo Excel</span>
-              <span style={{ fontSize: "12px", color: T.muted }}>Formatos soportados: .xlsx, .xls, .csv (máx 1000 filas)</span>
+              <span style={{ fontSize: "12px", color: T.muted }}>Formatos soportados: .xlsx, .xls, .csv (máx 5000 filas)</span>
             </div>
           )}
         </label>

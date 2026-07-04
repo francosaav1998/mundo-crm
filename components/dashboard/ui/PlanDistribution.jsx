@@ -28,20 +28,21 @@ export default function PlanDistribution({ leads, data, T }) {
           const total = planDistribution.reduce((acc, curr) => acc + curr.value, 0);
           const percentage = total > 0 ? ((p.value / total) * 100).toFixed(0) : 0;
           const barColors = [T.accent, T.accent2, T.secondary, T.accent3];
+          const color = barColors[i % barColors.length];
           return (
             <div key={p.name} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
                 <span style={{ fontWeight: 600, color: T.text }}>{p.name}</span>
-                <span style={{ fontWeight: 700, color: barColors[i] }}>{p.value} ({percentage}%)</span>
+                <span style={{ fontWeight: 700, color: color }}>{p.value} ({percentage}%)</span>
               </div>
               <div style={{ height: "10px", background: T.inputBg, borderRadius: "6px", overflow: "hidden", position: "relative" }}>
                 <div
                   style={{
                     width: `${percentage}%`,
                     height: "100%",
-                    background: `linear-gradient(90deg, ${barColors[i]}, ${i < 3 ? T.accent : barColors[i]})`,
+                    background: `linear-gradient(90deg, ${color}, ${i < 3 ? T.accent : color})`,
                     borderRadius: "6px",
-                    boxShadow: `0 0 10px ${barColors[i]}60`,
+                    boxShadow: `0 0 10px ${color}60`,
                     transition: "width 1s ease",
                   }}
                 />
