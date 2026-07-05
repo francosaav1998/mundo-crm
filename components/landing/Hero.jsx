@@ -1,18 +1,24 @@
 "use client";
 
+import { useRef } from "react";
+
 export default function Hero({ bgVideoUrl, onScrollTo, onSelectPlan }) {
+  const videoRef = useRef(null);
+
   return (
     <section id="inicio" className="hero">
       {bgVideoUrl && (
         <div className="hero-video-bg" aria-hidden="true">
           <video
+            ref={videoRef}
             className="hero-video-bg__el"
             autoPlay
             muted
             loop
             playsInline
-            preload="metadata"
-            poster={bgVideoUrl.replace(/\.(mp4|webm|mov)$/i, ".jpg")}
+            preload="auto"
+            onCanPlay={(e) => { const v = e.target; v.play().catch(() => {}); }}
+            onLoadedMetadata={(e) => { const v = e.target; v.muted = true; v.play().catch(() => {}); }}
           >
             <source
               src={bgVideoUrl}
