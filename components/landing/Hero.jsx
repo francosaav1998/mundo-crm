@@ -2,7 +2,7 @@
 
 import { useRef, useEffect } from "react";
 
-export default function Hero({ bgVideoUrl, onScrollTo, onSelectPlan }) {
+export default function Hero({ bgVideoUrl, onScrollTo, onSelectPlan, onOpenModal }) {
   const videoRef = useRef(null);
 
   const videoType = bgVideoUrl
@@ -62,7 +62,7 @@ export default function Hero({ bgVideoUrl, onScrollTo, onSelectPlan }) {
             Conéctate con la Fibra <span>más rápida de Chile</span>
           </h1>
           <p>
-            Contrata hoy con asesoría personalizada directa a tu WhatsApp. Disfruta de la
+            Contrata hoy con asesoría personalizada. Disfruta de la
             mejor relación precio-calidad, instalación express y soporte dedicado sin salir
             de casa.
           </p>
@@ -71,7 +71,7 @@ export default function Hero({ bgVideoUrl, onScrollTo, onSelectPlan }) {
               Ver Planes
             </button>
             <button
-              onClick={() => onScrollTo("cobertura")}
+              onClick={onOpenModal}
               className="btn btn-outline"
               style={{ borderColor: "#fff", color: "#fff" }}
             >

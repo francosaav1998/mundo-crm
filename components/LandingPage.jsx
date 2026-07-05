@@ -11,6 +11,7 @@ import CoverageSection from "./landing/CoverageSection";
 import BenefitsSection from "./landing/BenefitsSection";
 import Footer from "./landing/Footer";
 import WhatsAppFloat from "./landing/WhatsAppFloat";
+import LeadModal from "./landing/LeadModal";
 
 export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -24,6 +25,8 @@ export default function LandingPage() {
   });
   const [formStatus, setFormStatus] = useState({ type: "", message: "" });
   const [submitting, setSubmitting] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalPlan, setModalPlan] = useState("");
   const [sellerPhotoUrl, setSellerPhotoUrl] = useState("");
   const [sellerBioText, setSellerBioText] = useState(
     "Como tu ejecutiva comercial especializada de Mundo, te ayudo a gestionar tu contrato de forma rápida y transparente. Olvídate de largas esperas en call centers. Analizo la cobertura de tu sector en minutos y agendo tu instalación en tiempo récord."
@@ -95,8 +98,13 @@ export default function LandingPage() {
   };
 
   const handlePlanClick = (planValue) => {
-    setFormData((prev) => ({ ...prev, plan: planValue }));
-    scrollToSection("cobertura");
+    setModalPlan(planValue);
+    setModalOpen(true);
+  };
+
+  const openModal = () => {
+    setModalPlan("");
+    setModalOpen(true);
   };
 
   const handleSubmit = async (e) => {
@@ -129,7 +137,7 @@ export default function LandingPage() {
       <MetaPixel pixelId={metaPixelId} />
       <Header menuOpen={menuOpen} setMenuOpen={setMenuOpen} onScrollTo={scrollToSection} sellerLabels={sellerLabels} />
       <main>
-        <Hero bgVideoUrl={bgVideoUrl} onScrollTo={scrollToSection} onSelectPlan={handlePlanClick} />
+        <Hero bgVideoUrl={bgVideoUrl} onScrollTo={scrollToSection} onSelectPlan={handlePlanClick} onOpenModal={openModal} />
         <SellerSection
           sellerPhotoUrl={sellerPhotoUrl}
           sellerBioText={sellerBioText}
@@ -149,6 +157,13 @@ export default function LandingPage() {
       </main>
       <Footer footerText={footerText} onScrollTo={scrollToSection} sellerLabels={sellerLabels} sellerPhone={SELLER_CONFIG.phone} />
       <WhatsAppFloat />
+      <LeadModal
+        key={modalOpen ? modalPlan : "closed"}
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        initialPlan={modalPlan}
+        sellerName={sellerName}
+      />
     </>
   );
 }

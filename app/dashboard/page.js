@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAuth, isAdmin } from "@/lib/auth";
+import { findOrCreateSellerForUser } from "@/lib/seller.server";
 import DashboardClient from "@/components/DashboardClient";
 
 export const dynamic = "force-dynamic";
@@ -17,19 +18,13 @@ export default async function DashboardPage() {
 
   const admin = isAdmin(session.user);
   const userId = session.user?.id;
-  const userEmail = session.user?.email || "";
 
   let seller = null;
   let sellerWhere = {};
 
   if (!admin) {
-    seller = await prisma.seller.findUnique({ where: { userId } });
-    if (!seller) {
-      seller = await prisma.seller.findFirst({ where: { email: userEmail } });
-    }
-    if (seller) {
-      sellerWhere = { sellerId: seller.id };
-    }
+    seller = await findOrCreateSellerForUser(session.user);
+    sellerWhere = { sellerId: seller.id };
   }
 
   const [initialLeads, initialTotal] = await prisma.$transaction([

@@ -3,6 +3,16 @@ import { useMemo, useState } from "react";
 import { renderTemplate } from "@/lib/dashboard/utils";
 import { STATUSES } from "@/lib/dashboard/constants";
 
+const VARS = [
+  { tag: "{{nombre}}", label: "Nombre" },
+  { tag: "{{telefono}}", label: "Teléfono" },
+  { tag: "{{email}}", label: "Email" },
+  { tag: "{{ciudad}}", label: "Ciudad" },
+  { tag: "{{direccion}}", label: "Dirección" },
+  { tag: "{{plan}}", label: "Plan" },
+  { tag: "{{estado}}", label: "Estado" },
+];
+
 const TEMPLATES = {
   default: {
     subject: "Mundo · Información sobre {{plan}}",
@@ -157,6 +167,18 @@ export default function BulkEmail({ leads, T, isMobile, sellerName, showToast })
     cursor: "pointer",
   };
 
+  const tagBtn = {
+    padding: "4px 10px",
+    borderRadius: "8px",
+    border: `1px solid ${T.accent}40`,
+    background: `${T.accent}10`,
+    color: T.accent,
+    fontSize: "12px",
+    fontWeight: 700,
+    cursor: "pointer",
+    fontFamily: "inherit",
+  };
+
   const btnActive = (active, color = T.accent) => ({
     ...btnBase,
     border: `1px solid ${active ? color : T.border}`,
@@ -168,10 +190,10 @@ export default function BulkEmail({ leads, T, isMobile, sellerName, showToast })
     <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 360px", gap: isMobile ? 16 : 24 }}>
       <div style={cardStyle}>
         <h2 style={{ fontSize: "20px", fontWeight: 800, color: T.accent, marginBottom: 6 }}>
-          <i className="bi bi-envelope-fill" style={{ marginRight: 8 }} /> Correo Masivo a Clientes
+          <i className="bi bi-envelope-fill" style={{ marginRight: 8 }} /> Mensajes por Correo
         </h2>
         <p style={{ fontSize: "13px", color: T.muted, marginBottom: 24 }}>
-          Selecciona leads con email y envía mensajes personalizados por WhatsApp Web o SMTP.
+          Selecciona leads con email y envía mensajes personalizados por SMTP o tu cliente de correo.
         </p>
 
         <div style={{ marginBottom: 20 }}>
@@ -217,8 +239,20 @@ export default function BulkEmail({ leads, T, isMobile, sellerName, showToast })
             }}
           />
           <div style={{ fontSize: "11px", color: T.muted, marginTop: 6 }}>
-            Variables:{" "}
-            <code style={{ color: T.accent }}>{`{{nombre}} {{telefono}} {{email}} {{ciudad}} {{direccion}} {{plan}} {{estado}}`}</code>
+            Haz clic para insertar variables en el cuerpo:
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
+            {VARS.map((v) => (
+              <button
+                key={v.tag}
+                type="button"
+                onClick={() => setBody((prev) => `${prev} ${v.tag}`)}
+                style={tagBtn}
+              >
+                <i className="bi bi-plus-lg" style={{ marginRight: 4 }}></i>
+                {v.label}
+              </button>
+            ))}
           </div>
         </div>
 

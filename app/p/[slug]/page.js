@@ -13,6 +13,7 @@ import CoverageSection from "@/components/landing/CoverageSection";
 import BenefitsSection from "@/components/landing/BenefitsSection";
 import Footer from "@/components/landing/Footer";
 import WhatsAppFloat from "@/components/landing/WhatsAppFloat";
+import LeadModal from "@/components/landing/LeadModal";
 
 export default function SellerLanding() {
   const params = useParams();
@@ -31,6 +32,8 @@ export default function SellerLanding() {
   });
   const [formStatus, setFormStatus] = useState({ type: "", message: "" });
   const [submitting, setSubmitting] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalPlan, setModalPlan] = useState("");
 
   useEffect(() => {
     async function loadSeller() {
@@ -88,8 +91,13 @@ export default function SellerLanding() {
   };
 
   const handlePlanClick = (planValue) => {
-    setFormData((prev) => ({ ...prev, plan: planValue }));
-    scrollToSection("cobertura");
+    setModalPlan(planValue);
+    setModalOpen(true);
+  };
+
+  const openModal = () => {
+    setModalPlan("");
+    setModalOpen(true);
   };
 
   const handleSubmit = async (e) => {
@@ -148,7 +156,7 @@ export default function SellerLanding() {
       <MetaPixel pixelId={metaPixelId} />
       <Header menuOpen={menuOpen} setMenuOpen={setMenuOpen} onScrollTo={scrollToSection} sellerLabels={sellerLabels} />
       <main>
-        <Hero bgVideoUrl={bgVideoUrl} onScrollTo={scrollToSection} onSelectPlan={handlePlanClick} />
+        <Hero bgVideoUrl={bgVideoUrl} onScrollTo={scrollToSection} onSelectPlan={handlePlanClick} onOpenModal={openModal} />
         <SellerSection
           sellerPhotoUrl={sellerPhoto}
           sellerBioText={sellerBio}
@@ -168,6 +176,14 @@ export default function SellerLanding() {
       </main>
       <Footer footerText={footerText} onScrollTo={scrollToSection} sellerLabels={sellerLabels} sellerPhone={seller?.phone || ""} />
       <WhatsAppFloat />
+      <LeadModal
+        key={modalOpen ? modalPlan : "closed"}
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        initialPlan={modalPlan}
+        sellerId={seller?.id}
+        sellerName={seller?.name}
+      />
     </>
   );
 }

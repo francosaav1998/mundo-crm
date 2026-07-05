@@ -35,9 +35,16 @@ export default function SettingsForm({
     }
   };
 
+  const MAX_VIDEO_SIZE = 5 * 1024 * 1024; // 5 MB
+
   const handleVideoUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    if (file.size > MAX_VIDEO_SIZE) {
+      showToast("El video no debe pesar más de 5 MB (ideal < 2 MB).");
+      return;
+    }
 
     setUploadingVideo(true);
     try {

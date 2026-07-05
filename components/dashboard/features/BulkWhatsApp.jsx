@@ -130,13 +130,13 @@ export default function BulkWhatsApp({ leads, T, isMobile, showToast }) {
         Mensajes Directos WhatsApp
       </h2>
       <p style={{ fontSize: "13px", color: T.muted, marginBottom: 24 }}>
-        Escribe una plantilla, selecciona clientes y envía mensajes personalizados en masa automáticamente.
+        Escribe una plantilla, selecciona clientes y abre chats personalizados uno a uno.
       </p>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 24, background: T.inputBg, padding: 6, borderRadius: "14px", border: `1px solid ${T.border}` }}>
         {[
           { id: "single", icon: "bi-person-fill", label: "Mensaje Individual" },
-          { id: "mass", icon: "bi-people-fill", label: "Envío en Masa" },
+          { id: "mass", icon: "bi-people-fill", label: "Múltiples Clientes" },
         ].map((m) => (
           <button
             key={m.id}

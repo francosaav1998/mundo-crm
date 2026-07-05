@@ -7,7 +7,7 @@ const ALL_MENU_ITEMS = [
   { id: "dashboard", icon: "bi-grid-1x2-fill", label: "Dashboard General" },
   { id: "leads", icon: "bi-people-fill", label: "Clientes y Leads" },
   { id: "emails", icon: "bi-envelope-fill", label: "Correos" },
-  { id: "whatsapp", icon: "bi-whatsapp", label: "Mensajes Directos en Masa" },
+  { id: "whatsapp", icon: "bi-whatsapp", label: "Mensajes Directos" },
   { id: "import", icon: "bi-file-earmark-spreadsheet-fill", label: "Importar Datos" },
   { id: "users", icon: "bi-shield-lock-fill", label: "Usuarios", adminOnly: true },
   { id: "settings", icon: "bi-gear-fill", label: "Configuraciones" },
