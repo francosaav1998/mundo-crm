@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 
 export default function Hero({ bgVideoUrl, onScrollTo, onSelectPlan }) {
   const videoRef = useRef(null);
@@ -12,6 +12,26 @@ export default function Hero({ bgVideoUrl, onScrollTo, onSelectPlan }) {
       ? "video/quicktime"
       : "video/mp4"
     : "video/mp4";
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    const start = () => {
+      v.muted = true;
+      v.play().catch(() => {
+        v.muted = true;
+        v.play().catch(() => {});
+      });
+    };
+    start();
+    document.addEventListener("touchstart", start, { once: true });
+    document.addEventListener("click", start, { once: true });
+    window.addEventListener("scroll", () => { if (!v.paused) return; start(); }, { once: true, passive: true });
+    return () => {
+      document.removeEventListener("touchstart", start);
+      document.removeEventListener("click", start);
+    };
+  }, [bgVideoUrl]);
 
   return (
     <section id="inicio" className="hero">
