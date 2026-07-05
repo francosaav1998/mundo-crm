@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 import { rateLimit, getClientKey } from "@/lib/rate-limit";
 
 export async function POST(request) {
   try {
-    // Rate limit login attempts: 5 per minute per IP
     const limit = await rateLimit({
       windowMs: 60 * 1000,
       maxRequests: 5,
@@ -19,10 +19,34 @@ export async function POST(request) {
     }
 
     const { username, password } = await request.json();
-    // Backwards compatibility: allow plain usernames by appending the local domain.
     const email = username.includes("@") ? username : `${username}@mundo-crm.local`;
 
-    const supabase = await createClient();
+    const cookieStore = await cookies();
+    const res = NextResponse.json({ success: true });
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const cookieOptions = {
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+    };
+
+    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+      cookieOptions,
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            res.cookies.set(name, value, { ...cookieOptions, ...options });
+          });
+        },
+      },
+    });
+
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -35,7 +59,7 @@ export async function POST(request) {
       );
     }
 
-    return NextResponse.json({ success: true });
+    return res;
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
