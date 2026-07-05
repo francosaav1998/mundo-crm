@@ -6,7 +6,10 @@ export default function Hero({ bgVideoUrl, onScrollTo, onSelectPlan }) {
       {bgVideoUrl && (
         <div className="hero-video-bg" aria-hidden="true">
           <video className="hero-video-bg__el" autoPlay muted loop playsInline preload="auto">
-            <source src={bgVideoUrl} type="video/mp4" />
+            <source
+              src={bgVideoUrl}
+              type={bgVideoUrl.match(/\.(webm)$/i) ? "video/webm" : bgVideoUrl.match(/\.(mov)$/i) ? "video/quicktime" : "video/mp4"}
+            />
           </video>
           <div className="hero-video-bg__overlay" />
         </div>

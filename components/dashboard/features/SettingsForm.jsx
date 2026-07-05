@@ -30,8 +30,10 @@ export default function SettingsForm({
 
       if (!res.ok) throw new Error(data.error || "Error al subir foto");
 
+      const updated = { ...settings, sellerPhoto: data.url };
       onUpdateSettings({ sellerPhoto: data.url });
-      showToast("Foto subida correctamente");
+      await onSaveSettings(updated);
+      showToast("Foto subida y guardada correctamente");
     } catch (err) {
       showToast(err.message || "Error al subir foto");
     } finally {
@@ -54,8 +56,10 @@ export default function SettingsForm({
 
       if (!res.ok) throw new Error(data.error || "Error al subir video");
 
+      const updated = { ...settings, bgVideoUrl: data.url };
       onUpdateSettings({ bgVideoUrl: data.url });
-      showToast("Video de fondo subido correctamente");
+      await onSaveSettings(updated);
+      showToast("Video de fondo subido y guardado correctamente");
     } catch (err) {
       showToast(err.message || "Error al subir video");
     } finally {

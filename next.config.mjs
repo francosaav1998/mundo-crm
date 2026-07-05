@@ -53,6 +53,7 @@ const nextConfig = {
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://connect.facebook.net",
               "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com",
               "img-src 'self' data: https: https://www.facebook.com",
+              "media-src 'self' https: data:",
               "font-src 'self' https: data:",
               "connect-src 'self' https://*.supabase.co https://www.facebook.com",
               "frame-src 'none'",
