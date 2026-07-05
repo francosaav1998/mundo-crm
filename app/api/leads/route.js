@@ -81,7 +81,14 @@ export async function GET(request) {
     const where = {};
 
     if (!isAdmin(session.user)) {
-      where.assignedTo = session.user.email;
+      const userId = session.user?.id;
+      const userEmail = session.user?.email || "";
+      const seller = await prisma.seller.findUnique({ where: { userId } }) || await prisma.seller.findFirst({ where: { email: userEmail } });
+      if (seller) {
+        where.sellerId = seller.id;
+      } else {
+        where.assignedTo = userEmail;
+      }
     }
 
     if (status && status !== "Todos") {

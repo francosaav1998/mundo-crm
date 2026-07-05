@@ -15,13 +15,31 @@ export default async function DashboardPage() {
     redirect("/dashboard/login");
   }
 
+  const admin = isAdmin(session.user);
+  const userId = session.user?.id;
+  const userEmail = session.user?.email || "";
+
+  let seller = null;
+  let sellerWhere = {};
+
+  if (!admin) {
+    seller = await prisma.seller.findUnique({ where: { userId } });
+    if (!seller) {
+      seller = await prisma.seller.findFirst({ where: { email: userEmail } });
+    }
+    if (seller) {
+      sellerWhere = { sellerId: seller.id };
+    }
+  }
+
   const [initialLeads, initialTotal] = await prisma.$transaction([
     prisma.lead.findMany({
+      where: sellerWhere,
       orderBy: { createdAt: "desc" },
       take: INITIAL_LIMIT,
       select: { id: true, name: true, phone: true, city: true, plan: true, status: true, createdAt: true },
     }),
-    prisma.lead.count(),
+    prisma.lead.count({ where: sellerWhere }),
   ]);
 
   return (
@@ -29,7 +47,14 @@ export default async function DashboardPage() {
       initialLeads={initialLeads}
       initialTotal={initialTotal}
       username={session.user?.user_metadata?.name || session.user?.email || "Admin"}
-      isAdmin={isAdmin(session.user)}
+      isAdmin={admin}
+      sellerSlug={seller?.slug || null}
+      sellerInfo={seller ? {
+        photo: seller.photo,
+        bio: seller.bio,
+        phone: seller.phone,
+        name: seller.name,
+      } : null}
     />
   );
 }

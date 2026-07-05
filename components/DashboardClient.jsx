@@ -25,7 +25,7 @@ const PAGE_TITLES = {
   settings: "Configuración",
 };
 
-export default function DashboardClient({ initialLeads = [], initialTotal = 0, initialStats = null, username, isAdmin = false }) {
+export default function DashboardClient({ initialLeads = [], initialTotal = 0, initialStats = null, username, isAdmin = false, sellerSlug = null, sellerInfo = null }) {
   const { theme, toggle: toggleTheme } = useTheme();
   const T = NEON_THEME[theme];
 
@@ -47,6 +47,8 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
     saveSettings,
     showToast,
   } = useSettings();
+
+  const onboardingNeeded = !isAdmin && (!sellerInfo?.photo || !sellerInfo?.bio || !sellerInfo?.phone);
 
   const {
     leads,
@@ -118,6 +120,9 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
       setCustomDate={setCustomDate}
       isMobile={isMobile}
       pageTitle={PAGE_TITLES[activeMenu]}
+      isAdmin={isAdmin}
+      sellerSlug={sellerSlug}
+      onboardingNeeded={onboardingNeeded}
     >
       {activeMenu === "dashboard" && (
         <DashboardOverview

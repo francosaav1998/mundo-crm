@@ -17,61 +17,83 @@ function slugify(text) {
     .slice(0, 60);
 }
 
+function normalizeWhatsApp(number) {
+  if (!number) return "";
+  const digits = String(number).replace(/\D/g, "");
+  if (digits.length === 12 && digits.startsWith("569")) return digits;
+  if (digits.length === 9 && digits.startsWith("9")) return `56${digits}`;
+  if (digits.length === 11 && digits.startsWith("56") && !digits.startsWith("569")) return `569${digits.slice(2)}`;
+  return digits;
+}
+
 export default function RegistroPage() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    city: "",
+    bio: "",
+    password: "",
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
+  const update = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
+
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
     setError("");
 
-    if (password.length < 6) {
+    if (form.password.length < 6) {
       setError("La contraseña debe tener al menos 6 caracteres");
       setLoading(false);
       return;
     }
 
+    if (!form.phone) {
+      setError("El WhatsApp es obligatorio para que los clientes te contacten");
+      setLoading(false);
+      return;
+    }
+
+    const normalizedPhone = normalizeWhatsApp(form.phone);
+
     try {
       const { data, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
+        email: form.email,
+        password: form.password,
         options: {
-          data: { full_name: name },
+          data: { full_name: form.name },
         },
       });
 
       if (signUpError) throw signUpError;
 
       if (data.user) {
-        const slug = slugify(name);
+        const slug = slugify(form.name);
         const res = await fetch("/api/sellers", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            name,
-            email,
-            phone,
+            name: form.name,
+            email: form.email,
+            phone: normalizedPhone,
             slug,
+            bio: form.bio,
           }),
         });
 
-        if (res.ok) {
-          const seller = await res.json();
-          setSuccess(true);
-          setTimeout(() => router.push(`/p/${seller.slug}`), 1500);
-          return;
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          console.error("Error creando seller:", errData);
         }
 
         setSuccess(true);
-        setTimeout(() => router.push("/dashboard/login"), 2000);
+        setTimeout(() => router.push("/dashboard"), 1500);
       }
     } catch (err) {
       setError(err.message || "Error al registrarse");
@@ -79,6 +101,29 @@ export default function RegistroPage() {
       setLoading(false);
     }
   }
+
+  const inputStyle = {
+    width: "100%",
+    padding: "12px 16px",
+    background: "#F8FAFC",
+    border: "2px solid #E2E8F0",
+    borderRadius: "12px",
+    color: "#1E293B",
+    fontSize: "14px",
+    fontWeight: 600,
+    outline: "none",
+    transition: "border-color 0.2s",
+  };
+
+  const labelStyle = {
+    display: "block",
+    fontSize: "12px",
+    fontWeight: 700,
+    color: "#1E293B",
+    textTransform: "uppercase",
+    letterSpacing: "0.05em",
+    marginBottom: "6px",
+  };
 
   return (
     <div
@@ -91,7 +136,6 @@ export default function RegistroPage() {
         alignItems: "center",
         justifyContent: "center",
         padding: "24px",
-        position: "relative",
       }}
     >
       <div
@@ -107,8 +151,8 @@ export default function RegistroPage() {
         }}
       />
 
-      <div style={{ width: "100%", maxWidth: "440px", zIndex: 1, textAlign: "center" }}>
-        <div style={{ marginBottom: "32px" }}>
+      <div style={{ width: "100%", maxWidth: "500px", zIndex: 1, textAlign: "center" }}>
+        <div style={{ marginBottom: "24px" }}>
           <div
             style={{
               width: "64px",
@@ -118,17 +162,17 @@ export default function RegistroPage() {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              margin: "0 auto 20px",
+              margin: "0 auto 16px",
               boxShadow: "0 10px 30px rgba(0, 0, 0, 0.2)",
             }}
           >
             <span style={{ color: "#00748E", fontWeight: 900, fontSize: "26px" }}>M</span>
           </div>
-          <h1 style={{ fontSize: "26px", fontWeight: 800, letterSpacing: "-0.02em" }}>
+          <h1 style={{ fontSize: "24px", fontWeight: 800, letterSpacing: "-0.02em" }}>
             Únete como Ejecutiva Mundo
           </h1>
-          <p style={{ color: "rgba(248, 250, 252, 0.85)", fontSize: "14px", marginTop: "6px" }}>
-            Regístrate y obtén tu propia landing personalizada para vender
+          <p style={{ color: "rgba(248, 250, 252, 0.85)", fontSize: "13px", marginTop: "6px" }}>
+            Completa tus datos y obtén tu landing personalizada
           </p>
         </div>
 
@@ -136,7 +180,7 @@ export default function RegistroPage() {
           style={{
             background: "#FFFFFF",
             borderRadius: "24px",
-            padding: "36px",
+            padding: "32px",
             boxShadow: "0 20px 50px rgba(0, 0, 0, 0.25)",
             textAlign: "left",
           }}
@@ -152,8 +196,12 @@ export default function RegistroPage() {
                 fontSize: "13px",
                 fontWeight: 700,
                 marginBottom: "20px",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
               }}
             >
+              <i className="bi bi-exclamation-triangle-fill"></i>
               {error}
             </div>
           )}
@@ -173,104 +221,101 @@ export default function RegistroPage() {
               }}
             >
               <i className="bi bi-check-circle-fill" style={{ marginRight: "8px" }}></i>
-              ¡Cuenta creada! Redirigiendo a tu landing...
+              ¡Cuenta creada! Redirigiendo a tu dashboard...
             </div>
           )}
 
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             <div>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1E293B", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "6px" }}>
-                Nombre completo *
-              </label>
+              <label style={labelStyle}>Nombre completo *</label>
               <input
                 type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={form.name}
+                onChange={(e) => update("name", e.target.value)}
                 required
                 placeholder="María González"
-                style={{
-                  width: "100%",
-                  padding: "12px 16px",
-                  background: "#F8FAFC",
-                  border: "2px solid #E2E8F0",
-                  borderRadius: "12px",
-                  color: "#1E293B",
-                  fontSize: "14px",
-                  fontWeight: 600,
-                  outline: "none",
-                }}
+                style={inputStyle}
+                onFocus={(e) => (e.target.style.borderColor = "#00748E")}
+                onBlur={(e) => (e.target.style.borderColor = "#E2E8F0")}
               />
             </div>
 
-            <div>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1E293B", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "6px" }}>
-                Email *
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                placeholder="maria@gmail.com"
-                style={{
-                  width: "100%",
-                  padding: "12px 16px",
-                  background: "#F8FAFC",
-                  border: "2px solid #E2E8F0",
-                  borderRadius: "12px",
-                  color: "#1E293B",
-                  fontSize: "14px",
-                  fontWeight: 600,
-                  outline: "none",
-                }}
-              />
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+              <div>
+                <label style={labelStyle}>Email *</label>
+                <input
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => update("email", e.target.value)}
+                  required
+                  placeholder="maria@gmail.com"
+                  style={inputStyle}
+                  onFocus={(e) => (e.target.style.borderColor = "#00748E")}
+                  onBlur={(e) => (e.target.style.borderColor = "#E2E8F0")}
+                />
+              </div>
+
+              <div>
+                <label style={labelStyle}>Contraseña *</label>
+                <input
+                  type="password"
+                  value={form.password}
+                  onChange={(e) => update("password", e.target.value)}
+                  required
+                  placeholder="Mín. 6 caracteres"
+                  style={inputStyle}
+                  onFocus={(e) => (e.target.style.borderColor = "#00748E")}
+                  onBlur={(e) => (e.target.style.borderColor = "#E2E8F0")}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+              <div>
+                <label style={{ ...labelStyle, color: "#DC2626" }}>WhatsApp *</label>
+                <input
+                  type="tel"
+                  value={form.phone}
+                  onChange={(e) => update("phone", e.target.value)}
+                  required
+                  placeholder="+56912345678"
+                  style={inputStyle}
+                  onFocus={(e) => (e.target.style.borderColor = "#00748E")}
+                  onBlur={(e) => (e.target.style.borderColor = "#E2E8F0")}
+                />
+                <p style={{ fontSize: "11px", color: "#64748B", marginTop: "4px" }}>
+                  Los clientes te contactarán aquí
+                </p>
+              </div>
+
+              <div>
+                <label style={labelStyle}>Ciudad / Región</label>
+                <input
+                  type="text"
+                  value={form.city}
+                  onChange={(e) => update("city", e.target.value)}
+                  placeholder="Santiago (opcional)"
+                  style={inputStyle}
+                  onFocus={(e) => (e.target.style.borderColor = "#00748E")}
+                  onBlur={(e) => (e.target.style.borderColor = "#E2E8F0")}
+                />
+              </div>
             </div>
 
             <div>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1E293B", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "6px" }}>
-                WhatsApp
-              </label>
-              <input
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="+56912345678"
-                style={{
-                  width: "100%",
-                  padding: "12px 16px",
-                  background: "#F8FAFC",
-                  border: "2px solid #E2E8F0",
-                  borderRadius: "12px",
-                  color: "#1E293B",
-                  fontSize: "14px",
-                  fontWeight: 600,
-                  outline: "none",
-                }}
+              <label style={labelStyle}>Bio / Presentación (opcional)</label>
+              <textarea
+                value={form.bio}
+                onChange={(e) => update("bio", e.target.value)}
+                placeholder="Como tu ejecutiva comercial especializada de Mundo, te ayudo a gestionar tu contrato..."
+                rows={3}
+                style={{ ...inputStyle, resize: "none", lineHeight: "1.5" }}
+                onFocus={(e) => (e.target.style.borderColor = "#00748E")}
+                onBlur={(e) => (e.target.style.borderColor = "#E2E8F0")}
               />
-            </div>
-
-            <div>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1E293B", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "6px" }}>
-                Contraseña *
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                placeholder="Mínimo 6 caracteres"
-                style={{
-                  width: "100%",
-                  padding: "12px 16px",
-                  background: "#F8FAFC",
-                  border: "2px solid #E2E8F0",
-                  borderRadius: "12px",
-                  color: "#1E293B",
-                  fontSize: "14px",
-                  fontWeight: 600,
-                  outline: "none",
-                }}
-              />
+              <p style={{ fontSize: "11px", color: "#64748B", marginTop: "4px" }}>
+                Si lo dejas vacío, usaremos un texto por defecto. Podrás editarlo después.
+              </p>
             </div>
 
             <button
@@ -292,17 +337,15 @@ export default function RegistroPage() {
                 alignItems: "center",
                 justifyContent: "center",
                 gap: "8px",
-                marginTop: "8px",
+                marginTop: "4px",
               }}
             >
-              {loading ? "Creando cuenta..." : "Crear mi cuenta"}
+              {loading ? "Creando cuenta..." : "Crear mi cuenta y dashboard"}
             </button>
           </form>
 
-          <div style={{ marginTop: "24px", paddingTop: "20px", borderTop: "1px solid #E2E8F0", textAlign: "center" }}>
-            <p style={{ fontSize: "13px", color: "#64748B", marginBottom: "8px" }}>
-              ¿Ya tienes cuenta?
-            </p>
+          <div style={{ marginTop: "20px", paddingTop: "16px", borderTop: "1px solid #E2E8F0", textAlign: "center" }}>
+            <p style={{ fontSize: "13px", color: "#64748B", marginBottom: "6px" }}>¿Ya tienes cuenta?</p>
             <button
               onClick={() => router.push("/dashboard/login")}
               style={{
@@ -319,7 +362,7 @@ export default function RegistroPage() {
           </div>
         </div>
 
-        <p style={{ fontSize: "12px", color: "rgba(248, 250, 252, 0.6)", marginTop: "20px" }}>
+        <p style={{ fontSize: "11px", color: "rgba(248, 250, 252, 0.6)", marginTop: "16px" }}>
           Al registrarte, aceptas nuestra{" "}
           <a href="/politica-de-privacidad" style={{ color: "rgba(248, 250, 252, 0.8)" }}>
             Política de Privacidad

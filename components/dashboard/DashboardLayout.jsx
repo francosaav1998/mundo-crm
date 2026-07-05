@@ -3,13 +3,13 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
-const MENU_ITEMS = [
+const ALL_MENU_ITEMS = [
   { id: "dashboard", icon: "bi-grid-1x2-fill", label: "Dashboard General" },
   { id: "leads", icon: "bi-people-fill", label: "Clientes y Leads" },
   { id: "emails", icon: "bi-envelope-fill", label: "Correos" },
   { id: "whatsapp", icon: "bi-whatsapp", label: "Mensajes Directos en Masa" },
   { id: "import", icon: "bi-file-earmark-spreadsheet-fill", label: "Importar Datos" },
-  { id: "users", icon: "bi-shield-lock-fill", label: "Usuarios" },
+  { id: "users", icon: "bi-shield-lock-fill", label: "Usuarios", adminOnly: true },
   { id: "settings", icon: "bi-gear-fill", label: "Configuraciones" },
 ];
 
@@ -39,8 +39,12 @@ export default function DashboardLayout({
   setCustomDate,
   isMobile,
   pageTitle,
+  isAdmin = false,
+  sellerSlug = null,
+  onboardingNeeded = false,
 }) {
   const router = useRouter();
+  const MENU_ITEMS = ALL_MENU_ITEMS.filter((item) => !item.adminOnly || isAdmin);
 
   const logout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -345,6 +349,85 @@ export default function DashboardLayout({
             )}
           </div>
         </header>
+
+        {/* Onboarding Banner */}
+        {onboardingNeeded && !isAdmin && (
+          <div
+            style={{
+              margin: isMobile ? "0 16px 16px" : "0 40px 24px",
+              background: `linear-gradient(135deg, ${T.accent}15 0%, ${T.accent}05 100%)`,
+              border: `2px solid ${T.accent}40`,
+              borderRadius: "16px",
+              padding: "20px 24px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "16px",
+              flexWrap: "wrap",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+              <div
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: "12px",
+                  background: T.accent,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 24,
+                  flexShrink: 0,
+                }}
+              >
+                <i className="bi bi-rocket-takeoff-fill"></i>
+              </div>
+              <div>
+                <h3 style={{ fontSize: "16px", fontWeight: 800, color: T.text, marginBottom: "4px" }}>
+                  ¡Bienvenida! Tu landing está casi lista
+                </h3>
+                <p style={{ fontSize: "13px", color: T.muted }}>
+                  Personaliza tu foto, bio, video de fondo y verifica tu WhatsApp para que los clientes te encuentren.
+                </p>
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+              {sellerSlug && (
+                <button
+                  onClick={() => router.push(`/p/${sellerSlug}`)}
+                  style={{
+                    padding: "10px 18px",
+                    borderRadius: "10px",
+                    border: `1px solid ${T.accent}50`,
+                    background: "transparent",
+                    color: T.text,
+                    fontSize: "13px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  <i className="bi bi-eye-fill"></i> Ver mi landing
+                </button>
+              )}
+              <button
+                onClick={() => onMenuChange("settings")}
+                style={{
+                  padding: "10px 18px",
+                  borderRadius: "10px",
+                  border: "none",
+                  background: T.accent,
+                  color: "#FFFFFF",
+                  fontSize: "13px",
+                  fontWeight: 800,
+                  cursor: "pointer",
+                  boxShadow: `0 4px 14px ${T.accent}40`,
+                }}
+              >
+                <i className="bi bi-gear-fill"></i> Configurar ahora
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Page Content */}
         <main style={{ padding: isMobile ? "16px" : "40px" }}>{children}</main>
