@@ -5,6 +5,7 @@ import { SELLER_CONFIG, sendWhatsAppMessage, updateSellerConfig } from "@/lib/se
 import MetaPixel from "./landing/MetaPixel";
 import Header from "./landing/Header";
 import Hero from "./landing/Hero";
+import HeroCard from "./landing/HeroCard";
 import SellerSection from "./landing/SellerSection";
 import PlansSection from "./landing/PlansSection";
 import CoverageSection from "./landing/CoverageSection";
@@ -144,6 +145,7 @@ export default function LandingPage() {
       <Header menuOpen={menuOpen} setMenuOpen={setMenuOpen} onScrollTo={scrollToSection} />
       <main>
         <Hero bgVideoUrl={bgVideoUrl} onScrollTo={scrollToSection} onSelectPlan={handlePlanClick} />
+        <HeroCard onSelectPlan={handlePlanClick} />
         <SellerSection
           sellerPhotoUrl={sellerPhotoUrl}
           sellerBioText={sellerBioText}
