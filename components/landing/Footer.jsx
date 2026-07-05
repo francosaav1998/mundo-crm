@@ -45,7 +45,7 @@ export default function Footer({ footerText, onScrollTo }) {
               <li>
                 <i className="bi bi-person-fill"></i>
                 <div>
-                  <span className="footer-contact-title">Nombre Asesora</span>
+                  <span className="footer-contact-title">Nombre Ejecutiva</span>
                   <span className="seller-name-placeholder">{SELLER_CONFIG.name}</span>
                 </div>
               </li>
@@ -53,14 +53,14 @@ export default function Footer({ footerText, onScrollTo }) {
                 <i className="bi bi-whatsapp"></i>
                 <div>
                   <span className="footer-contact-title">WhatsApp de Ventas</span>
-                  <span>Atención Digital Inmediata</span>
+                  <span>{SELLER_CONFIG.phone ? `+${SELLER_CONFIG.phone}` : "Atención Digital Inmediata"}</span>
                 </div>
               </li>
             </ul>
           </div>
         </div>
         <div className="footer-bottom">
-          <p>&copy; 2026 Mundo Telecomunicaciones. Página web de Asesora de Ventas Oficial Independiente.</p>
+          <p>&copy; 2026 Mundo Telecomunicaciones. Página web de Ejecutiva de Ventas Oficial Independiente.</p>
           <p style={{ marginTop: "0.5rem", fontSize: "0.75rem" }}>
             Los logotipos, marcas comerciales y nombres de servicios exhibidos en este sitio son
             propiedad exclusiva de Mundo Pacífico S.A. y sus filiales. Este sitio tiene propósitos

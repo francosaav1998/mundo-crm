@@ -8,7 +8,7 @@ const inter = Inter({
 });
 
 export const metadata = {
-  title: "Tu Asesora Mundo - Fibra Óptica, TV HD y Telefonía Hogar",
+  title: "Tu Ejecutiva Mundo - Fibra Óptica, TV HD y Telefonía Hogar",
   description: "Contrata Internet Fibra Óptica, TV Smart GO! y Telefonía Móvil al mejor precio con tu ejecutiva de ventas autorizada.",
 };
 

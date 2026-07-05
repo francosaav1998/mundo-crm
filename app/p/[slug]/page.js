@@ -148,7 +148,7 @@ export default function SellerLanding() {
     );
   }
 
-  const sellerPhoto = seller?.photo || "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=400";
+  const sellerPhoto = seller?.photo || "";
   const sellerBio = seller?.bio || "Como tu ejecutiva comercial especializada de Mundo, te ayudo a gestionar tu contrato de forma rápida y transparente.";
   const footerText = seller?.footerText || "Tu asesora comercial autorizada de Mundo. Gestión ágil, directa y transparente.";
   const bgVideoUrl = seller?.bgVideoUrl || "";

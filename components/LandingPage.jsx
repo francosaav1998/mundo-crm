@@ -24,14 +24,12 @@ export default function LandingPage() {
   });
   const [formStatus, setFormStatus] = useState({ type: "", message: "" });
   const [submitting, setSubmitting] = useState(false);
-  const [sellerPhotoUrl, setSellerPhotoUrl] = useState(
-    "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=400"
-  );
+  const [sellerPhotoUrl, setSellerPhotoUrl] = useState("");
   const [sellerBioText, setSellerBioText] = useState(
     "Como tu ejecutiva comercial especializada de Mundo, te ayudo a gestionar tu contrato de forma rápida y transparente. Olvídate de largas esperas en call centers. Analizo la cobertura de tu sector en minutos y agendo tu instalación en tiempo récord."
   );
   const [footerText, setFooterText] = useState(
-    "Tu asesora comercial autorizada de Mundo. Gestión ágil, directa y transparente de tus planes de internet fibra, televisión digital y telefonía móvil."
+    "Tu ejecutiva comercial autorizada de Mundo. Gestión ágil, directa y transparente de tus planes de internet fibra, televisión digital y telefonía móvil."
   );
   const [bgVideoUrl, setBgVideoUrl] = useState("");
   const [sellerName, setSellerName] = useState(SELLER_CONFIG.name);
