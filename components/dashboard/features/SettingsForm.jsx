@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import { normalizeWhatsAppNumber } from "@/lib/seller";
+import { uploadFileBrowser } from "@/lib/upload/browser";
 
 export default function SettingsForm({
   settings,
@@ -21,17 +22,10 @@ export default function SettingsForm({
 
     setUploadingPhoto(true);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("folder", "seller");
+      const { url } = await uploadFileBrowser(file, "seller");
 
-      const res = await fetch("/api/upload", { method: "POST", body: formData });
-      const data = await res.json();
-
-      if (!res.ok) throw new Error(data.error || "Error al subir foto");
-
-      const updated = { ...settings, sellerPhoto: data.url };
-      onUpdateSettings({ sellerPhoto: data.url });
+      const updated = { ...settings, sellerPhoto: url };
+      onUpdateSettings({ sellerPhoto: url });
       await onSaveSettings(updated);
       showToast("Foto subida y guardada correctamente");
     } catch (err) {
@@ -47,17 +41,10 @@ export default function SettingsForm({
 
     setUploadingVideo(true);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("folder", "videos");
+      const { url } = await uploadFileBrowser(file, "videos");
 
-      const res = await fetch("/api/upload", { method: "POST", body: formData });
-      const data = await res.json();
-
-      if (!res.ok) throw new Error(data.error || "Error al subir video");
-
-      const updated = { ...settings, bgVideoUrl: data.url };
-      onUpdateSettings({ bgVideoUrl: data.url });
+      const updated = { ...settings, bgVideoUrl: url };
+      onUpdateSettings({ bgVideoUrl: url });
       await onSaveSettings(updated);
       showToast("Video de fondo subido y guardado correctamente");
     } catch (err) {
