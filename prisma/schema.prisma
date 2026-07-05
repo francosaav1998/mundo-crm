@@ -8,27 +8,52 @@ datasource db {
 }
 
 model Lead {
-  id          String   @id @default(uuid())
-  name        String
-  phone       String
-  email       String   @default("")
-  city        String
-  address     String
-  plan        String
-  status      String   @default("Nuevo")
-  notes       String?
-  assignedTo  String   @default("")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(uuid())
+  name       String
+  phone      String
+  email      String   @default("")
+  city       String
+  address    String
+  plan       String
+  status     String   @default("Nuevo")
+  notes      String?
+  assignedTo String   @default("")
+  sellerId   String?
+  seller     Seller?  @relation(fields: [sellerId], references: [id], onDelete: SetNull)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@index([createdAt])
   @@index([status])
   @@index([assignedTo])
+  @@index([sellerId])
+}
+
+model Seller {
+  id           String   @id @default(uuid())
+  userId       String?  @unique
+  slug         String   @unique
+  name         String
+  email        String   @default("")
+  phone        String   @default("")
+  photo        String   @default("")
+  bio          String   @default("")
+  bgVideoUrl   String   @default("")
+  footerText   String   @default("")
+  metaPixelId  String   @default("")
+  landingTheme String   @default("")
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  leads Lead[]
+
+  @@index([userId])
+  @@index([slug])
 }
 
 model Setting {
-  key   String @id
-  value String
+  key    String  @id
+  value  String
+  userId String?
 }
-
-

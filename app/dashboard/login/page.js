@@ -216,7 +216,13 @@ export default function LoginPage() {
           </form>
 
           <div style={{ marginTop: "24px", paddingTop: "20px", borderTop: "1px solid #E2E8F0", textAlign: "center" }}>
-            <Link href="/" style={{ fontSize: "13px", fontWeight: 700, color: "#00748E", textDecoration: "none" }}>
+            <p style={{ fontSize: "13px", color: "#64748B", marginBottom: "12px" }}>
+              ¿Eres ejecutiva y no tienes cuenta?
+            </p>
+            <Link href="/registro" style={{ fontSize: "14px", fontWeight: 700, color: "#00748E", textDecoration: "none", display: "block", marginBottom: "12px" }}>
+              Regístrate aqui →
+            </Link>
+            <Link href="/" style={{ fontSize: "13px", fontWeight: 700, color: "#64748B", textDecoration: "none" }}>
               ← Volver a la landing
             </Link>
           </div>

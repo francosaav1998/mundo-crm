@@ -141,7 +141,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { name, phone, email, city, address, plan } = body;
+    const { name, phone, email, city, address, plan, sellerId } = body;
 
     if (!name || !phone || !city || !address || !plan) {
       return NextResponse.json(
@@ -157,6 +157,17 @@ export async function POST(request) {
       );
     }
 
+    let assignedTo = process.env.ADMIN_EMAIL || "";
+    let sellerSlug = "";
+
+    if (sellerId) {
+      const seller = await prisma.seller.findUnique({ where: { id: sellerId } });
+      if (seller) {
+        assignedTo = seller.email || seller.name;
+        sellerSlug = seller.slug;
+      }
+    }
+
     const lead = await prisma.lead.create({
       data: {
         name: sanitizeString(name, MAX_LENGTHS.name),
@@ -165,7 +176,8 @@ export async function POST(request) {
         city: sanitizeString(city, MAX_LENGTHS.city),
         address: sanitizeString(address, MAX_LENGTHS.address),
         plan: sanitizeString(plan, MAX_LENGTHS.plan),
-        assignedTo: process.env.ADMIN_EMAIL || "",
+        assignedTo,
+        sellerId: sellerId || null,
       },
     });
 
