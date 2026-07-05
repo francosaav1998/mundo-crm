@@ -18,16 +18,16 @@ const STORAGE_KEYS = [
 ];
 
 const DEFAULT_SETTINGS = {
-  sellerName: "Valentina Asesora Mundo",
-  sellerPhone: "56912345678",
-  sellerMsg: "Hola Valentina, vi tu página web y me gustaría recibir asesoría sobre los planes de Internet y TV Hogar de Mundo.",
+  sellerName: "Ejecutiva Mundo",
+  sellerPhone: "",
+  sellerMsg: "Hola, vi tu página web y me gustaría recibir asesoría sobre los planes de Internet y TV Hogar de Mundo.",
   sellerPhoto: "",
   sellerBio: "Como tu ejecutiva comercial especializada de Mundo, te ayudo a gestionar tu contrato de forma rápida y transparente.",
   landingTheme: "light",
-  footerText: "Tu asesora comercial autorizada de Mundo. Gestión ágil, directa y transparente de tus planes de internet fibra, televisión digital y telefonía móvil.",
-  whatsappNumber: "56912345678",
+  footerText: "Tu ejecutiva comercial autorizada de Mundo. Gestión ágil, directa y transparente de tus planes de internet fibra, televisión digital y telefonía móvil.",
+  whatsappNumber: "",
   metaPixelId: "",
-  bgVideoUrl: "/bg-loop.mp4",
+  bgVideoUrl: "",
   emailUseSmtp: false,
 };
 
