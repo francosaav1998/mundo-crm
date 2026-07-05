@@ -43,6 +43,9 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
+    const session = await getSession();
+    if (!session) throw new Error("Unauthorized");
+
     const limit = await rateLimit({
       windowMs: 60 * 1000,
       maxRequests: 10,
@@ -64,8 +67,7 @@ export async function POST(request) {
       slug = `${slug}-${Date.now().toString(36).slice(-4)}`;
     }
 
-    const session = await getSession();
-    const userId = session?.user?.id || null;
+    const userId = session.user.id;
 
     const seller = await prisma.seller.create({
       data: {

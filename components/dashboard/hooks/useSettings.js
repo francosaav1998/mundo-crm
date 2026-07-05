@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { normalizeWhatsAppNumber } from "@/lib/seller";
 
+const LOCAL_KEYS = ["seller_msg"];
+
 const STORAGE_KEYS = [
   "seller_name",
   "seller_phone",
@@ -31,7 +33,51 @@ const DEFAULT_SETTINGS = {
   emailUseSmtp: false,
 };
 
-export function useSettings() {
+function sellerToSettings(seller) {
+  if (!seller) return {};
+  return {
+    sellerName: seller.name || DEFAULT_SETTINGS.sellerName,
+    sellerPhone: seller.phone || DEFAULT_SETTINGS.sellerPhone,
+    sellerPhoto: seller.photo || DEFAULT_SETTINGS.sellerPhoto,
+    sellerBio: seller.bio || DEFAULT_SETTINGS.sellerBio,
+    landingTheme: seller.landingTheme || DEFAULT_SETTINGS.landingTheme,
+    footerText: seller.footerText || DEFAULT_SETTINGS.footerText,
+    whatsappNumber: normalizeWhatsAppNumber(seller.phone || ""),
+    metaPixelId: seller.metaPixelId || DEFAULT_SETTINGS.metaPixelId,
+    bgVideoUrl: seller.bgVideoUrl || DEFAULT_SETTINGS.bgVideoUrl,
+  };
+}
+
+function settingsToSellerPayload(settings) {
+  return {
+    name: settings.sellerName,
+    phone: normalizeWhatsAppNumber(settings.sellerPhone),
+    photo: settings.sellerPhoto ? settings.sellerPhoto.trim() : "",
+    bio: settings.sellerBio,
+    landingTheme: settings.landingTheme,
+    footerText: settings.footerText,
+    metaPixelId: settings.metaPixelId ? settings.metaPixelId.trim() : "",
+    bgVideoUrl: settings.bgVideoUrl ? settings.bgVideoUrl.trim() : "",
+  };
+}
+
+function settingsToGlobalPayload(settings) {
+  return {
+    seller_name: settings.sellerName,
+    seller_phone: normalizeWhatsAppNumber(settings.sellerPhone),
+    seller_msg: settings.sellerMsg,
+    seller_bio: settings.sellerBio,
+    seller_photo: settings.sellerPhoto ? settings.sellerPhoto.trim() : "",
+    landing_theme: settings.landingTheme,
+    footer_text: settings.footerText,
+    whatsapp_number: normalizeWhatsAppNumber(settings.whatsappNumber),
+    meta_pixel_id: settings.metaPixelId.trim(),
+    bg_video_url: settings.bgVideoUrl.trim(),
+    crm_email_use_smtp: settings.emailUseSmtp ? "1" : "0",
+  };
+}
+
+export function useSettings({ isAdmin = false } = {}) {
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
@@ -50,7 +96,7 @@ export function useSettings() {
       sellerPhoto: localStorage.getItem("seller_photo") || DEFAULT_SETTINGS.sellerPhoto,
       sellerBio: localStorage.getItem("seller_bio") || DEFAULT_SETTINGS.sellerBio,
       landingTheme: localStorage.getItem("landing_theme") || DEFAULT_SETTINGS.landingTheme,
-      footerText: localStorage.getItem("footer_text") || DEFAULT_SETTINGS.footerText,
+      footerText: localStorage.getItem("footer_text") !== null ? localStorage.getItem("footer_text") : DEFAULT_SETTINGS.footerText,
       whatsappNumber: normalizeWhatsAppNumber(localStorage.getItem("whatsapp_number") || DEFAULT_SETTINGS.whatsappNumber),
       metaPixelId: localStorage.getItem("meta_pixel_id") || DEFAULT_SETTINGS.metaPixelId,
       bgVideoUrl: localStorage.getItem("bg_video_url") || DEFAULT_SETTINGS.bgVideoUrl,
@@ -61,23 +107,35 @@ export function useSettings() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch("/api/settings");
-        if (!res.ok) throw new Error("Failed to load settings");
-        const data = await res.json();
-
-        setSettings({
-          sellerName: data.seller_name || DEFAULT_SETTINGS.sellerName,
-          sellerPhone: data.seller_phone || DEFAULT_SETTINGS.sellerPhone,
-          sellerMsg: data.seller_msg || DEFAULT_SETTINGS.sellerMsg,
-          sellerPhoto: data.seller_photo || DEFAULT_SETTINGS.sellerPhoto,
-          sellerBio: data.seller_bio || DEFAULT_SETTINGS.sellerBio,
-          landingTheme: data.landing_theme || DEFAULT_SETTINGS.landingTheme,
-          footerText: data.footer_text !== undefined ? data.footer_text : DEFAULT_SETTINGS.footerText,
-          whatsappNumber: normalizeWhatsAppNumber(data.whatsapp_number || DEFAULT_SETTINGS.whatsappNumber),
-          metaPixelId: data.meta_pixel_id !== undefined ? data.meta_pixel_id : DEFAULT_SETTINGS.metaPixelId,
-          bgVideoUrl: data.bg_video_url !== undefined ? data.bg_video_url : DEFAULT_SETTINGS.bgVideoUrl,
-          emailUseSmtp: data.crm_email_use_smtp === "1" || data.crm_email_use_smtp === true,
-        });
+        if (isAdmin) {
+          const res = await fetch("/api/settings");
+          if (!res.ok) throw new Error("Failed to load settings");
+          const data = await res.json();
+          setSettings({
+            sellerName: data.seller_name || DEFAULT_SETTINGS.sellerName,
+            sellerPhone: data.seller_phone || DEFAULT_SETTINGS.sellerPhone,
+            sellerMsg: data.seller_msg || DEFAULT_SETTINGS.sellerMsg,
+            sellerPhoto: data.seller_photo || DEFAULT_SETTINGS.sellerPhoto,
+            sellerBio: data.seller_bio || DEFAULT_SETTINGS.sellerBio,
+            landingTheme: data.landing_theme || DEFAULT_SETTINGS.landingTheme,
+            footerText: data.footer_text !== undefined ? data.footer_text : DEFAULT_SETTINGS.footerText,
+            whatsappNumber: normalizeWhatsAppNumber(data.whatsapp_number || DEFAULT_SETTINGS.whatsappNumber),
+            metaPixelId: data.meta_pixel_id !== undefined ? data.meta_pixel_id : DEFAULT_SETTINGS.metaPixelId,
+            bgVideoUrl: data.bg_video_url !== undefined ? data.bg_video_url : DEFAULT_SETTINGS.bgVideoUrl,
+            emailUseSmtp: data.crm_email_use_smtp === "1" || data.crm_email_use_smtp === true,
+          });
+        } else {
+          const res = await fetch("/api/me/seller");
+          if (!res.ok) throw new Error("Failed to load seller");
+          const seller = await res.json();
+          const local = loadFromLocalStorage();
+          setSettings({
+            ...DEFAULT_SETTINGS,
+            ...local,
+            ...sellerToSettings(seller),
+            sellerMsg: local.sellerMsg,
+          });
+        }
       } catch {
         setSettings(loadFromLocalStorage());
       } finally {
@@ -85,49 +143,47 @@ export function useSettings() {
       }
     }
     load();
-  }, [loadFromLocalStorage]);
+  }, [isAdmin, loadFromLocalStorage]);
 
   const updateSettings = useCallback((updates) => {
     setSettings((prev) => ({ ...prev, ...updates }));
   }, []);
 
-  const saveSettings = useCallback(async (settingsToSave) => {
-    const normalizedWhatsapp = normalizeWhatsAppNumber(settingsToSave.whatsappNumber);
-    const payload = {
-      seller_name: settingsToSave.sellerName,
-      seller_phone: settingsToSave.sellerPhone,
-      seller_msg: settingsToSave.sellerMsg,
-      seller_bio: settingsToSave.sellerBio,
-      seller_photo: settingsToSave.sellerPhoto ? settingsToSave.sellerPhoto.trim() : "",
-      landing_theme: settingsToSave.landingTheme,
-      footer_text: settingsToSave.footerText,
-      whatsapp_number: normalizedWhatsapp,
-      meta_pixel_id: settingsToSave.metaPixelId.trim(),
-      bg_video_url: settingsToSave.bgVideoUrl.trim(),
-      crm_email_use_smtp: settingsToSave.emailUseSmtp ? "1" : "0",
-    };
+  const persistLocally = useCallback((settingsToSave) => {
+    if (typeof window === "undefined") return;
+    const globalPayload = settingsToGlobalPayload(settingsToSave);
+    Object.entries(globalPayload).forEach(([key, value]) => {
+      localStorage.setItem(key, value);
+    });
+    document.documentElement.setAttribute("data-landing-theme", settingsToSave.landingTheme);
+  }, []);
 
-    if (typeof window !== "undefined") {
-      Object.entries(payload).forEach(([key, value]) => {
-        localStorage.setItem(key, value);
-      });
-      document.documentElement.setAttribute("data-landing-theme", settingsToSave.landingTheme);
-    }
+  const saveSettings = useCallback(async (settingsToSave) => {
+    persistLocally(settingsToSave);
 
     try {
-      const res = await fetch("/api/settings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error("Error al guardar en el servidor");
+      if (isAdmin) {
+        const res = await fetch("/api/settings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(settingsToGlobalPayload(settingsToSave)),
+        });
+        if (!res.ok) throw new Error("Error al guardar en el servidor");
+      } else {
+        const res = await fetch("/api/me/seller", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(settingsToSellerPayload(settingsToSave)),
+        });
+        if (!res.ok) throw new Error("Error al guardar perfil");
+      }
       showToast("Configuración guardada exitosamente");
       return true;
     } catch (error) {
       showToast(error.message || "Error al guardar");
       return false;
     }
-  }, [showToast]);
+  }, [isAdmin, persistLocally, showToast]);
 
   return { settings, loading, toast, updateSettings, saveSettings, showToast };
 }

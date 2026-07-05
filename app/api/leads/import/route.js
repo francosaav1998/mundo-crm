@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/auth";
+import { requireAuth, isAdmin } from "@/lib/auth";
 import { rateLimit, getClientKey } from "@/lib/rate-limit";
 import { parseLeadsFromExcel } from "@/lib/parse-leads-excel.mjs";
 
@@ -9,7 +9,8 @@ const MAX_ROWS = 5000;
 
 export async function POST(request) {
   try {
-    await requireAdmin();
+    const session = await requireAuth();
+    const admin = isAdmin(session.user);
 
     // Rate limit imports: 5 por minuto por IP
     const limit = await rateLimit({
@@ -42,8 +43,21 @@ export async function POST(request) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
+    let sellerId = null;
+    let assignedTo = process.env.ADMIN_EMAIL || "";
+
+    if (!admin) {
+      const seller = await prisma.seller.findUnique({ where: { userId: session.user.id } });
+      if (!seller) {
+        return NextResponse.json({ error: "Perfil de vendedora no encontrado" }, { status: 404 });
+      }
+      sellerId = seller.id;
+      assignedTo = seller.email || session.user.email || "";
+    }
+
     const { leads: leadsToCreate, skipped, total } = await parseLeadsFromExcel(buffer, {
-      assignedTo: process.env.ADMIN_EMAIL || "",
+      assignedTo,
+      sellerId,
     });
 
     if (total === 0) {

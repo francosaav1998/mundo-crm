@@ -6,17 +6,6 @@ import { createClient } from "@/lib/supabase/client";
 
 export const dynamic = "force-dynamic";
 
-function slugify(text) {
-  return String(text)
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-zA-Z0-9\s-]/g, "")
-    .trim()
-    .replace(/\s+/g, "-")
-    .toLowerCase()
-    .slice(0, 60);
-}
-
 export default function AuthCallback() {
   const [status, setStatus] = useState("Autenticando...");
   const router = useRouter();
@@ -32,44 +21,22 @@ export default function AuthCallback() {
           return;
         }
 
-        const user = session.user;
-        const fullName =
-          user.user_metadata?.full_name ||
-          user.user_metadata?.name ||
-          user.email?.split("@")[0] ||
-          "Ejecutiva Mundo";
+        setStatus("Preparando tu perfil...");
 
-        setStatus("Creando tu landing...");
-
-        const res = await fetch("/api/sellers", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: fullName,
-            email: user.email || "",
-            photo: user.user_metadata?.avatar_url || user.user_metadata?.picture || "",
-          }),
-        });
-
-        const data = await res.json();
-
-        if (!res.ok && data.error !== "Unauthorized" && data.error !== "Forbidden") {
-          setStatus("Error al crear perfil: " + (data.error || ""));
+        const res = await fetch("/api/me/seller");
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          setStatus("Error al preparar perfil: " + (data.error || ""));
           setTimeout(() => router.push("/registro"), 3000);
           return;
         }
 
-        if (data.slug) {
+        const seller = await res.json();
+        if (seller?.slug) {
           setStatus("Redirigiendo a tu landing...");
-          router.push(`/p/${data.slug}`);
-        } else if (data.error) {
-          const existing = await fetch(`/api/sellers?slug=${slugify(fullName)}`);
-          if (existing.ok) {
-            const seller = await existing.json();
-            router.push(`/p/${seller.slug}`);
-          } else {
-            router.push("/dashboard");
-          }
+          router.push(`/p/${seller.slug}`);
+        } else {
+          router.push("/dashboard");
         }
       } catch (e) {
         setStatus("Error: " + e.message);

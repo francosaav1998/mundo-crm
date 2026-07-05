@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/auth";
+import { requireAuth, isAdmin } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { rateLimit, getClientKey } from "@/lib/rate-limit";
 import nodemailer from "nodemailer";
 
@@ -19,7 +20,8 @@ function isValidEmail(email) {
 
 export async function POST(request) {
   try {
-    await requireAdmin();
+    const session = await requireAuth();
+    const admin = isAdmin(session.user);
 
     // Rate limit email sends: 30 per minute per IP
     const limit = await rateLimit({
@@ -50,6 +52,22 @@ export async function POST(request) {
         { error: "El correo del destinatario no es válido" },
         { status: 400 }
       );
+    }
+
+    if (!admin) {
+      const seller = await prisma.seller.findUnique({ where: { userId: session.user.id } });
+      if (!seller) {
+        return NextResponse.json({ error: "Perfil no encontrado" }, { status: 404 });
+      }
+      const lead = await prisma.lead.findFirst({
+        where: { email: String(to).trim(), sellerId: seller.id },
+      });
+      if (!lead) {
+        return NextResponse.json(
+          { error: "No puedes enviar correos a leads ajenos" },
+          { status: 403 }
+        );
+      }
     }
 
     const smtpHost = process.env.SMTP_HOST;

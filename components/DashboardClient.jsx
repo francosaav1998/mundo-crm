@@ -46,7 +46,7 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
     updateSettings,
     saveSettings,
     showToast,
-  } = useSettings();
+  } = useSettings({ isAdmin });
 
   const onboardingNeeded = !isAdmin && (!sellerInfo?.photo || !sellerInfo?.bio || !sellerInfo?.phone);
 

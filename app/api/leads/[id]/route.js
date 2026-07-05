@@ -57,8 +57,15 @@ export async function PATCH(request, { params }) {
       return NextResponse.json({ error: "Lead no encontrado" }, { status: 404 });
     }
 
-    if (!userIsAdmin && existing.assignedTo !== session.user.email) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 403 });
+    if (!userIsAdmin) {
+      const userId = session.user?.id;
+      const userEmail = session.user?.email || "";
+      const seller = await prisma.seller.findUnique({ where: { userId } }) || await prisma.seller.findFirst({ where: { email: userEmail } });
+      const ownsBySeller = seller && existing.sellerId === seller.id;
+      const ownsByEmail = existing.assignedTo && existing.assignedTo === userEmail;
+      if (!ownsBySeller && !ownsByEmail) {
+        return NextResponse.json({ error: "No autorizado" }, { status: 403 });
+      }
     }
 
     const data = {};

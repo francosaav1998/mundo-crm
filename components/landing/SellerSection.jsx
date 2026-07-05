@@ -20,11 +20,7 @@ export default function SellerSection({ sellerPhotoUrl, sellerBioText, onScrollT
       <div className="container">
         <div className="seller-card">
           <div className="seller-avatar-wrapper">
-            {sellerPhotoUrl && sellerPhotoUrl.startsWith("http") ? (
-              <Image src={photo} alt={SELLER_CONFIG.name} fill style={{ objectFit: "cover" }} />
-            ) : (
-              <img src={photo} alt={SELLER_CONFIG.name} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
-            )}
+            <Image src={photo} alt={SELLER_CONFIG.name} fill sizes="320px" style={{ objectFit: "cover" }} />
             <span className="seller-badge">Ejecutiva Oficial</span>
           </div>
           <div className="seller-info">

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/auth";
+import { requireAuth, isAdmin } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase/server";
 import { rateLimit, getClientKey } from "@/lib/rate-limit";
 
@@ -51,7 +51,8 @@ function sanitizeFolder(folder) {
 
 export async function POST(request) {
   try {
-    await requireAdmin();
+    const session = await requireAuth();
+    const admin = isAdmin(session.user);
 
     // Rate limit uploads: 10 por minuto por IP
     const limit = await rateLimit({

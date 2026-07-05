@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { updateSellerConfig, sendWhatsAppMessage } from "@/lib/seller";
 import MetaPixel from "@/components/landing/MetaPixel";
@@ -143,7 +144,7 @@ export default function SellerLanding() {
       <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg, #005A6F 0%, #00748E 100%)", color: "#fff", gap: "16px" }}>
         <h1>404</h1>
         <p>{error}</p>
-        <a href="/" style={{ color: "#FDDC02", fontWeight: 700 }}>← Volver al inicio</a>
+        <Link href="/" style={{ color: "#FDDC02", fontWeight: 700 }}>← Volver al inicio</Link>
       </div>
     );
   }

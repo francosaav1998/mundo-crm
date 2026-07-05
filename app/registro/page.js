@@ -38,6 +38,7 @@ export default function RegistroPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [needsConfirmation, setNeedsConfirmation] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
@@ -74,26 +75,13 @@ export default function RegistroPage() {
       if (signUpError) throw signUpError;
 
       if (data.user) {
-        const slug = slugify(form.name);
-        const res = await fetch("/api/sellers", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: form.name,
-            email: form.email,
-            phone: normalizedPhone,
-            slug,
-            bio: form.bio,
-          }),
-        });
-
-        if (!res.ok) {
-          const errData = await res.json().catch(() => ({}));
-          console.error("Error creando seller:", errData);
-        }
-
         setSuccess(true);
-        setTimeout(() => router.push("/dashboard"), 1500);
+        // Si Supabase requiere confirmación por email, data.session será null.
+        if (data.session) {
+          setTimeout(() => router.push("/dashboard"), 1500);
+        } else {
+          setNeedsConfirmation(true);
+        }
       }
     } catch (err) {
       setError(err.message || "Error al registrarse");
@@ -221,7 +209,9 @@ export default function RegistroPage() {
               }}
             >
               <i className="bi bi-check-circle-fill" style={{ marginRight: "8px" }}></i>
-              ¡Cuenta creada! Redirigiendo a tu dashboard...
+              {needsConfirmation
+                ? "¡Cuenta creada! Revisa tu correo para confirmar y luego inicia sesión."
+                : "¡Cuenta creada! Redirigiendo a tu dashboard..."}
             </div>
           )}
 
