@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { updateSellerConfig, sendWhatsAppMessage } from "@/lib/seller";
+import { updateSellerConfig, getSellerLabels } from "@/lib/seller";
 import MetaPixel from "@/components/landing/MetaPixel";
 import Header from "@/components/landing/Header";
 import Hero from "@/components/landing/Hero";
@@ -109,21 +109,8 @@ export default function SellerLanding() {
         throw new Error(data.error || "Error al enviar");
       }
 
-      setFormStatus({ type: "success", message: "¡Datos enviados! Te redirigimos a WhatsApp." });
-
-      const text =
-        `*CONSULTA DE COBERTURA - MUNDO*\n\n` +
-        `📌 *Información del Solicitante:*\n` +
-        `• *Nombre:* ${formData.name}\n` +
-        `• *Teléfono:* ${formData.phone}\n` +
-        `• *Email:* ${formData.email || "No proporcionado"}\n` +
-        `• *Comuna/Ciudad:* ${formData.city}\n` +
-        `• *Dirección:* ${formData.address}\n\n` +
-        `📦 *Servicio de Interés:*\n` +
-        `• *Plan Seleccionado:* ${formData.plan}\n\n` +
-        `Hola ${seller?.name || ""}, me gustaría verificar la factibilidad técnica para instalar este servicio en mi domicilio.`;
-
-      setTimeout(() => sendWhatsAppMessage(text), 600);
+      const labels = getSellerLabels(seller?.gender || "");
+      setFormStatus({ type: "success", message: `¡Solicitud enviada! Tu ${labels.executive} te contactará pronto.` });
     } catch (error) {
       setFormStatus({ type: "error", message: error.message });
     } finally {
@@ -154,16 +141,18 @@ export default function SellerLanding() {
   const footerText = seller?.footerText || "Tu asesora comercial autorizada de Mundo. Gestión ágil, directa y transparente.";
   const bgVideoUrl = seller?.bgVideoUrl || "";
   const metaPixelId = seller?.metaPixelId || "";
+  const sellerLabels = getSellerLabels(seller?.gender || "");
 
   return (
     <>
       <MetaPixel pixelId={metaPixelId} />
-      <Header menuOpen={menuOpen} setMenuOpen={setMenuOpen} onScrollTo={scrollToSection} />
+      <Header menuOpen={menuOpen} setMenuOpen={setMenuOpen} onScrollTo={scrollToSection} sellerLabels={sellerLabels} />
       <main>
         <Hero bgVideoUrl={bgVideoUrl} onScrollTo={scrollToSection} onSelectPlan={handlePlanClick} />
         <SellerSection
           sellerPhotoUrl={sellerPhoto}
           sellerBioText={sellerBio}
+          sellerLabels={sellerLabels}
           onScrollTo={scrollToSection}
         />
         <PlansSection onSelectPlan={handlePlanClick} />
@@ -173,10 +162,11 @@ export default function SellerLanding() {
           formStatus={formStatus}
           submitting={submitting}
           onSubmit={handleSubmit}
+          sellerLabels={sellerLabels}
         />
         <BenefitsSection />
       </main>
-      <Footer footerText={footerText} onScrollTo={scrollToSection} />
+      <Footer footerText={footerText} onScrollTo={scrollToSection} sellerLabels={sellerLabels} sellerPhone={seller?.phone || ""} />
       <WhatsAppFloat />
     </>
   );

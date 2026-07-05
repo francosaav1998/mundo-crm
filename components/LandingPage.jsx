@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { SELLER_CONFIG, sendWhatsAppMessage, updateSellerConfig } from "@/lib/seller";
+import { SELLER_CONFIG, updateSellerConfig, inferGender, getSellerLabels } from "@/lib/seller";
 import MetaPixel from "./landing/MetaPixel";
 import Header from "./landing/Header";
 import Hero from "./landing/Hero";
@@ -33,7 +33,10 @@ export default function LandingPage() {
   );
   const [bgVideoUrl, setBgVideoUrl] = useState("");
   const [sellerName, setSellerName] = useState(SELLER_CONFIG.name);
+  const [sellerGender, setSellerGender] = useState("");
   const [metaPixelId, setMetaPixelId] = useState("");
+
+  const sellerLabels = getSellerLabels(sellerGender || inferGender(sellerName));
 
   useEffect(() => {
     async function loadSettings() {
@@ -49,6 +52,7 @@ export default function LandingPage() {
         });
 
         if (settings.seller_name) setSellerName(settings.seller_name);
+        if (settings.seller_gender !== undefined) setSellerGender(settings.seller_gender);
         if (settings.seller_bio) setSellerBioText(settings.seller_bio);
         if (settings.seller_photo) setSellerPhotoUrl(settings.seller_photo);
         if (settings.footer_text !== undefined) setFooterText(settings.footer_text);
@@ -112,23 +116,7 @@ export default function LandingPage() {
         throw new Error(data.error || "Error al enviar");
       }
 
-      setFormStatus({ type: "success", message: "¡Datos enviados! Te redirigimos a WhatsApp." });
-
-      const text =
-        `*CONSULTA DE COBERTURA - MUNDO*\n\n` +
-        `📌 *Información del Solicitante:*\n` +
-        `• *Nombre:* ${formData.name}\n` +
-        `• *Teléfono:* ${formData.phone}\n` +
-        `• *Email:* ${formData.email || "No proporcionado"}\n` +
-        `• *Comuna/Ciudad:* ${formData.city}\n` +
-        `• *Dirección:* ${formData.address}\n\n` +
-        `📦 *Servicio de Interés:*\n` +
-        `• *Plan Seleccionado:* ${formData.plan}\n\n` +
-        `Hola ${sellerName}, me gustaría verificar la factibilidad técnica para instalar este servicio en mi domicilio.`;
-
-      setTimeout(() => {
-        sendWhatsAppMessage(text);
-      }, 600);
+      setFormStatus({ type: "success", message: `¡Solicitud enviada! Tu ${sellerLabels.executive} te contactará pronto.` });
     } catch (error) {
       setFormStatus({ type: "error", message: error.message });
     } finally {
@@ -139,12 +127,13 @@ export default function LandingPage() {
   return (
     <>
       <MetaPixel pixelId={metaPixelId} />
-      <Header menuOpen={menuOpen} setMenuOpen={setMenuOpen} onScrollTo={scrollToSection} />
+      <Header menuOpen={menuOpen} setMenuOpen={setMenuOpen} onScrollTo={scrollToSection} sellerLabels={sellerLabels} />
       <main>
         <Hero bgVideoUrl={bgVideoUrl} onScrollTo={scrollToSection} onSelectPlan={handlePlanClick} />
         <SellerSection
           sellerPhotoUrl={sellerPhotoUrl}
           sellerBioText={sellerBioText}
+          sellerLabels={sellerLabels}
           onScrollTo={scrollToSection}
         />
         <PlansSection onSelectPlan={handlePlanClick} />
@@ -154,10 +143,11 @@ export default function LandingPage() {
           formStatus={formStatus}
           submitting={submitting}
           onSubmit={handleSubmit}
+          sellerLabels={sellerLabels}
         />
         <BenefitsSection />
       </main>
-      <Footer footerText={footerText} onScrollTo={scrollToSection} />
+      <Footer footerText={footerText} onScrollTo={scrollToSection} sellerLabels={sellerLabels} sellerPhone={SELLER_CONFIG.phone} />
       <WhatsAppFloat />
     </>
   );

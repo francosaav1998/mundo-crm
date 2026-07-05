@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Seller" ADD COLUMN IF NOT EXISTS "gender" TEXT NOT NULL DEFAULT '';

@@ -15,6 +15,7 @@ export default function CoverageSection({
   formStatus,
   submitting,
   onSubmit,
+  sellerLabels = {},
 }) {
   return (
     <section id="cobertura" className="coverage-section">
@@ -26,8 +27,7 @@ export default function CoverageSection({
             </h2>
             <p>
               Completa el siguiente formulario con tus datos de ubicación. Evaluaremos
-              inmediatamente la cobertura de fibra óptica en tu zona y te contactaremos por
-              WhatsApp con las ofertas disponibles.
+              inmediatamente la cobertura de fibra óptica en tu zona y tu {sellerLabels.executive || "ejecutivo/a"} te contactará con las ofertas disponibles.
             </p>
             <div className="coverage-steps">
               <div className="step-card">
@@ -48,7 +48,7 @@ export default function CoverageSection({
                 <div className="step-num">3</div>
                 <div className="step-text">
                   <h4>¡Listo para contactar!</h4>
-                  <p>Presiona enviar y envíanos la solicitud directo a WhatsApp en un clic.</p>
+                  <p>Presiona enviar y recibe una respuesta personalizada de tu {sellerLabels.executive || "ejecutivo/a"}.</p>
                 </div>
               </div>
             </div>
@@ -129,8 +129,8 @@ export default function CoverageSection({
                 </select>
               </div>
               <button type="submit" className="btn btn-primary w-100" disabled={submitting}>
-                <i className="bi bi-whatsapp"></i>{" "}
-                {submitting ? "Enviando..." : "Consultar por WhatsApp"}
+                <i className="bi bi-send-fill"></i>{" "}
+                {submitting ? "Enviando..." : "Enviar solicitud"}
               </button>
             </form>
           </div>

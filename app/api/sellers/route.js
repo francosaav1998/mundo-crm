@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getSession, isAdmin } from "@/lib/auth";
 import { rateLimit, getClientKey } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
-import { normalizeWhatsAppNumber } from "@/lib/seller";
+import { normalizeWhatsAppNumber, inferGender } from "@/lib/seller";
 
 function slugify(text) {
   return String(text)
@@ -56,7 +56,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { name, email, phone, photo, bio, bgVideoUrl, footerText, metaPixelId, landingTheme } = body;
+    const { name, email, phone, photo, bio, gender, bgVideoUrl, footerText, metaPixelId, landingTheme } = body;
 
     if (!name) return NextResponse.json({ error: "El nombre es obligatorio" }, { status: 400 });
 
@@ -78,6 +78,7 @@ export async function POST(request) {
         phone: normalizeWhatsAppNumber(phone || ""),
         photo: String(photo || "").slice(0, 500),
         bio: String(bio || "").slice(0, 1000),
+        gender: gender || inferGender(name),
         bgVideoUrl: String(bgVideoUrl || "").slice(0, 500),
         footerText: String(footerText || "").slice(0, 500),
         metaPixelId: String(metaPixelId || "").slice(0, 50),

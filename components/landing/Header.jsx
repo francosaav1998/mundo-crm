@@ -4,13 +4,13 @@ import Image from "next/image";
 
 const NAV_LINKS = [
   { id: "inicio", label: "Inicio" },
-  { id: "asesor", label: "Tu Ejecutiva" },
+  { id: "asesor", label: "Tu Ejecutivo/a" },
   { id: "planes", label: "Planes Hogar" },
   { id: "cobertura", label: "Consultar Cobertura" },
   { id: "beneficios", label: "Beneficios" },
 ];
 
-export default function Header({ menuOpen, setMenuOpen, onScrollTo }) {
+export default function Header({ menuOpen, setMenuOpen, onScrollTo, sellerLabels = {} }) {
   return (
     <>
       <div className="header-top">
@@ -24,7 +24,7 @@ export default function Header({ menuOpen, setMenuOpen, onScrollTo }) {
             </span>
           </div>
           <div>
-            <span>Ejecutiva de Ventas Oficial Mundo</span>
+            <span>{sellerLabels.executiveCapitalized || "Ejecutivo/a"} de Ventas Oficial Mundo</span>
           </div>
         </div>
       </div>
@@ -51,6 +51,9 @@ export default function Header({ menuOpen, setMenuOpen, onScrollTo }) {
                   </a>
                 </li>
               ))}
+              <li>
+                <a href="/politica-de-privacidad">Política de Privacidad</a>
+              </li>
             </ul>
             <div className="nav-cta">
               <button onClick={() => onScrollTo("cobertura")} className="btn btn-secondary">

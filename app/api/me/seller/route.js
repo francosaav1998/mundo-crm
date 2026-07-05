@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAuth, isAdmin } from "@/lib/auth";
-import { normalizeWhatsAppNumber, slugify } from "@/lib/seller";
+import { requireAuth } from "@/lib/auth";
+import { normalizeWhatsAppNumber, slugify, inferGender } from "@/lib/seller";
+
+const VALID_GENDERS = new Set(["", "male", "female"]);
 
 const SELLER_UPDATE_FIELDS = [
   "name",
@@ -9,6 +11,7 @@ const SELLER_UPDATE_FIELDS = [
   "phone",
   "photo",
   "bio",
+  "gender",
   "bgVideoUrl",
   "footerText",
   "metaPixelId",
@@ -65,6 +68,7 @@ async function findOrCreateSeller(session) {
         slug,
         name: fullName.slice(0, 100),
         email: userEmail.slice(0, 254),
+        gender: inferGender(fullName),
       },
     });
   }
@@ -101,6 +105,8 @@ export async function PUT(request) {
         let value = body[key];
         if (key === "phone") {
           value = normalizeWhatsAppNumber(value);
+        } else if (key === "gender") {
+          value = VALID_GENDERS.has(value) ? value : inferGender(body.name || seller.name);
         }
         data[key] = sanitize(value, MAX_LENGTHS[key]);
       }

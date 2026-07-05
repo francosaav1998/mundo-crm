@@ -38,6 +38,7 @@ model Seller {
   phone        String   @default("")
   photo        String   @default("")
   bio          String   @default("")
+  gender       String   @default("")
   bgVideoUrl   String   @default("")
   footerText   String   @default("")
   metaPixelId  String   @default("")

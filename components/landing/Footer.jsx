@@ -10,7 +10,7 @@ const FOOTER_LINKS = [
   { id: "cobertura", label: "Evaluar Cobertura" },
 ];
 
-export default function Footer({ footerText, onScrollTo }) {
+export default function Footer({ footerText, onScrollTo, sellerLabels = {}, sellerPhone = "" }) {
   return (
     <footer className="site-footer">
       <div className="container">
@@ -40,12 +40,12 @@ export default function Footer({ footerText, onScrollTo }) {
             </ul>
           </div>
           <div className="footer-contact">
-            <h4>Contacto Ejecutiva</h4>
+            <h4>Contacto {sellerLabels.executiveCapitalized || "Ejecutivo/a"}</h4>
             <ul>
               <li>
                 <i className="bi bi-person-fill"></i>
                 <div>
-                  <span className="footer-contact-title">Nombre Ejecutiva</span>
+                  <span className="footer-contact-title">Nombre {sellerLabels.executiveCapitalized || "Ejecutivo/a"}</span>
                   <span className="seller-name-placeholder">{SELLER_CONFIG.name}</span>
                 </div>
               </li>
@@ -53,14 +53,25 @@ export default function Footer({ footerText, onScrollTo }) {
                 <i className="bi bi-whatsapp"></i>
                 <div>
                   <span className="footer-contact-title">WhatsApp de Ventas</span>
-                  <span>{SELLER_CONFIG.phone ? `+${SELLER_CONFIG.phone}` : "Atención Digital Inmediata"}</span>
+                  {sellerPhone ? (
+                    <a
+                      href={`https://wa.me/${sellerPhone}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: "inherit", textDecoration: "none" }}
+                    >
+                      +{sellerPhone}
+                    </a>
+                  ) : (
+                    <span>Atención Digital Inmediata</span>
+                  )}
                 </div>
               </li>
             </ul>
           </div>
         </div>
         <div className="footer-bottom">
-          <p>&copy; 2026 Mundo Telecomunicaciones. Página web de Ejecutiva de Ventas Oficial Independiente.</p>
+          <p>&copy; 2026 Mundo Telecomunicaciones. Página web de {sellerLabels.executiveCapitalized || "Ejecutivo/a"} de Ventas Oficial Independiente.</p>
           <p style={{ marginTop: "0.5rem", fontSize: "0.75rem" }}>
             Los logotipos, marcas comerciales y nombres de servicios exhibidos en este sitio son
             propiedad exclusiva de Mundo Pacífico S.A. y sus filiales. Este sitio tiene propósitos

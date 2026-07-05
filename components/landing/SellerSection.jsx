@@ -12,7 +12,7 @@ const FALLBACK_AVATAR =
     </svg>`
   ).toString("base64");
 
-export default function SellerSection({ sellerPhotoUrl, sellerBioText, onScrollTo }) {
+export default function SellerSection({ sellerPhotoUrl, sellerBioText, sellerLabels = {}, onScrollTo }) {
   const photo = sellerPhotoUrl || FALLBACK_AVATAR;
 
   return (
@@ -21,7 +21,7 @@ export default function SellerSection({ sellerPhotoUrl, sellerBioText, onScrollT
         <div className="seller-card">
           <div className="seller-avatar-wrapper">
             <Image src={photo} alt={SELLER_CONFIG.name} fill sizes="320px" style={{ objectFit: "cover" }} />
-            <span className="seller-badge">Ejecutiva Oficial</span>
+            <span className="seller-badge">{sellerLabels.advisorCapitalized || "Asesor/a"} Oficial</span>
           </div>
           <div className="seller-info">
             <h4>Atención Personalizada</h4>

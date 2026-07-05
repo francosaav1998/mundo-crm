@@ -20,18 +20,19 @@ CREATE TABLE "Seller" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Seller_userId_key" ON "Seller"("userId");
-CREATE UNIQUE INDEX "Seller_slug_key" ON "Seller"("slug");
-CREATE INDEX "Seller_userId_idx" ON "Seller"("userId");
-CREATE INDEX "Seller_slug_idx" ON "Seller"("slug");
+CREATE UNIQUE INDEX IF NOT EXISTS "Seller_userId_key" ON "Seller"("userId");
+CREATE UNIQUE INDEX IF NOT EXISTS "Seller_slug_key" ON "Seller"("slug");
+CREATE INDEX IF NOT EXISTS "Seller_userId_idx" ON "Seller"("userId");
+CREATE INDEX IF NOT EXISTS "Seller_slug_idx" ON "Seller"("slug");
 
 -- AlterTable: Lead + relacion con Seller
-ALTER TABLE "Lead" ADD COLUMN "sellerId" TEXT;
+ALTER TABLE "Lead" ADD COLUMN IF NOT EXISTS "sellerId" TEXT;
+ALTER TABLE "Lead" DROP CONSTRAINT IF EXISTS "Lead_sellerId_fkey";
 ALTER TABLE "Lead" ADD CONSTRAINT "Lead_sellerId_fkey" FOREIGN KEY ("sellerId") REFERENCES "Seller"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-CREATE INDEX "Lead_sellerId_idx" ON "Lead"("sellerId");
+CREATE INDEX IF NOT EXISTS "Lead_sellerId_idx" ON "Lead"("sellerId");
 
 -- AlterTable: Setting agrega userId opcional
-ALTER TABLE "Setting" ADD COLUMN "userId" TEXT;
+ALTER TABLE "Setting" ADD COLUMN IF NOT EXISTS "userId" TEXT;
 
 -- Migrar settings globales existentes a un seller por defecto (si quieres)
 -- Esto es opcional, comentado por seguridad:

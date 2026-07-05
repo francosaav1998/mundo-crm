@@ -28,9 +28,9 @@ export default function PlanCard({ plan, index, onSelect }) {
       <div className="plan-cta">
         <button
           onClick={() => onSelect(plan.value)}
-          className={`btn btn-whatsapp w-100 ${plan.featured ? "btn-primary" : ""}`}
+          className={`btn w-100 ${plan.featured ? "btn-primary" : ""}`}
         >
-          <i className="bi bi-whatsapp"></i> {plan.cta}
+          <i className="bi bi-send-fill"></i> {plan.cta}
         </button>
       </div>
     </div>

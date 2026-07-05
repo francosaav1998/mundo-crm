@@ -204,6 +204,44 @@ export default function SettingsForm({
         </div>
 
         <div>
+          <label style={labelStyle}>Género para adaptar la landing</label>
+          <div style={{ display: "flex", gap: 10 }}>
+            {[
+              { value: "", label: "Auto-detectar" },
+              { value: "female", label: "Mujer" },
+              { value: "male", label: "Hombre" },
+            ].map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => onUpdateSettings({ sellerGender: option.value })}
+                style={{
+                  flex: 1,
+                  padding: "12px",
+                  borderRadius: "12px",
+                  border: settings.sellerGender === option.value ? `2px solid ${T.accent}` : `1px solid ${T.border}`,
+                  background: settings.sellerGender === option.value ? `${T.accent}15` : "transparent",
+                  color: settings.sellerGender === option.value ? T.accent : T.muted,
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  fontWeight: 700,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  transition: "all 0.2s",
+                }}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+          <span style={{ fontSize: "11px", color: T.muted, marginTop: 6, display: "block" }}>
+            La landing usará &quot;ejecutivo&quot;, &quot;ejecutiva&quot;, &quot;vendedor&quot; o &quot;vendedora&quot; según esta selección.
+          </span>
+        </div>
+
+        <div>
           <label style={labelStyle}>Texto de Presentación</label>
           <textarea
             value={settings.sellerBio}

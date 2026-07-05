@@ -108,9 +108,9 @@ export default function Hero({ bgVideoUrl, onScrollTo, onSelectPlan }) {
             </ul>
             <button
               onClick={() => onSelectPlan("Plan Fibra 800 Megas ($12.990)")}
-              className="btn btn-primary btn-whatsapp plan-cta w-100"
+              className="btn btn-primary plan-cta w-100"
             >
-              <i className="bi bi-whatsapp"></i> Contratar por WhatsApp
+              <i className="bi bi-send-fill"></i> Solicitar este plan
             </button>
           </div>
         </div>
