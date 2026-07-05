@@ -12,6 +12,13 @@ export const metadata = {
   description: "Contrata Internet Fibra Óptica, TV Smart GO! y Telefonía Móvil al mejor precio con tu ejecutiva de ventas autorizada.",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover",
+};
+
 export default function RootLayout({ children }) {
   return (
     <html lang="es-CL" className={inter.variable}>

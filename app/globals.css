@@ -1040,7 +1040,7 @@ ul {
   html { font-size: 15px; }
   .hero .container {
     grid-template-columns: 1fr;
-    gap: 4rem;
+    gap: 2.5rem;
     text-align: center;
   }
   .hero-content { max-width: 700px; margin: 0 auto; }
@@ -1089,11 +1089,15 @@ ul {
   .nav-cta { display: none; }
   .site-header { padding: 0.5rem 0; }
   .header-top { display: none; }
-  .hero { padding: 3rem 0 4rem; }
-  .hero-content h1 { font-size: 2rem; }
-  .hero-content p { font-size: 1rem; }
-  .hero-card { padding: 1.5rem; }
-  .hero-card-price { font-size: 2.5rem; }
+  .hero-content h1 { font-size: 1.75rem; }
+  .hero-content p { font-size: 0.95rem; }
+  .hero-ctas { gap: 0.75rem; }
+  .hero-ctas .btn { font-size: 0.85rem; padding: 0.65rem 1.25rem; }
+  .hero-card { padding: 1.25rem; }
+  .hero-card-title { font-size: 1.5rem; }
+  .hero-card-price { font-size: 2.25rem; }
+  .hero-card-features { margin-bottom: 1.5rem; padding-top: 1rem; }
+  .hero-card-features li { font-size: 0.85rem; margin-bottom: 0.5rem; }
   .seller-card { padding: 1.5rem; }
   .seller-info h2 { font-size: 1.6rem; }
   .planes-section { padding: 4rem 0; }
@@ -1122,8 +1126,12 @@ ul {
 }
 
 @media (max-width: 480px) {
-  .hero-card { padding: 1.5rem; }
-  .hero-card-price { font-size: 2.75rem; }
+  .hero-card { padding: 1.1rem; }
+  .hero-card-price { font-size: 2rem; }
+  .hero-card-title { font-size: 1.35rem; }
+  .hero-content h1 { font-size: 1.5rem; }
+  .hero-ctas { flex-direction: column; }
+  .hero-ctas .btn { width: 100%; }
   .seller-stats { grid-template-columns: 1fr; gap: 1rem; }
   .planes-tabs { flex-direction: column; align-items: stretch; }
   .tab-btn { width: 100%; text-align: center; }
@@ -1175,14 +1183,20 @@ ul {
 
 /* Mobile: overlay mas fuerte y ligero scale para evitar bordes vacios */
 @media (max-width: 768px) {
+  .hero {
+    min-height: 100svh;
+    display: flex;
+    align-items: center;
+    padding: 5rem 0 3rem;
+  }
   .hero-video-bg__el {
-    transform: translate(-50%, -50%) scale(1.05);
+    transform: translate(-50%, -50%) scale(1.1);
   }
   .hero-video-bg__overlay {
     background:
-      linear-gradient(180deg, rgba(0,26,36,0.6) 0%, rgba(0,58,72,0.7) 50%, rgba(0,90,111,0.82) 100%);
-    backdrop-filter: blur(2px);
-    -webkit-backdrop-filter: blur(2px);
+      linear-gradient(180deg, rgba(0,26,36,0.45) 0%, rgba(0,58,72,0.55) 50%, rgba(0,90,111,0.7) 100%);
+    backdrop-filter: blur(1px);
+    -webkit-backdrop-filter: blur(1px);
   }
 }
 

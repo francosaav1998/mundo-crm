@@ -5,7 +5,15 @@ export default function Hero({ bgVideoUrl, onScrollTo, onSelectPlan }) {
     <section id="inicio" className="hero">
       {bgVideoUrl && (
         <div className="hero-video-bg" aria-hidden="true">
-          <video className="hero-video-bg__el" autoPlay muted loop playsInline preload="auto">
+          <video
+            className="hero-video-bg__el"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            poster={bgVideoUrl.replace(/\.(mp4|webm|mov)$/i, ".jpg")}
+          >
             <source
               src={bgVideoUrl}
               type={bgVideoUrl.match(/\.(webm)$/i) ? "video/webm" : bgVideoUrl.match(/\.(mov)$/i) ? "video/quicktime" : "video/mp4"}
