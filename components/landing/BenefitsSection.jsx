@@ -44,7 +44,7 @@ export default function BenefitsSection() {
               className={`benefit-card scroll-animate fade-in-up delay-${index + 1}`}
             >
               <div className="benefit-icon">
-                <i className={benefit.icon}></i>
+                <i className={`bi ${benefit.icon}`}></i>
               </div>
               <h3>{benefit.title}</h3>
               <p>{benefit.description}</p>
