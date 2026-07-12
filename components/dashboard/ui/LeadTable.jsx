@@ -111,13 +111,22 @@ export default function LeadTable({ leads, onUpdateStatus, updating, T, isMobile
     setSentIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
   };
 
-  const desktopHeaders = ["Fecha", "Cliente", "Teléfono", "Email", "Ciudad/Comuna", "Dirección", "Plan Solicitado", "Asignado a", "Estado", "Acciones"];
+  const desktopHeaders = [
+    { key: "fecha", label: "Fecha", width: "90px" },
+    { key: "cliente", label: "Cliente", width: "auto" },
+    { key: "contacto", label: "Contacto", width: "180px" },
+    { key: "ubicacion", label: "Ubicación", width: "200px" },
+    { key: "plan", label: "Plan", width: "130px" },
+    { key: "asignado", label: "Asignado", width: "150px" },
+    { key: "estado", label: "Estado", width: "80px" },
+    { key: "acciones", label: "Acciones", width: "110px" },
+  ];
 
   return (
-    <div style={{ overflowX: "auto" }}>
-      <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
+    <div style={{ overflowX: "auto", borderRadius: "16px", border: `1px solid ${T.border}` }}>
+      <table style={{ width: "100%", minWidth: 900, borderCollapse: "collapse", textAlign: "left" }}>
         <thead>
-          <tr style={{ borderBottom: `1px solid ${T.border}` }}>
+          <tr style={{ borderBottom: `1px solid ${T.border}`, background: `${T.inputBg}80` }}>
             {isMobile
               ? ["Cliente", "Estado"].map((h) => (
                   <th key={h} style={{ padding: "12px 14px", fontSize: "10px", fontWeight: 600, color: T.muted, textTransform: "uppercase", letterSpacing: "0.2em" }}>
@@ -125,8 +134,8 @@ export default function LeadTable({ leads, onUpdateStatus, updating, T, isMobile
                   </th>
                 ))
               : desktopHeaders.map((h) => (
-                  <th key={h} style={{ padding: "16px 20px", fontSize: "10px", fontWeight: 600, color: T.muted, textTransform: "uppercase", letterSpacing: "0.2em" }}>
-                    {h}
+                  <th key={h.key} style={{ padding: "14px 12px", fontSize: "10px", fontWeight: 700, color: T.muted, textTransform: "uppercase", letterSpacing: "0.15em", width: h.width }}>
+                    {h.label}
                   </th>
                 ))}
           </tr>
@@ -144,6 +153,7 @@ export default function LeadTable({ leads, onUpdateStatus, updating, T, isMobile
                 showToast={showToast}
                 sent={sentIds.includes(lead.id)}
                 onSent={() => markSent(lead.id)}
+                compact={!isMobile}
               />
             );
 
@@ -172,28 +182,41 @@ export default function LeadTable({ leads, onUpdateStatus, updating, T, isMobile
                 <td style={{ padding: "14px", verticalAlign: "top" }}>{statusIcons}</td>
               </tr>
             ) : (
-              <tr key={lead.id} style={{ borderBottom: `1px solid ${T.border}`, transition: "background 0.2s" }}>
-                <td style={{ padding: "18px 20px" }}>
-                  <div style={{ fontSize: "13px", fontWeight: 600, color: T.text }}>{formatDate(lead.createdAt)}</div>
+              <tr
+                key={lead.id}
+                style={{ borderBottom: `1px solid ${T.border}`, transition: "background 0.2s" }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = `${T.accent}08`)}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+              >
+                <td style={{ padding: "14px 12px" }}>
+                  <div style={{ fontSize: "12px", fontWeight: 600, color: T.text, whiteSpace: "nowrap" }}>{formatDate(lead.createdAt)}</div>
                   <div style={{ fontSize: "11px", color: T.muted, marginTop: 2 }}>{formatTime(lead.createdAt)}</div>
                 </td>
-                <td style={{ padding: "18px 20px", fontSize: "14px", fontWeight: 600, color: T.text, fontFamily: "var(--font-heading), 'Outfit', sans-serif" }}>{lead.name}</td>
-                <td style={{ padding: "18px 20px", fontSize: "13px", fontWeight: 600, color: T.text }}>
-                  <i className="bi bi-whatsapp" style={{ color: "#25D366", marginRight: 6 }} /> +56 {lead.phone}
+                <td style={{ padding: "14px 12px", fontSize: "14px", fontWeight: 600, color: T.text, fontFamily: "var(--font-heading), 'Outfit', sans-serif" }}>{lead.name}</td>
+                <td style={{ padding: "14px 12px" }}>
+                  <div style={{ fontSize: "12px", fontWeight: 600, color: T.text, whiteSpace: "nowrap", marginBottom: 4 }}>
+                    <i className="bi bi-whatsapp" style={{ color: "#25D366", marginRight: 4 }} /> +56 {lead.phone}
+                  </div>
+                  <div style={{ fontSize: "12px", color: T.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {lead.email || <span style={{ fontStyle: "italic" }}>Sin email</span>}
+                  </div>
                 </td>
-                <td style={{ padding: "18px 20px", fontSize: "13px", color: T.text }}>{lead.email || <span style={{ color: T.muted, fontStyle: "italic" }}>—</span>}</td>
-                <td style={{ padding: "18px 20px", fontSize: "13px", color: T.muted }}>{lead.city}</td>
-                <td style={{ padding: "18px 20px", fontSize: "13px", color: T.muted, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.address}</td>
-                <td style={{ padding: "18px 20px" }}>
-                  <span style={{ fontSize: "11px", fontWeight: 600, padding: "4px 10px", borderRadius: "9999px", background: `${T.accent}15`, color: T.accent, border: `1px solid ${T.accent}30` }}>
+                <td style={{ padding: "14px 12px" }}>
+                  <div style={{ fontSize: "12px", fontWeight: 600, color: T.text }}>{lead.city}</div>
+                  <div style={{ fontSize: "11px", color: T.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={lead.address}>
+                    {lead.address || "—"}
+                  </div>
+                </td>
+                <td style={{ padding: "14px 12px" }}>
+                  <span style={{ fontSize: "11px", fontWeight: 700, padding: "4px 10px", borderRadius: "9999px", background: `${T.accent}15`, color: T.accent, border: `1px solid ${T.accent}30`, whiteSpace: "nowrap" }}>
                     {lead.plan}
                   </span>
                 </td>
-                <td style={{ padding: "18px 20px" }}>
+                <td style={{ padding: "14px 12px" }}>
                   <AssignedCell lead={lead} isAdmin={isAdmin} T={T} />
                 </td>
-                <td style={{ padding: "18px 20px" }}>{statusIcons}</td>
-                <td style={{ padding: "18px 20px" }}>{actions}</td>
+                <td style={{ padding: "14px 12px" }}>{statusIcons}</td>
+                <td style={{ padding: "14px 12px" }}>{actions}</td>
               </tr>
             );
           })}

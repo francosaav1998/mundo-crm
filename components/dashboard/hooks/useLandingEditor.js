@@ -14,17 +14,6 @@ export function useLandingEditor({ seller, showToast }) {
   const [plans, setPlans] = useState([]);
   const [previewMode, setPreviewMode] = useState("desktop");
   const [sellerData, setSellerData] = useState(null);
-  const [profile, setProfile] = useState({
-    name: "",
-    phone: "",
-    photo: "",
-    bio: "",
-    gender: "",
-    bgVideoUrl: "",
-    footerText: "",
-    metaPixelId: "",
-    landingTheme: "light",
-  });
 
   useEffect(() => {
     async function load() {
@@ -43,17 +32,6 @@ export function useLandingEditor({ seller, showToast }) {
             name: s.name,
             phone: s.phone,
             defaultMessage: s.defaultMessage || undefined,
-          });
-          setProfile({
-            name: s.name || "",
-            phone: s.phone || "",
-            photo: s.photo || "",
-            bio: s.bio || "",
-            gender: s.gender || "",
-            bgVideoUrl: s.bgVideoUrl || "",
-            footerText: s.footerText || "",
-            metaPixelId: s.metaPixelId || "",
-            landingTheme: s.landingTheme || "light",
           });
         }
 
@@ -98,11 +76,6 @@ export function useLandingEditor({ seller, showToast }) {
       arr.splice(index, 1);
       return { ...prev, [section]: { ...prev[section], [key]: arr } };
     });
-  }, []);
-
-  const updateProfile = useCallback((updates) => {
-    setProfile((prev) => ({ ...prev, ...updates }));
-    setSellerData((prev) => (prev ? { ...prev, ...updates } : null));
   }, []);
 
   const updatePlan = useCallback((index, updates) => {
@@ -150,15 +123,6 @@ export function useLandingEditor({ seller, showToast }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           landingContent: content,
-          name: profile.name,
-          phone: profile.phone,
-          photo: profile.photo,
-          bio: profile.bio,
-          gender: profile.gender,
-          bgVideoUrl: profile.bgVideoUrl,
-          footerText: profile.footerText,
-          metaPixelId: profile.metaPixelId,
-          landingTheme: profile.landingTheme,
         }),
       });
 
@@ -198,7 +162,7 @@ export function useLandingEditor({ seller, showToast }) {
     } finally {
       setSaving(false);
     }
-  }, [content, plans, profile, showToast]);
+  }, [content, plans, showToast]);
 
   return {
     loading,
@@ -207,7 +171,6 @@ export function useLandingEditor({ seller, showToast }) {
     setActiveSection,
     content,
     plans,
-    profile,
     previewMode,
     setPreviewMode,
     sellerData,
@@ -215,7 +178,6 @@ export function useLandingEditor({ seller, showToast }) {
     updateArrayItem,
     addArrayItem,
     removeArrayItem,
-    updateProfile,
     updatePlan,
     updatePlanFeature,
     addPlanFeature,

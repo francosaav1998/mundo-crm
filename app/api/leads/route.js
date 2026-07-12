@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth, isAdmin } from "@/lib/auth";
 import { rateLimit, getClientKey } from "@/lib/rate-limit";
+import { sendEmail, buildLeadNotificationEmail } from "@/lib/email";
 
 const MAX_LENGTHS = {
   name: 200,
@@ -188,6 +189,20 @@ export async function POST(request) {
         planId: planId || null,
       },
     });
+
+    // Enviar notificación al vendedor
+    try {
+      const seller = sellerId
+        ? await prisma.seller.findUnique({ where: { id: sellerId } })
+        : null;
+      if (seller?.email) {
+        const { subject, html, text } = buildLeadNotificationEmail({ sellerName: seller.name, lead });
+        await sendEmail({ to: seller.email, subject, html, text });
+      }
+    } catch (err) {
+      // No fallar la creación del lead si el email no se envía
+      console.error("[leads] Error enviando notificación:", err.message);
+    }
 
     return NextResponse.json(lead, { status: 201 });
   } catch (error) {

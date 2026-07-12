@@ -18,6 +18,7 @@ export default function MessageActionButtons({
   sent = false,
   onSent,
   showToast,
+  compact = false,
 }) {
   const [emailOpen, setEmailOpen] = useState(false);
   const containerRef = useRef(null);
@@ -105,7 +106,7 @@ export default function MessageActionButtons({
         }}
       >
         <i className="bi bi-whatsapp"></i>
-        <span className="hidden sm:inline">WhatsApp</span>
+        {!compact && <span className="hidden sm:inline">WhatsApp</span>}
       </button>
 
       <div ref={containerRef} style={{ position: "relative" }}>
@@ -119,7 +120,7 @@ export default function MessageActionButtons({
           }}
         >
           <i className="bi bi-envelope-fill"></i>
-          <span className="hidden sm:inline">Email</span>
+          {!compact && <span className="hidden sm:inline">Email</span>}
           <i className={`bi bi-chevron-${emailOpen ? "up" : "down"}`} style={{ fontSize: 10 }}></i>
         </button>
 

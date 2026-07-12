@@ -7,7 +7,6 @@ const ALL_MENU_ITEMS = [
   { id: "dashboard", icon: "bi-grid-1x2-fill", label: "Dashboard General" },
   { id: "leads", icon: "bi-people-fill", label: "Clientes y Leads" },
   { id: "emails", icon: "bi-envelope-fill", label: "Correos" },
-  { id: "whatsapp", icon: "bi-whatsapp", label: "Mensajes Directos" },
   { id: "import", icon: "bi-file-earmark-spreadsheet-fill", label: "Importar Datos" },
   { id: "landing", icon: "bi-palette-fill", label: "Editor de Landing" },
   { id: "landings", icon: "bi-globe-americas", label: "Landings por Compañía", adminOnly: true },
@@ -311,8 +310,33 @@ export default function DashboardLayout({
             </div>
           </div>
 
-          {/* Date filter + Theme Toggle */}
+          {/* Date filter + Theme Toggle + Ver Landing */}
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            {sellerSlug && (
+              <a
+                href={`/p/${sellerSlug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "8px 14px",
+                  borderRadius: "9999px",
+                  background: `${T.accent}15`,
+                  border: `1px solid ${T.accent}35`,
+                  color: T.accent,
+                  fontSize: "13px",
+                  fontWeight: 700,
+                  textDecoration: "none",
+                  whiteSpace: "nowrap",
+                  transition: "all 0.2s",
+                }}
+              >
+                <i className="bi bi-eye-fill"></i>
+                <span className="hide-mobile">Ver mi landing</span>
+              </a>
+            )}
             <button
               onClick={toggleTheme}
               style={{
@@ -420,8 +444,10 @@ export default function DashboardLayout({
             </div>
             <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
               {sellerSlug && (
-                <button
-                  onClick={() => router.push(`/p/${sellerSlug}`)}
+                <a
+                  href={`/p/${sellerSlug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   style={{
                     padding: "10px 18px",
                     borderRadius: "9999px",
@@ -432,10 +458,14 @@ export default function DashboardLayout({
                     fontWeight: 600,
                     cursor: "pointer",
                     transition: "all 0.2s",
+                    textDecoration: "none",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
                   }}
                 >
                   <i className="bi bi-eye-fill"></i> Ver mi landing
-                </button>
+                </a>
               )}
               <button
                 onClick={() => onMenuChange("settings")}

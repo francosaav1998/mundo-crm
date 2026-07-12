@@ -11,7 +11,6 @@ import DashboardLayout from "./dashboard/DashboardLayout";
 import DashboardOverview from "./dashboard/DashboardOverview";
 import LeadsView from "./dashboard/LeadsView";
 import BulkEmail from "./dashboard/features/BulkEmail";
-import BulkWhatsApp from "./dashboard/features/BulkWhatsApp";
 import ImportData from "./dashboard/features/ImportData";
 import UserManager from "./dashboard/features/UserManager";
 import SettingsForm from "./dashboard/features/SettingsForm";
@@ -22,7 +21,6 @@ const PAGE_TITLES = {
   dashboard: "Dashboard",
   leads: "Clientes",
   emails: "Correos",
-  whatsapp: "WhatsApp",
   import: "Importar Datos",
   users: "Usuarios",
   settings: "Configuración",
@@ -30,7 +28,7 @@ const PAGE_TITLES = {
   landings: "Landings por Compañía",
 };
 
-export default function DashboardClient({ initialLeads = [], initialTotal = 0, initialStats = null, username, isAdmin = false, sellerSlug = null, sellerInfo = null }) {
+export default function DashboardClient({ initialLeads = [], initialTotal = 0, initialStats = null, username, isAdmin = false, sellerSlug = null, sellerInfo: initialSellerInfo = null }) {
   const { theme, toggle: toggleTheme } = useTheme();
   const T = NEON_THEME[theme];
 
@@ -38,25 +36,14 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
   const isTablet = useMediaQuery("(max-width: 1024px)");
   const searchParams = useSearchParams();
 
+  const [sellerInfo, setSellerInfo] = useState(initialSellerInfo);
+
   const [activeMenu, setActiveMenu] = useState(() => {
     const tab = searchParams.get("tab");
     return PAGE_TITLES[tab] ? tab : "dashboard";
   });
-  // Iniciar sidebar cerrado para evitar layout roto en mobile durante hidratación
+  // Iniciar sidebar cerrado; el CSS responsive se encarga del layout
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  // Abrir sidebar automáticamente solo en desktop al montar
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    setSidebarOpen(window.innerWidth > 768);
-  }, []);
-
-  // Cerrar sidebar cuando se detecta mobile
-  useEffect(() => {
-    if (isMobile && sidebarOpen) {
-      setSidebarOpen(false);
-    }
-  }, [isMobile]);
 
   const [updating, setUpdating] = useState(null);
 
@@ -68,7 +55,13 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
     showToast,
   } = useSettings({ isAdmin });
 
-  const onboardingNeeded = !isAdmin && (!sellerInfo?.photo || !sellerInfo?.bio || !sellerInfo?.phone);
+  const onboardingNeeded =
+    !isAdmin &&
+    (!sellerInfo?.name ||
+      !sellerInfo?.email ||
+      !sellerInfo?.photo ||
+      !sellerInfo?.bio ||
+      !sellerInfo?.phone);
 
   const {
     leads,
@@ -118,8 +111,28 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
 
   const handleSaveSettings = useCallback(async (settingsToSave) => {
     const ok = await saveSettings(settingsToSave);
-    if (ok && typeof window !== "undefined" && settingsToSave.landingTheme) {
-      document.documentElement.setAttribute("data-landing-theme", settingsToSave.landingTheme);
+    if (ok) {
+      setSellerInfo((prev) =>
+        prev
+          ? {
+              ...prev,
+              name: settingsToSave.sellerName || prev.name,
+              email: settingsToSave.sellerEmail || prev.email,
+              phone: settingsToSave.sellerPhone || prev.phone,
+              photo: settingsToSave.sellerPhoto || prev.photo,
+              bio: settingsToSave.sellerBio || prev.bio,
+              gender: settingsToSave.sellerGender || prev.gender,
+              bgVideoUrl: settingsToSave.bgVideoUrl ?? prev.bgVideoUrl,
+              footerText: settingsToSave.footerText ?? prev.footerText,
+              metaPixelId: settingsToSave.metaPixelId ?? prev.metaPixelId,
+              landingTheme: settingsToSave.landingTheme || prev.landingTheme,
+              defaultMessage: settingsToSave.sellerMsg ?? prev.defaultMessage,
+            }
+          : prev
+      );
+      if (typeof window !== "undefined" && settingsToSave.landingTheme) {
+        document.documentElement.setAttribute("data-landing-theme", settingsToSave.landingTheme);
+      }
     }
   }, [saveSettings]);
 
@@ -187,16 +200,6 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
         />
       )}
 
-      {activeMenu === "whatsapp" && (
-        <BulkWhatsApp
-          leads={leads}
-          T={T}
-          isMobile={isMobile}
-          showToast={showToast}
-          defaultMessage={settings.sellerMsg}
-        />
-      )}
-
       {activeMenu === "import" && (
         <ImportData
           leads={leads}
@@ -224,6 +227,7 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
           isMobile={isMobile}
           showToast={showToast}
           isAdmin={isAdmin}
+          leads={leads}
         />
       )}
 

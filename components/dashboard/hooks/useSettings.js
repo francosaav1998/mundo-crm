@@ -21,6 +21,7 @@ const STORAGE_KEYS = [
 
 const DEFAULT_SETTINGS = {
   sellerName: "Ejecutiva Mundo",
+  sellerEmail: "",
   sellerPhone: "",
   sellerMsg: "Hola, vi tu página web y me gustaría recibir asesoría sobre los planes de Internet y TV Hogar de Mundo.",
   sellerPhoto: "",
@@ -38,6 +39,7 @@ function sellerToSettings(seller) {
   if (!seller) return {};
   return {
     sellerName: seller.name || DEFAULT_SETTINGS.sellerName,
+    sellerEmail: seller.email || DEFAULT_SETTINGS.sellerEmail,
     sellerPhone: seller.phone || DEFAULT_SETTINGS.sellerPhone,
     sellerPhoto: seller.photo || DEFAULT_SETTINGS.sellerPhoto,
     sellerBio: seller.bio || DEFAULT_SETTINGS.sellerBio,
@@ -52,9 +54,18 @@ function sellerToSettings(seller) {
 }
 
 function settingsToSellerPayload(settings) {
-  // Los datos de perfil (nombre, foto, bio, etc.) se editan desde el Editor de Landing.
-  // Desde Configuración el vendedor solo edita su mensaje inicial por defecto.
+  // Desde Configuración el vendedor edita su perfil completo y mensaje por defecto.
   return {
+    name: settings.sellerName,
+    email: settings.sellerEmail,
+    phone: normalizeWhatsAppNumber(settings.sellerPhone),
+    photo: settings.sellerPhoto ? settings.sellerPhoto.trim() : "",
+    bio: settings.sellerBio,
+    gender: settings.sellerGender,
+    bgVideoUrl: settings.bgVideoUrl.trim(),
+    footerText: settings.footerText,
+    metaPixelId: settings.metaPixelId.trim(),
+    landingTheme: settings.landingTheme,
     defaultMessage: settings.sellerMsg,
   };
 }
@@ -62,10 +73,12 @@ function settingsToSellerPayload(settings) {
 function settingsToGlobalPayload(settings) {
   return {
     seller_name: settings.sellerName,
+    seller_email: settings.sellerEmail,
     seller_phone: normalizeWhatsAppNumber(settings.sellerPhone),
     seller_msg: settings.sellerMsg,
     seller_bio: settings.sellerBio,
     seller_photo: settings.sellerPhoto ? settings.sellerPhoto.trim() : "",
+    seller_gender: settings.sellerGender,
     landing_theme: settings.landingTheme,
     footer_text: settings.footerText,
     whatsapp_number: normalizeWhatsAppNumber(settings.whatsappNumber),
@@ -89,10 +102,12 @@ export function useSettings({ isAdmin = false } = {}) {
     if (typeof window === "undefined") return DEFAULT_SETTINGS;
     return {
       sellerName: localStorage.getItem("seller_name") || DEFAULT_SETTINGS.sellerName,
+      sellerEmail: localStorage.getItem("seller_email") || DEFAULT_SETTINGS.sellerEmail,
       sellerPhone: localStorage.getItem("seller_phone") || DEFAULT_SETTINGS.sellerPhone,
       sellerMsg: localStorage.getItem("seller_msg") || DEFAULT_SETTINGS.sellerMsg,
       sellerPhoto: localStorage.getItem("seller_photo") || DEFAULT_SETTINGS.sellerPhoto,
       sellerBio: localStorage.getItem("seller_bio") || DEFAULT_SETTINGS.sellerBio,
+      sellerGender: localStorage.getItem("seller_gender") || DEFAULT_SETTINGS.sellerGender,
       landingTheme: localStorage.getItem("landing_theme") || DEFAULT_SETTINGS.landingTheme,
       footerText: localStorage.getItem("footer_text") !== null ? localStorage.getItem("footer_text") : DEFAULT_SETTINGS.footerText,
       whatsappNumber: normalizeWhatsAppNumber(localStorage.getItem("whatsapp_number") || DEFAULT_SETTINGS.whatsappNumber),
@@ -112,10 +127,12 @@ export function useSettings({ isAdmin = false } = {}) {
           const data = await res.json();
           setSettings({
             sellerName: data.seller_name || DEFAULT_SETTINGS.sellerName,
+            sellerEmail: data.seller_email || DEFAULT_SETTINGS.sellerEmail,
             sellerPhone: data.seller_phone || DEFAULT_SETTINGS.sellerPhone,
             sellerMsg: data.seller_msg || DEFAULT_SETTINGS.sellerMsg,
             sellerPhoto: data.seller_photo || DEFAULT_SETTINGS.sellerPhoto,
             sellerBio: data.seller_bio || DEFAULT_SETTINGS.sellerBio,
+            sellerGender: data.seller_gender || DEFAULT_SETTINGS.sellerGender,
             landingTheme: data.landing_theme || DEFAULT_SETTINGS.landingTheme,
             footerText: data.footer_text !== undefined ? data.footer_text : DEFAULT_SETTINGS.footerText,
             whatsappNumber: normalizeWhatsAppNumber(data.whatsapp_number || DEFAULT_SETTINGS.whatsappNumber),
