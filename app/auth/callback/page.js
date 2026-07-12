@@ -23,7 +23,9 @@ export default function AuthCallback() {
 
         setStatus("Preparando tu perfil...");
 
-        const res = await fetch("/api/me/seller");
+        const companySlug = session.user?.user_metadata?.company;
+
+        const res = await fetch(`/api/me/seller${companySlug ? `?company=${encodeURIComponent(companySlug)}` : ""}`);
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
           setStatus("Error al preparar perfil: " + (data.error || ""));

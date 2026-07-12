@@ -3,8 +3,74 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Company {
+  id             String    @id @default(uuid())
+  slug           String    @unique
+  name           String
+  brandColor     String    @default("#00748E")
+  brandColorDark String    @default("#005A6F")
+  secondaryColor String    @default("#FDDC02")
+  accentColor    String    @default("#FF8000")
+  logoUrl        String    @default("")
+  websiteUrl     String    @default("")
+  order          Int       @default(0)
+  active         Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  sellers Seller[]
+  plans   Plan[]
+
+  @@index([slug])
+  @@index([active])
+}
+
+model Plan {
+  id            String   @id @default(uuid())
+  companyId     String
+  company       Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  category      String   // internet | duo
+  title         String
+  speed         String
+  speedLabel    String   @default("")
+  price         String
+  priceSubtitle String   @default("")
+  features      Json     @default("[]")
+  featured      Boolean  @default(false)
+  value         String   @unique
+  planOrder     Int      @default(0)
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  leads Lead[]
+  sellerOverrides SellerPlanOverride[]
+
+  @@index([companyId])
+  @@index([category])
+  @@index([active])
+}
+
+model SellerPlanOverride {
+  id        String   @id @default(uuid())
+  sellerId  String
+  seller    Seller   @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  planId    String
+  plan      Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  active    Boolean  @default(true)
+  order     Int      @default(0)
+  overrides Json     @default("{}")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([sellerId, planId])
+  @@index([sellerId])
+  @@index([planId])
 }
 
 model Lead {
@@ -20,6 +86,8 @@ model Lead {
   assignedTo String   @default("")
   sellerId   String?
   seller     Seller?  @relation(fields: [sellerId], references: [id], onDelete: SetNull)
+  planId     String?
+  planRef    Plan?    @relation(fields: [planId], references: [id], onDelete: SetNull)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -27,11 +95,14 @@ model Lead {
   @@index([status])
   @@index([assignedTo])
   @@index([sellerId])
+  @@index([planId])
 }
 
 model Seller {
   id           String   @id @default(uuid())
   userId       String?  @unique
+  companyId    String?
+  company      Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
   slug         String   @unique
   name         String
   email        String   @default("")
@@ -42,15 +113,19 @@ model Seller {
   bgVideoUrl   String   @default("")
   footerText   String   @default("")
   metaPixelId  String   @default("")
-  landingTheme String   @default("")
-  active       Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  landingTheme   String             @default("")
+  landingContent Json?
+  defaultMessage String?
+  active         Boolean            @default(true)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
 
-  leads Lead[]
+  leads         Lead[]
+  planOverrides SellerPlanOverride[]
 
   @@index([userId])
   @@index([slug])
+  @@index([companyId])
 }
 
 model Setting {

@@ -1,11 +1,6 @@
 "use client";
 
-const PLAN_OPTIONS = [
-  "Plan Fibra 800 Megas ($12.990)",
-  "Plan Hiper Fibra 1 Giga ($15.990)",
-  "Plan Dúo 800 Megas + TV ($23.990)",
-  "Plan Dúo 1 Giga + TV ($26.990)",
-  "Plan Móvil Gigas Libres ($5.990)",
+const DEFAULT_OPTIONS = [
   "Necesito Asesoría / Otro",
 ];
 
@@ -16,46 +11,50 @@ export default function CoverageSection({
   submitting,
   onSubmit,
   sellerLabels = {},
+  plans = [],
+  content = {},
 }) {
+  const c = content || {};
+  const steps = Array.isArray(c.steps) && c.steps.length > 0 ? c.steps : [
+    { title: "Ingresa tus datos", description: "Escribe tu nombre, comuna y dirección completa." },
+    { title: "Selecciona tu plan", description: "Indícanos cuál es el plan de tu interés o si buscas asesoría." },
+    { title: "¡Listo para contactar!", description: "Presiona enviar y recibe una respuesta personalizada de tu ejecutivo/a." },
+  ];
+
+  const planOptions = plans.length > 0
+    ? [...plans.map((p) => p.value), ...DEFAULT_OPTIONS]
+    : DEFAULT_OPTIONS;
+
+  const titleHighlight = c.titleHighlight || "¡Compruébalo Gratis!";
+  const description = (c.description || "Completa el siguiente formulario con tus datos de ubicación. Evaluaremos inmediatamente la cobertura de fibra óptica en tu zona y tu {executive} te contactará con las ofertas disponibles.").replace(
+    /{executive}/g,
+    sellerLabels.executive || "ejecutivo/a"
+  );
+
   return (
     <section id="cobertura" className="coverage-section">
       <div className="container">
         <div className="coverage-layout">
-          <div className="coverage-info scroll-animate fade-in-left">
+          <div className="coverage-info">
             <h2>
-              ¿Tienes Cobertura en tu Sector? <span>¡Compruébalo Gratis!</span>
+              {c.title || "¿Tienes Cobertura en tu Sector?"} <span>{titleHighlight}</span>
             </h2>
-            <p>
-              Completa el siguiente formulario con tus datos de ubicación. Evaluaremos
-              inmediatamente la cobertura de fibra óptica en tu zona y tu {sellerLabels.executive || "ejecutivo/a"} te contactará con las ofertas disponibles.
-            </p>
+            <p>{description}</p>
             <div className="coverage-steps">
-              <div className="step-card">
-                <div className="step-num">1</div>
-                <div className="step-text">
-                  <h4>Ingresa tus datos</h4>
-                  <p>Escribe tu nombre, comuna y dirección completa.</p>
+              {steps.map((step, idx) => (
+                <div className="step-card" key={idx}>
+                  <div className="step-num">{idx + 1}</div>
+                  <div className="step-text">
+                    <h4>{step.title}</h4>
+                    <p>{step.description}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="step-card">
-                <div className="step-num">2</div>
-                <div className="step-text">
-                  <h4>Selecciona tu plan</h4>
-                  <p>Indícanos cuál es el plan de tu interés o si buscas asesoría.</p>
-                </div>
-              </div>
-              <div className="step-card">
-                <div className="step-num">3</div>
-                <div className="step-text">
-                  <h4>¡Listo para contactar!</h4>
-                  <p>Presiona enviar y recibe una respuesta personalizada de tu {sellerLabels.executive || "ejecutivo/a"}.</p>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
 
-          <div className="coverage-card scroll-animate fade-in-right">
-            <h3>Consultar Factibilidad Técnica</h3>
+          <div className="coverage-card">
+            <h3>{c.formTitle || "Consultar Factibilidad Técnica"}</h3>
             {formStatus.message && (
               <div className={`form-message ${formStatus.type}`}>{formStatus.message}</div>
             )}
@@ -118,10 +117,10 @@ export default function CoverageSection({
                 <label htmlFor="client-plan">Plan de Interés</label>
                 <select
                   id="client-plan"
-                  value={formData.plan}
+                  value={formData.plan || ""}
                   onChange={(e) => setFormData({ ...formData, plan: e.target.value })}
                 >
-                  {PLAN_OPTIONS.map((option) => (
+                  {planOptions.map((option) => (
                     <option key={option} value={option}>
                       {option.replace(")", "/mes)")}
                     </option>
@@ -130,7 +129,7 @@ export default function CoverageSection({
               </div>
               <button type="submit" className="btn btn-primary w-100" disabled={submitting}>
                 <i className="bi bi-send-fill"></i>{" "}
-                {submitting ? "Enviando..." : "Enviar solicitud"}
+                {submitting ? "Enviando..." : (c.submitLabel || "Enviar solicitud")}
               </button>
             </form>
           </div>

@@ -1,14 +1,46 @@
 import Link from "next/link";
 import Image from "next/image";
+import { prisma } from "@/lib/prisma";
+import {
+  getCompanyConfig,
+  getCompanyVars,
+  getLogoUrl,
+  shouldInvertLogo,
+} from "@/lib/company";
 
 export const metadata = {
-  title: "Política de Privacidad | Tu Asesora Mundo",
-  description: "Conoce cómo protegemos tus datos personales y cómo usamos cookies y tecnologías de seguimiento en nuestro sitio.",
+  title: "Política de Privacidad",
+  description:
+    "Conoce cómo protegemos tus datos personales y cómo usamos cookies y tecnologías de seguimiento en nuestro sitio.",
 };
 
-export default function PoliticaPrivacidadPage() {
+export default async function PoliticaPrivacidadPage({ searchParams }) {
+  const params = await searchParams;
+  const slug = params?.company || "mundo";
+  const config = getCompanyConfig(slug);
+
+  let company = await prisma.company.findUnique({ where: { slug } });
+  if (!company) {
+    company = {
+      slug: "mundo",
+      name: "Mundo",
+      brandColor: "#00748E",
+      brandColorDark: "#005A6F",
+      secondaryColor: "#FDDC02",
+      accentColor: "#FF8000",
+      logoUrl: config.logoDarkHeader,
+    };
+  }
+
+  const vars = getCompanyVars(company);
+  const logoUrl = getLogoUrl(company, "header");
+  const invertLogo = shouldInvertLogo(company);
+  const policyUrl = `/politica-de-privacidad?company=${company.slug}`;
+  const homeUrl = company.slug === "mundo" ? "/" : `/p/demo-${company.slug}`;
+
   return (
-    <div className="privacy-page">
+    <div data-company={company.slug} style={vars}>
+      <link rel="stylesheet" href={config.googleFontUrl} />
       <div className="header-top">
         <div className="container">
           <div className="header-top-info">
@@ -20,7 +52,7 @@ export default function PoliticaPrivacidadPage() {
             </span>
           </div>
           <div>
-            <span>Ejecutivo/a de Ventas Oficial Mundo</span>
+            <span>Ejecutivo/a de Ventas Oficial {company.name}</span>
           </div>
         </div>
       </div>
@@ -28,20 +60,24 @@ export default function PoliticaPrivacidadPage() {
       <header className="site-header">
         <div className="container">
           <nav className="main-nav">
-            <Link href="/" className="logo">
+            <Link href={homeUrl} className="logo">
               <Image
-                src="https://www.tumundo.cl/wp-content/uploads/2022/12/logo-mundo-negative.svg"
-                alt="Mundo Logo"
+                src={logoUrl}
+                alt={`${company.name} Logo`}
                 width={120}
-                height={32}
+                height={40}
+                style={{
+                  objectFit: "contain",
+                  filter: invertLogo ? "brightness(0) invert(1)" : "none",
+                }}
               />
             </Link>
             <ul className="nav-links">
               <li>
-                <Link href="/">Volver al inicio</Link>
+                <Link href={homeUrl}>Volver al inicio</Link>
               </li>
               <li>
-                <Link href="/politica-de-privacidad">Política de Privacidad</Link>
+                <Link href={policyUrl}>Política de Privacidad</Link>
               </li>
             </ul>
           </nav>
@@ -52,26 +88,21 @@ export default function PoliticaPrivacidadPage() {
         <div className="container">
           <div className="privacy-card">
             <div className="privacy-header">
-              <Link
-                href="/"
-                className="privacy-back"
-              >
+              <Link href={homeUrl} className="privacy-back">
                 <i className="bi bi-arrow-left"></i>
                 Volver al inicio
               </Link>
 
               <h1>Política de Privacidad</h1>
-              <p className="privacy-date">
-                Última actualización: 04 de julio de 2026
-              </p>
+              <p className="privacy-date">Última actualización: 04 de julio de 2026</p>
             </div>
 
             <div className="privacy-content">
               <p>
-                En <strong>Tu Asesora Mundo</strong> nos tomamos muy en serio la protección de tus datos
-                personales. Esta política explica qué información recopilamos, con qué fines la usamos
-                y cuáles son tus derechos como usuario. Este sitio es operado por una ejecutiva de
-                ventas autorizada e independiente de Mundo Pacífico S.A. con fines de captación
+                En <strong>Tu Ejecutivo/a {company.name}</strong> nos tomamos muy en serio la protección
+                de tus datos personales. Esta política explica qué información recopilamos, con qué
+                fines la usamos y cuáles son tus derechos como usuario. Este sitio es operado por una
+                ejecutiva de ventas autorizada e independiente de {company.name} con fines de captación
                 comercial.
               </p>
 
@@ -79,8 +110,9 @@ export default function PoliticaPrivacidadPage() {
               <p>
                 El responsable del tratamiento de los datos es la ejecutiva comercial independiente que
                 opera este sitio, actuando como intermediaria para la gestión de solicitudes de
-                información y contratación de servicios de Mundo. Para ejercer tus derechos, podés
-                contactarnos a través del formulario de contacto o por WhatsApp publicado en este sitio.
+                información y contratación de servicios de {company.name}. Para ejercer tus derechos,
+                podés contactarnos a través del formulario de contacto o por WhatsApp publicado en este
+                sitio.
               </p>
 
               <h2>2. Datos personales que recopilamos</h2>
@@ -98,7 +130,7 @@ export default function PoliticaPrivacidadPage() {
               <ul>
                 <li>Gestionar tu solicitud de factibilidad técnica y cotización.</li>
                 <li>Contactarte por teléfono, WhatsApp o correo electrónico para coordinar la instalación.</li>
-                <li>Enviarte información comercial relacionada con planes y promociones de Mundo.</li>
+                <li>Enviarte información comercial relacionada con planes y promociones de {company.name}.</li>
                 <li>Cumplir con obligaciones legales y regulatorias.</li>
               </ul>
 
@@ -120,11 +152,7 @@ export default function PoliticaPrivacidadPage() {
               <p>
                 Podés deshabilitar las cookies desde la configuración de tu navegador. Para más
                 información sobre cómo Meta utiliza tus datos, visitá la{" "}
-                <a
-                  href="https://www.facebook.com/privacy/policy"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+                <a href="https://www.facebook.com/privacy/policy" target="_blank" rel="noopener noreferrer">
                   Política de Privacidad de Meta
                 </a>
                 .
@@ -132,8 +160,8 @@ export default function PoliticaPrivacidadPage() {
 
               <h2>6. Compartición de datos</h2>
               <p>
-                Tus datos podrán ser compartidos con Mundo Pacífico S.A. y sus filiales únicamente para
-                la gestión de la solicitud y la eventual contratación del servicio. No vendemos ni
+                Tus datos podrán ser compartidos con {company.name} y sus filiales únicamente para la
+                gestión de la solicitud y la eventual contratación del servicio. No vendemos ni
                 transferimos tus datos a terceros ajenos a este proceso.
               </p>
 
@@ -180,7 +208,7 @@ export default function PoliticaPrivacidadPage() {
             </div>
 
             <div className="privacy-footer">
-              <Link href="/" className="btn btn-primary">
+              <Link href={homeUrl} className="btn btn-primary">
                 <i className="bi bi-house-door-fill"></i>
                 Volver a la página principal
               </Link>
@@ -192,14 +220,19 @@ export default function PoliticaPrivacidadPage() {
       <footer className="site-footer">
         <div className="container">
           <div className="footer-bottom">
-            <p>&copy; 2026 Mundo Telecomunicaciones. Página web de Ejecutivo/a de Ventas Oficial Independiente.</p>
+            <p>
+              &copy; 2026 {company.name}. Página web de Ejecutivo/a de Ventas Oficial Independiente.
+            </p>
             <p style={{ marginTop: "0.5rem", fontSize: "0.75rem" }}>
               Los logotipos, marcas comerciales y nombres de servicios exhibidos en este sitio son
-              propiedad exclusiva de Mundo Pacífico S.A. y sus filiales. Este sitio tiene propósitos
+              propiedad exclusiva de {company.name} y sus filiales. Este sitio tiene propósitos
               informativos y de captación comercial por parte de una ejecutiva oficial independiente.
             </p>
             <p style={{ marginTop: "0.75rem" }}>
-              <Link href="/politica-de-privacidad" className="text-[#00748E] hover:text-[#005A6F] hover:underline font-medium">
+              <Link
+                href={policyUrl}
+                className="text-[var(--color-primary)] hover:underline font-medium"
+              >
                 Política de Privacidad y Cookies
               </Link>
             </p>

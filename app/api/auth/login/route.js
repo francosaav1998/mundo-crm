@@ -19,6 +19,19 @@ export async function POST(request) {
     }
 
     const { username, password } = await request.json();
+
+    // Acceso local rápido para desarrollo
+    if (process.env.NODE_ENV === "development" && username === "admin" && password === "admin") {
+      const res = NextResponse.json({ success: true });
+      res.cookies.set("mundo-local-auth", "admin", {
+        secure: false,
+        sameSite: "lax",
+        path: "/",
+        maxAge: 60 * 60 * 24 * 7,
+      });
+      return res;
+    }
+
     const email = username.includes("@") ? username : `${username}@mundo-crm.local`;
 
     const cookieStore = await cookies();

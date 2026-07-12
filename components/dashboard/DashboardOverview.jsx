@@ -29,22 +29,29 @@ export default function DashboardOverview({ filters, initialStats, T, isMobile, 
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
+        <div>
+          <div className="eyebrow" style={{ marginBottom: 6 }}>Dashboard General</div>
+          <h2 style={{ fontSize: isMobile ? "22px" : "28px", fontWeight: 700, color: T.text, fontFamily: "var(--font-heading), 'Outfit', sans-serif", letterSpacing: "-0.02em" }}>
+            Resumen de leads
+          </h2>
+        </div>
         <button
           onClick={refresh}
           disabled={loading}
           style={{
-            padding: "8px 14px",
-            borderRadius: "10px",
+            padding: "8px 16px",
+            borderRadius: "9999px",
             border: `1px solid ${T.border}`,
-            background: "rgba(255,255,255,0.05)",
+            background: "rgba(255,255,255,0.04)",
             color: T.text,
             fontSize: "12px",
-            fontWeight: 700,
+            fontWeight: 600,
             cursor: "pointer",
             display: "inline-flex",
             alignItems: "center",
             gap: 6,
+            transition: "all 0.2s",
           }}
         >
           <i className={`bi bi-arrow-clockwise ${loading ? "" : ""}`} style={{ animation: loading ? "spin 1s linear infinite" : "none" }}></i>

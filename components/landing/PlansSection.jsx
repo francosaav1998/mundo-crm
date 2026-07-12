@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import PlanCard from "./PlanCard";
 
-const TABS = [
+const ALL_TABS = [
   { key: "all", label: "Todos los Planes" },
   { key: "internet", label: "Solo Internet" },
   { key: "duo", label: "Internet + TV" },
@@ -94,29 +94,40 @@ export const PLANS = [
   },
 ];
 
-export default function PlansSection({ onSelectPlan }) {
+export default function PlansSection({ onSelectPlan, plans, company = null, content = {} }) {
   const [activeTab, setActiveTab] = useState("all");
 
+  const displayPlans = plans && plans.length > 0 ? plans : PLANS;
+  const hasMovil = displayPlans.some((p) => p.category === "movil");
+
+  const c = content || {};
+  const tabs = Array.isArray(c.tabs) && c.tabs.length > 0
+    ? c.tabs.filter((t) => t.key !== "movil" || hasMovil)
+    : ALL_TABS.filter((t) => t.key !== "movil" || hasMovil);
+
   const filteredPlans = useMemo(
-    () => (activeTab === "all" ? PLANS : PLANS.filter((p) => p.category === activeTab)),
-    [activeTab]
+    () => (activeTab === "all" ? displayPlans : displayPlans.filter((p) => p.category === activeTab)),
+    [activeTab, displayPlans]
+  );
+
+  const companyName = company?.name || "Mundo";
+  const description = (c.description || "Explora las mejores ofertas en Internet Fibra Óptica y Dúos de {companyName}.").replace(
+    /{companyName}/g,
+    companyName
   );
 
   return (
     <section id="planes" className="planes-section">
       <div className="container">
-        <div className="section-header scroll-animate fade-in-up">
+        <div className="section-header">
           <h2>
-            Elige el <span>Plan Perfecto</span> para Ti
+            {c.title || "Elige el"} <span>{c.titleHighlight || "Plan Perfecto"}</span> {c.titleSuffix || "para Ti"}
           </h2>
-          <p>
-            Explora nuestras mejores ofertas en Internet Fibra Óptica, Dúos (Internet +
-            Televisión) y Planes Móviles.
-          </p>
+          <p>{description}</p>
         </div>
 
-        <div className="planes-tabs scroll-animate fade-in-up delay-1">
-          {TABS.map((tab) => (
+        <div className="planes-tabs">
+          {tabs.map((tab) => (
             <button
               key={tab.key}
               className={`tab-btn ${activeTab === tab.key ? "active" : ""}`}

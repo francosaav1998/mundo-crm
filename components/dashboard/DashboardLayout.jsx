@@ -9,6 +9,8 @@ const ALL_MENU_ITEMS = [
   { id: "emails", icon: "bi-envelope-fill", label: "Correos" },
   { id: "whatsapp", icon: "bi-whatsapp", label: "Mensajes Directos" },
   { id: "import", icon: "bi-file-earmark-spreadsheet-fill", label: "Importar Datos" },
+  { id: "landing", icon: "bi-palette-fill", label: "Editor de Landing" },
+  { id: "landings", icon: "bi-globe-americas", label: "Landings por Compañía", adminOnly: true },
   { id: "users", icon: "bi-shield-lock-fill", label: "Usuarios", adminOnly: true },
   { id: "settings", icon: "bi-gear-fill", label: "Configuraciones" },
 ];
@@ -33,6 +35,7 @@ export default function DashboardLayout({
   toggleTheme,
   sellerName,
   username,
+  company = null,
   dateFilter,
   setDateFilter,
   customDate,
@@ -58,56 +61,40 @@ export default function DashboardLayout({
         minHeight: "100vh",
         background: T.bgGradient,
         color: T.text,
-        fontFamily: "'Inter', sans-serif",
+        fontFamily: "var(--font-body), 'Plus Jakarta Sans', system-ui, sans-serif",
         position: "relative",
         transition: "background 0.3s, color 0.3s",
       }}
     >
-      {/* Background Glows */}
-      <div
-        style={{
-          position: "fixed",
-          inset: 0,
-          backgroundImage: `
-            radial-gradient(ellipse 60% 40% at 50% 0%, rgba(0, 229, 255, 0.08) 0%, transparent 70%),
-            radial-gradient(circle at 100% 100%, rgba(255, 45, 149, 0.05) 0%, transparent 50%)
-          `,
-          pointerEvents: "none",
-          zIndex: 0,
-        }}
-      />
+      {/* EducMark Aurora Background */}
+      <div className="educmark-bg" />
+      <div className="educmark-progress" style={{ width: "100%" }} />
 
       {/* Mobile Sidebar Backdrop */}
-      {isMobile && sidebarOpen && (
+      {sidebarOpen && (
         <div
+          className="dashboard-sidebar-backdrop"
           onClick={() => setSidebarOpen(false)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.5)",
-            zIndex: 9,
-          }}
         />
       )}
 
       {/* Sidebar */}
       <aside
+        className={`dashboard-sidebar ${sidebarOpen ? "dashboard-sidebar-open" : ""}`}
         style={{
-          width: sidebarOpen ? 280 : (isMobile ? 0 : 70),
           background: T.sidebarBg,
-          backdropFilter: "blur(20px)",
-          borderRight: isMobile ? "none" : `1px solid ${T.border}`,
+          backdropFilter: "blur(28px)",
+          WebkitBackdropFilter: "blur(28px)",
+          borderRight: `1px solid ${T.border}`,
           display: "flex",
           flexDirection: "column",
           flexShrink: 0,
-          transition: "width 0.25s cubic-bezier(0.4,0,0.2,1)",
+          transition: "width 0.25s cubic-bezier(0.4,0,0.2,1), transform 0.25s cubic-bezier(0.4,0,0.2,1)",
           overflow: "hidden",
-          position: isMobile ? "fixed" : "sticky",
           top: 0,
           left: 0,
           height: "100vh",
           zIndex: 10,
-          boxShadow: isMobile && sidebarOpen ? "0 0 40px rgba(0,0,0,0.3)" : "none",
         }}
       >
         {/* Logo Section */}
@@ -117,29 +104,66 @@ export default function DashboardLayout({
             display: "flex",
             alignItems: "center",
             gap: 12,
-            borderBottom: "1px solid rgba(255, 255, 255, 0.06)",
+            borderBottom: `1px solid ${T.border}`,
             minHeight: 80,
           }}
         >
-          <Image
-            src="https://www.tumundo.cl/wp-content/uploads/2022/12/logo-mundo-negative.svg"
-            alt="Mundo"
-            width={120}
-            height={32}
-            style={{ height: 32, width: "auto", filter: "brightness(1.2)" }}
-          />
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              fontFamily: "var(--font-heading), 'Outfit', sans-serif",
+              fontWeight: 700,
+              fontSize: sidebarOpen ? 20 : 16,
+              color: T.text,
+              letterSpacing: "-0.02em",
+              whiteSpace: "nowrap",
+            }}
+          >
+            <span
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 10,
+                background: `linear-gradient(135deg, ${T.accent} 0%, ${T.secondary} 100%)`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 14,
+                color: "#fff",
+                flexShrink: 0,
+              }}
+            >
+              <i className="bi bi-globe-americas" />
+            </span>
+            {sidebarOpen && <span>Mundo</span>}
+          </div>
         </div>
 
         {/* User Info */}
         {sidebarOpen && (
-          <div style={{ padding: "16px 20px", background: "rgba(255,255,255,0.05)", borderBottom: `1px solid ${T.border}` }}>
-            <div style={{ fontSize: "11px", color: T.sidebarMuted, textTransform: "uppercase", letterSpacing: "0.05em" }}>Asesor Comercial</div>
-            <div style={{ fontSize: "14px", fontWeight: 700, color: "#FFFFFF", marginTop: 4 }}>{sellerName}</div>
+          <div
+            style={{
+              padding: "16px 20px",
+              background: T.inputBg,
+              borderBottom: `1px solid ${T.border}`,
+              borderRadius: "16px",
+              margin: "12px 14px 0",
+            }}
+          >
+            <div style={{ fontSize: "10px", color: T.sidebarMuted, textTransform: "uppercase", letterSpacing: "0.2em", fontWeight: 600 }}>Asesor Comercial</div>
+            <div style={{ fontSize: "15px", fontWeight: 700, color: T.sidebarText, marginTop: 6, fontFamily: "var(--font-heading), 'Outfit', sans-serif" }}>{sellerName}</div>
+            {company && (
+              <div style={{ fontSize: "12px", color: T.accent, fontWeight: 600, marginTop: 4 }}>
+                {company.name}
+              </div>
+            )}
           </div>
         )}
 
         {/* Nav Links */}
-        <nav style={{ flex: 1, padding: "20px 10px", display: "flex", flexDirection: "column", gap: 6 }}>
+        <nav style={{ flex: 1, padding: "16px 12px", display: "flex", flexDirection: "column", gap: 4 }}>
           {MENU_ITEMS.map((item) => {
             const active = activeMenu === item.id;
             return (
@@ -151,17 +175,18 @@ export default function DashboardLayout({
                   alignItems: "center",
                   gap: 12,
                   padding: "12px 16px",
-                  borderRadius: "12px",
+                  borderRadius: "14px",
                   cursor: "pointer",
-                  background: active ? `${T.accent}20` : "transparent",
+                  background: active ? `${T.accent}15` : "transparent",
                   color: active ? T.accent : T.sidebarMuted,
-                  border: active ? `1px solid ${T.accent}40` : "1px solid transparent",
+                  border: active ? `1px solid ${T.accent}35` : "1px solid transparent",
                   transition: "all 0.2s",
                   whiteSpace: "nowrap",
                   fontWeight: 600,
+                  fontSize: 13,
                 }}
               >
-                <i className={`bi ${item.icon}`} style={{ fontSize: 16 }} />
+                <i className={`bi ${item.icon}`} style={{ fontSize: 16, color: active ? T.accent : "inherit" }} />
                 {sidebarOpen && <span>{item.label}</span>}
               </div>
             );
@@ -174,12 +199,13 @@ export default function DashboardLayout({
             onClick={() => setSidebarOpen(!sidebarOpen)}
             style={{
               padding: "8px",
-              borderRadius: "8px",
-              background: "rgba(255,255,255,0.05)",
-              border: "none",
+              borderRadius: "10px",
+              background: "rgba(255,255,255,0.04)",
+              border: `1px solid ${T.border}`,
               color: T.sidebarMuted,
               cursor: "pointer",
               fontSize: "12px",
+              transition: "all 0.2s",
             }}
           >
             <i className={`bi ${sidebarOpen ? "bi-arrow-bar-left" : "bi-arrow-bar-right"}`} />
@@ -192,19 +218,20 @@ export default function DashboardLayout({
               style={{
                 display: "flex",
                 alignItems: "center",
+                justifyContent: "center",
                 gap: 10,
                 width: "100%",
                 padding: "12px 16px",
-                borderRadius: "12px",
-                background: `linear-gradient(135deg, ${T.accent} 0%, ${T.accent2} 100%)`,
-                border: "none",
-                color: "#FFFFFF",
+                borderRadius: "9999px",
+                background: `${T.accent}15`,
+                border: `1px solid ${T.accent}45`,
+                color: T.accent,
                 cursor: "pointer",
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: 700,
                 transition: "all 0.2s",
                 textDecoration: "none",
-                boxShadow: T.glowCyan,
+                backdropFilter: "blur(10px)",
               }}
             >
               <i className="bi bi-globe-americas" />
@@ -217,15 +244,16 @@ export default function DashboardLayout({
               style={{
                 display: "flex",
                 alignItems: "center",
+                justifyContent: "center",
                 gap: 10,
                 width: "100%",
                 padding: "12px 16px",
-                borderRadius: "12px",
-                background: "rgba(239, 68, 68, 0.1)",
-                border: "1px solid rgba(239, 68, 68, 0.2)",
+                borderRadius: "9999px",
+                background: "rgba(239, 68, 68, 0.08)",
+                border: "1px solid rgba(239, 68, 68, 0.18)",
                 color: "#EF4444",
                 cursor: "pointer",
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: 700,
                 transition: "all 0.2s",
               }}
@@ -241,10 +269,8 @@ export default function DashboardLayout({
       <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, zIndex: 1 }}>
         {/* Top Header */}
         <header
+          className="glass-header"
           style={{
-            background: T.headerBg,
-            backdropFilter: "blur(20px)",
-            borderBottom: `1px solid ${T.border}`,
             padding: isMobile ? "12px 16px" : "20px 40px",
             display: "flex",
             alignItems: "center",
@@ -254,31 +280,31 @@ export default function DashboardLayout({
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            {isMobile && (
-              <button
-                onClick={() => setSidebarOpen(true)}
-                style={{
-                  background: "rgba(255,255,255,0.1)",
-                  border: "none",
-                  color: T.headerText,
-                  width: 40,
-                  height: 40,
-                  borderRadius: "10px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: "pointer",
-                  fontSize: 20,
-                  flexShrink: 0,
-                }}
-              >
-                <i className="bi bi-list" />
-              </button>
-            )}
+            <button
+              className="dashboard-menu-btn"
+              onClick={() => setSidebarOpen(true)}
+              style={{
+                background: "rgba(255,255,255,0.05)",
+                border: `1px solid ${T.border}`,
+                color: T.headerText,
+                width: 40,
+                height: 40,
+                borderRadius: "12px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                fontSize: 20,
+                flexShrink: 0,
+                transition: "all 0.2s",
+              }}
+            >
+              <i className="bi bi-list" />
+            </button>
             <div>
-              <h1 style={{ fontSize: isMobile ? "18px" : "24px", fontWeight: 800, color: T.headerText }}>{pageTitle}</h1>
+              <h1 style={{ fontSize: isMobile ? "18px" : "26px", fontWeight: 700, color: T.headerText, fontFamily: "var(--font-heading), 'Outfit', sans-serif", letterSpacing: "-0.02em" }}>{pageTitle}</h1>
               {!isMobile && (
-                <p style={{ fontSize: "13px", color: T.headerMuted, marginTop: 4 }}>
+                <p style={{ fontSize: "13px", color: T.headerMuted, marginTop: 4, fontWeight: 500 }}>
                   Administración y control de cobertura digital en tiempo real.
                 </p>
               )}
@@ -294,12 +320,12 @@ export default function DashboardLayout({
                 alignItems: "center",
                 gap: 6,
                 padding: "8px 14px",
-                borderRadius: "30px",
-                border: "1px solid rgba(255,255,255,0.15)",
-                background: "rgba(255,255,255,0.08)",
+                borderRadius: "9999px",
+                border: `1px solid ${T.border}`,
+                background: "rgba(255,255,255,0.04)",
                 color: T.headerText,
                 fontSize: "13px",
-                fontWeight: 700,
+                fontWeight: 600,
                 cursor: "pointer",
                 transition: "all 0.2s",
               }}
@@ -308,20 +334,20 @@ export default function DashboardLayout({
               <span>{theme === "dark" ? "Día" : "Noche"}</span>
             </button>
 
-            {!isMobile && <span style={{ fontSize: "13px", color: T.headerMuted, fontWeight: 600 }}>Filtrar Fecha:</span>}
-            <div style={{ display: "flex", background: "rgba(255,255,255,0.08)", padding: "4px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.15)", overflowX: "auto", maxWidth: "100%" }}>
+            {!isMobile && <span style={{ fontSize: "12px", color: T.headerMuted, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>Filtrar Fecha:</span>}
+            <div style={{ display: "flex", background: "rgba(255,255,255,0.04)", padding: "4px", borderRadius: "12px", border: `1px solid ${T.border}`, overflowX: "auto", maxWidth: "100%" }}>
               {DATE_FILTERS.map((opt) => (
                 <button
                   key={opt.id}
                   onClick={() => setDateFilter(opt.id)}
                   style={{
                     padding: "6px 12px",
-                    borderRadius: "8px",
+                    borderRadius: "10px",
                     border: "none",
-                    background: dateFilter === opt.id ? T.accent : "transparent",
-                    color: dateFilter === opt.id ? "#FFFFFF" : T.headerMuted,
+                    background: dateFilter === opt.id ? `${T.accent}20` : "transparent",
+                    color: dateFilter === opt.id ? T.accent : T.headerMuted,
                     fontSize: "12px",
-                    fontWeight: 700,
+                    fontWeight: 600,
                     cursor: "pointer",
                     transition: "all 0.2s",
                   }}
@@ -337,11 +363,11 @@ export default function DashboardLayout({
                 value={customDate}
                 onChange={(e) => setCustomDate(e.target.value)}
                 style={{
-                  background: T.bgCard,
-                  border: `1px solid ${T.accent}50`,
+                  background: T.inputBg,
+                  border: `1px solid ${T.accent}40`,
                   color: T.text,
                   padding: "8px 12px",
-                  borderRadius: "10px",
+                  borderRadius: "12px",
                   fontSize: "13px",
                   outline: "none",
                 }}
@@ -353,11 +379,10 @@ export default function DashboardLayout({
         {/* Onboarding Banner */}
         {onboardingNeeded && !isAdmin && (
           <div
+            className="glass-card"
             style={{
               margin: isMobile ? "0 16px 16px" : "0 40px 24px",
-              background: `linear-gradient(135deg, ${T.accent}15 0%, ${T.accent}05 100%)`,
-              border: `2px solid ${T.accent}40`,
-              borderRadius: "16px",
+              border: `1px solid ${T.accent}35`,
               padding: "20px 24px",
               display: "flex",
               alignItems: "center",
@@ -371,22 +396,24 @@ export default function DashboardLayout({
                 style={{
                   width: 48,
                   height: 48,
-                  borderRadius: "12px",
-                  background: T.accent,
+                  borderRadius: "14px",
+                  background: `${T.accent}20`,
+                  border: `1px solid ${T.accent}40`,
+                  color: T.accent,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: 24,
+                  fontSize: 22,
                   flexShrink: 0,
                 }}
               >
                 <i className="bi bi-rocket-takeoff-fill"></i>
               </div>
               <div>
-                <h3 style={{ fontSize: "16px", fontWeight: 800, color: T.text, marginBottom: "4px" }}>
+                <h3 style={{ fontSize: "16px", fontWeight: 700, color: T.text, marginBottom: "4px", fontFamily: "var(--font-heading), 'Outfit', sans-serif" }}>
                   ¡Bienvenida! Tu landing está casi lista
                 </h3>
-                <p style={{ fontSize: "13px", color: T.muted }}>
+                <p style={{ fontSize: "13px", color: T.muted, fontWeight: 500 }}>
                   Personaliza tu foto, bio, video de fondo y verifica tu WhatsApp para que los clientes te encuentren.
                 </p>
               </div>
@@ -397,13 +424,14 @@ export default function DashboardLayout({
                   onClick={() => router.push(`/p/${sellerSlug}`)}
                   style={{
                     padding: "10px 18px",
-                    borderRadius: "10px",
-                    border: `1px solid ${T.accent}50`,
-                    background: "transparent",
+                    borderRadius: "9999px",
+                    border: `1px solid ${T.border}`,
+                    background: "rgba(255,255,255,0.04)",
                     color: T.text,
                     fontSize: "13px",
-                    fontWeight: 700,
+                    fontWeight: 600,
                     cursor: "pointer",
+                    transition: "all 0.2s",
                   }}
                 >
                   <i className="bi bi-eye-fill"></i> Ver mi landing
@@ -412,15 +440,16 @@ export default function DashboardLayout({
               <button
                 onClick={() => onMenuChange("settings")}
                 style={{
-                  padding: "10px 18px",
-                  borderRadius: "10px",
-                  border: "none",
-                  background: T.accent,
-                  color: "#FFFFFF",
+                  padding: "10px 20px",
+                  borderRadius: "9999px",
+                  border: `1px solid ${T.accent}50`,
+                  background: `${T.accent}15`,
+                  color: T.accent,
                   fontSize: "13px",
-                  fontWeight: 800,
+                  fontWeight: 700,
                   cursor: "pointer",
-                  boxShadow: `0 4px 14px ${T.accent}40`,
+                  transition: "all 0.2s",
+                  backdropFilter: "blur(10px)",
                 }}
               >
                 <i className="bi bi-gear-fill"></i> Configurar ahora

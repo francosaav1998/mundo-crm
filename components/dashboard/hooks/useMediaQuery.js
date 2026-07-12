@@ -12,6 +12,8 @@ export function useMediaQuery(query) {
     if (typeof window === "undefined") return;
     const mql = window.matchMedia(query);
     const handler = (e) => setMatches(e.matches);
+    // Sincronizar estado real tras hidratación para evitar valores SSR incorrectos
+    setMatches(mql.matches);
     mql.addEventListener("change", handler);
     return () => mql.removeEventListener("change", handler);
   }, [query]);

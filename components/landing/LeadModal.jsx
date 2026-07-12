@@ -2,23 +2,22 @@
 
 import { useEffect, useState } from "react";
 
-const PLAN_OPTIONS = [
-  "Plan Fibra 800 Megas ($12.990)",
-  "Plan Hiper Fibra 1 Giga ($15.990)",
-  "Plan Dúo 800 Megas + TV ($23.990)",
-  "Plan Dúo 1 Giga + TV ($26.990)",
-  "Plan Móvil Gigas Libres ($5.990)",
-  "Necesito Asesoría / Otro",
-];
+const DEFAULT_OPTIONS = ["Necesito Asesoría / Otro"];
 
-export default function LeadModal({ isOpen, onClose, sellerId, sellerName, initialPlan = "" }) {
+export default function LeadModal({ isOpen, onClose, sellerId, sellerName, initialPlan = "", plans = [], companySlug = "mundo" }) {
+  const planOptions = plans.length > 0
+    ? [...plans.map((p) => p.value), ...DEFAULT_OPTIONS]
+    : DEFAULT_OPTIONS;
+
+  const defaultPlan = initialPlan || planOptions[0] || DEFAULT_OPTIONS[0];
+
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
     email: "",
     city: "",
     address: "",
-    plan: initialPlan || "Plan Fibra 800 Megas ($12.990)",
+    plan: defaultPlan,
   });
   const [status, setStatus] = useState({ type: "", message: "" });
   const [submitting, setSubmitting] = useState(false);
@@ -47,10 +46,11 @@ export default function LeadModal({ isOpen, onClose, sellerId, sellerName, initi
     setStatus({ type: "", message: "" });
 
     try {
+      const selectedPlan = plans.find((p) => p.value === formData.plan);
       const res = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, sellerId }),
+        body: JSON.stringify({ ...formData, sellerId, planId: selectedPlan?.id }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Error al enviar");
@@ -71,7 +71,7 @@ export default function LeadModal({ isOpen, onClose, sellerId, sellerName, initi
         email: "",
         city: "",
         address: "",
-        plan: "Plan Fibra 800 Megas ($12.990)",
+        plan: defaultPlan,
       });
     } catch (err) {
       setStatus({ type: "error", message: err.message });
@@ -278,7 +278,7 @@ export default function LeadModal({ isOpen, onClose, sellerId, sellerName, initi
                 background: "#FFFFFF",
               }}
             >
-              {PLAN_OPTIONS.map((option) => (
+              {planOptions.map((option) => (
                 <option key={option} value={option}>
                   {option.replace(")", "/mes)")}
                 </option>
@@ -313,7 +313,7 @@ export default function LeadModal({ isOpen, onClose, sellerId, sellerName, initi
 
           <p style={{ fontSize: "11px", color: "#94A3B8", textAlign: "center" }}>
             Al enviar, aceptas nuestra{" "}
-            <a href="/politica-de-privacidad" style={{ color: "#00748E", fontWeight: 700 }}>
+            <a href={`/politica-de-privacidad?company=${companySlug}`} style={{ color: "#00748E", fontWeight: 700 }}>
               Política de Privacidad
             </a>
             .

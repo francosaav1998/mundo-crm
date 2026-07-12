@@ -11,16 +11,13 @@ export default function PlanDistribution({ leads, data, T }) {
 
   return (
     <div
+      className="glass-card"
       style={{
-        background: T.bgCard,
-        border: `1px solid ${T.border}`,
-        borderRadius: "24px",
-        padding: "30px",
-        boxShadow: "0 0 30px rgba(176,38,255,0.05)",
+        padding: "28px",
       }}
     >
-      <h3 style={{ fontSize: "16px", fontWeight: 700, marginBottom: 20, color: T.accent, textShadow: `0 0 10px ${T.accent}40` }}>
-        <i className="bi bi-pie-chart-fill" style={{ marginRight: 6 }}></i>
+      <div className="eyebrow" style={{ marginBottom: 6 }}>Distribución</div>
+      <h3 style={{ fontSize: "18px", fontWeight: 700, marginBottom: 22, color: T.text, fontFamily: "var(--font-heading), 'Outfit', sans-serif", letterSpacing: "-0.01em" }}>
         Planes Más Solicitados
       </h3>
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>

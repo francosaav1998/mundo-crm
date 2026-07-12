@@ -46,6 +46,10 @@ yarn-error.log*
 dev.log
 iniciar.bat
 iniciar-dashboard.bat
+dev-err.log
+dev-out.log
+server.err.log
+server.out.log
 
 # local sqlite db
 /prisma/dev.db

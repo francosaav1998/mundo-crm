@@ -163,6 +163,7 @@ export default function LandingPage() {
         onClose={() => setModalOpen(false)}
         initialPlan={modalPlan}
         sellerName={sellerName}
+        companySlug="mundo"
       />
     </>
   );

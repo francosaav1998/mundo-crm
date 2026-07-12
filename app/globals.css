@@ -39,11 +39,15 @@ html {
 }
 
 body {
-  font-family: var(--font-family);
+  font-family: var(--company-font-family, var(--font-family));
   background-color: var(--color-bg-light);
   color: var(--color-text-dark);
   line-height: 1.6;
   overflow-x: hidden;
+}
+
+html[data-theme] body {
+  background-color: transparent;
 }
 
 img {
@@ -256,7 +260,7 @@ ul {
 .hero {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 100%);
+  background: linear-gradient(135deg, var(--color-primary-dark, #005A6F) 0%, var(--color-primary, #00748E) 100%);
   color: var(--color-text-light);
   padding: 4rem 0;
 }
@@ -655,7 +659,7 @@ ul {
 /* COBERTURA */
 .coverage-section {
   padding: 6rem 0;
-  background: linear-gradient(135deg, #005A6F 0%, #00748E 100%);
+  background: linear-gradient(135deg, var(--color-primary-dark, #005A6F) 0%, var(--color-primary, #00748E) 100%);
   color: var(--color-text-light);
   position: relative;
 }
@@ -1372,4 +1376,257 @@ ul {
 .theme-toggle-btn:hover {
   border-color: #FDDC02;
   color: #FDDC02;
+}
+
+/* ── EDUCMARK THEME VARIABLES & UTILITIES ── */
+:root {
+  --em-bg: #0f0f1a;
+  --em-bg-light: #faf9f7;
+  --em-gold: #d4a574;
+  --em-gold-2: #b08a5f;
+  --em-gold-3: #8f7350;
+  --em-lilac: #8080ff;
+  --em-text: #f0f0f5;
+  --em-text-dark: #1a1a2e;
+  --em-muted: rgba(255, 255, 255, 0.55);
+  --em-border: rgba(255, 255, 255, 0.06);
+  --em-card: rgba(255, 255, 255, 0.03);
+  --em-radius: 24px;
+  --em-radius-sm: 16px;
+  --em-radius-xs: 12px;
+  --em-font-heading: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+  --em-font-body: 'Plus Jakarta Sans', 'Inter', sans-serif;
+}
+
+[data-theme="dark"] body {
+  background-color: var(--em-bg);
+  color: var(--em-text);
+}
+
+[data-theme="light"] body {
+  background-color: var(--em-bg-light);
+  color: var(--em-text-dark);
+}
+
+.glass-card {
+  background: var(--em-card);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--em-border);
+  border-radius: var(--em-radius);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+}
+
+[data-theme="light"] .glass-card {
+  background: rgba(255, 255, 255, 0.82);
+  border-color: rgba(0, 0, 0, 0.06);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+}
+
+.glass-header {
+  background: rgba(15, 15, 26, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--em-border);
+}
+
+[data-theme="light"] .glass-header {
+  background: rgba(250, 249, 247, 0.8);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.eyebrow {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.32em;
+  font-weight: 600;
+  color: var(--em-gold);
+}
+
+[data-theme="light"] .eyebrow {
+  color: var(--em-gold-2);
+}
+
+.educmark-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(212, 165, 116, 0.12), transparent 60%),
+    radial-gradient(circle at 120% 20%, rgba(128, 128, 255, 0.08), transparent 45%),
+    radial-gradient(circle at -10% 80%, rgba(212, 165, 116, 0.06), transparent 40%);
+}
+
+[data-theme="light"] .educmark-bg {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(176, 138, 95, 0.08), transparent 60%),
+    radial-gradient(circle at 120% 20%, rgba(107, 92, 231, 0.06), transparent 45%),
+    radial-gradient(circle at -10% 80%, rgba(176, 138, 95, 0.04), transparent 40%);
+}
+
+.educmark-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--em-gold), var(--em-lilac));
+  z-index: 9999;
+  transition: width 0.3s ease;
+}
+
+.em-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(212, 165, 116, 0.5);
+  background: rgba(212, 165, 116, 0.15);
+  color: var(--em-text);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+}
+
+.em-btn-primary:hover {
+  background: rgba(212, 165, 116, 0.25);
+  border-color: rgba(212, 165, 116, 0.7);
+}
+
+[data-theme="light"] .em-btn-primary {
+  color: var(--em-text-dark);
+  background: rgba(176, 138, 95, 0.12);
+  border-color: rgba(176, 138, 95, 0.4);
+}
+
+[data-theme="light"] .em-btn-primary:hover {
+  background: rgba(176, 138, 95, 0.2);
+}
+
+.em-input {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--em-border);
+  border-radius: var(--em-radius-xs);
+  color: var(--em-text);
+  padding: 10px 16px;
+  font-size: 13px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.em-input:focus {
+  border-color: var(--em-gold);
+  box-shadow: 0 0 0 3px rgba(212, 165, 116, 0.15);
+}
+
+[data-theme="light"] .em-input {
+  background: rgba(0, 0, 0, 0.03);
+  color: var(--em-text-dark);
+}
+
+[data-theme="light"] .em-input:focus {
+  box-shadow: 0 0 0 3px rgba(176, 138, 95, 0.12);
+}
+
+/* Preview del editor de landing: mostrar elementos animados siempre */
+.landing-preview-inner .scroll-animate {
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+/* ── DASHBOARD LAYOUT RESPONSIVE ── */
+.dashboard-sidebar {
+  position: sticky;
+  width: 70px;
+  box-shadow: none;
+}
+
+.dashboard-sidebar.dashboard-sidebar-open {
+  width: 280px;
+}
+
+.dashboard-menu-btn {
+  display: none;
+}
+
+.dashboard-sidebar-backdrop {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .dashboard-sidebar {
+    position: fixed;
+    width: 280px;
+    transform: translateX(-100%);
+    border-right: none;
+    box-shadow: none;
+  }
+
+  .dashboard-sidebar.dashboard-sidebar-open {
+    transform: translateX(0);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.3);
+  }
+
+  .dashboard-sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9;
+  }
+
+  .dashboard-menu-btn {
+    display: flex;
+  }
+
+  /* Header */
+  .glass-header {
+    padding: 12px 16px !important;
+  }
+
+  .glass-header h1 {
+    font-size: 18px !important;
+  }
+
+  .glass-header > p,
+  .glass-header p {
+    display: none;
+  }
+
+  /* Main */
+  .dashboard-main,
+  main:has(.dashboard-overview),
+  main:has(.leads-view),
+  main:has(.bulk-email),
+  main:has(.bulk-whatsapp),
+  main:has(.import-data),
+  main:has(.user-manager),
+  main:has(.settings-form),
+  main:has(.landing-editor),
+  main:has(.landing-manager) {
+    padding: 16px !important;
+  }
+
+  /* KPIs */
+  .kpi-grid,
+  .dashboard-kpi-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Tablas */
+  .dashboard-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  /* Cards */
+  .dashboard-card {
+    padding: 16px !important;
+  }
 }

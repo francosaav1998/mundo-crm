@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function UserManager({ T, isMobile, showToast }) {
   const [users, setUsers] = useState([]);
@@ -8,7 +8,31 @@ export default function UserManager({ T, isMobile, showToast }) {
   const [newUsername, setNewUsername] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [newUserRole, setNewUserRole] = useState("user");
+  const [newUserCompany, setNewUserCompany] = useState("");
+  const [companies, setCompanies] = useState([]);
+  const [companiesLoading, setCompaniesLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadCompanies() {
+      setCompaniesLoading(true);
+      try {
+        const res = await fetch("/api/companies");
+        if (res.ok && !cancelled) {
+          const data = await res.json();
+          setCompanies(data);
+          setNewUserCompany((prev) => (data.length > 0 && !prev ? data[0].slug : prev));
+        }
+      } catch (err) {
+        console.error("Error cargando compañías:", err);
+      } finally {
+        if (!cancelled) setCompaniesLoading(false);
+      }
+    }
+    loadCompanies();
+    return () => { cancelled = true; };
+  }, []);
 
   const loadUsers = async () => {
     setUsersLoading(true);
@@ -33,7 +57,12 @@ export default function UserManager({ T, isMobile, showToast }) {
       const res = await fetch("/api/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: newUsername, password: newPassword, role: newUserRole }),
+        body: JSON.stringify({
+          username: newUsername,
+          password: newPassword,
+          role: newUserRole,
+          companySlug: newUserCompany,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Error creando usuario");
@@ -41,6 +70,7 @@ export default function UserManager({ T, isMobile, showToast }) {
       setNewUsername("");
       setNewPassword("");
       setNewUserRole("user");
+      setNewUserCompany(companies[0]?.slug || "");
       const successText = "Usuario creado correctamente";
       setMessage({ type: "success", text: successText });
       showToast?.(successText);
@@ -55,7 +85,8 @@ export default function UserManager({ T, isMobile, showToast }) {
     border: `1px solid ${T.border}`,
     borderRadius: "24px",
     padding: isMobile ? "20px" : "30px",
-    boxShadow: "0 20px 50px rgba(0, 0, 0, 0.3)",
+    boxShadow: "0 20px 50px rgba(0, 0, 0, 0.2)",
+    backdropFilter: "blur(20px)",
   };
 
   const titleStyle = {
@@ -150,6 +181,31 @@ export default function UserManager({ T, isMobile, showToast }) {
             </select>
           </div>
 
+          <div>
+            <label style={labelStyle}>Compañía</label>
+            <select
+              value={newUserCompany}
+              onChange={(e) => setNewUserCompany(e.target.value)}
+              disabled={companiesLoading}
+              style={inputStyle}
+            >
+              {companiesLoading ? (
+                <option value="">Cargando compañías...</option>
+              ) : companies.length === 0 ? (
+                <option value="">No hay compañías disponibles</option>
+              ) : (
+                companies.map((c) => (
+                  <option key={c.slug} value={c.slug}>
+                    {c.name}
+                  </option>
+                ))
+              )}
+            </select>
+            <span style={{ fontSize: "11px", color: T.muted, marginTop: 6, display: "block" }}>
+              Determina qué planes y branding verá este vendedor en su landing.
+            </span>
+          </div>
+
           <button
             type="submit"
             style={{
@@ -157,7 +213,7 @@ export default function UserManager({ T, isMobile, showToast }) {
               borderRadius: "12px",
               border: "none",
               background: T.accent,
-              color: T.bg,
+              color: "#FFFFFF",
               fontWeight: 800,
               fontSize: "14px",
               cursor: "pointer",
@@ -184,7 +240,7 @@ export default function UserManager({ T, isMobile, showToast }) {
               borderRadius: "12px",
               border: "none",
               background: T.accent,
-              color: T.bg,
+              color: "#FFFFFF",
               fontWeight: 800,
               fontSize: "14px",
               cursor: "pointer",
@@ -219,6 +275,7 @@ export default function UserManager({ T, isMobile, showToast }) {
                   <div style={{ fontWeight: 700, color: T.text, fontSize: "14px" }}>{u.email}</div>
                   <div style={{ fontSize: "12px", color: T.muted }}>
                     Rol: <span style={{ textTransform: "capitalize" }}>{u.role}</span>
+                    {u.company ? ` · Compañía: ${u.company}` : " · Sin compañía"}
                   </div>
                 </div>
                 <span style={{

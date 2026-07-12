@@ -1,7 +1,13 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { renderTemplate } from "@/lib/dashboard/utils";
 import { STATUSES } from "@/lib/dashboard/constants";
+import {
+  getGmailComposeUrl,
+  getOutlookComposeUrl,
+  getMailtoUrl,
+  openLink,
+} from "@/lib/messaging";
 
 const VARS = [
   { tag: "{{nombre}}", label: "Nombre" },
@@ -13,31 +19,80 @@ const VARS = [
   { tag: "{{estado}}", label: "Estado" },
 ];
 
-const TEMPLATES = {
-  default: {
+const DEFAULT_TEMPLATES = [
+  {
+    id: "primera-respuesta",
+    name: "Primera respuesta",
     subject: "Mundo · Información sobre {{plan}}",
-    body: "Hola {{nombre}},\n\nGracias por tu interés en Mundo. Te escribo para ayudarte con la factibilidad del plan {{plan}} en {{ciudad}}.\n\n¿Nos coordinamos para avanzar?\n\nSaludos,\nTu ejecutivo/a Mundo",
+    body: "Hola {{nombre}},\n\nGracias por tu interés en Mundo. Te escribo para ayudarte con la factibilidad del plan {{plan}} en {{ciudad}}.\n\n¿Nos coordinamos para avanzar?\n\nSaludos,",
   },
-  promo: {
-    subject: "🔥 Oferta especial en {{plan}}",
-    body: "Hola {{nombre}},\n\nTenemos una promoción especial esta semana para el plan {{plan}}.\n\nRespóndeme y revisamos factibilidad en tu sector ({{ciudad}}).\n\n¡Saludos!\nTu ejecutivo/a Mundo",
-  },
-  followup: {
+  {
+    id: "seguimiento",
+    name: "Seguimiento",
     subject: "Mundo · Seguimiento de tu consulta",
-    body: "Hola {{nombre}},\n\nTe escribo para dar seguimiento a tu consulta sobre el plan {{plan}} en {{ciudad}}.\n\n¿Tienes alguna duda? Estoy para ayudarte.\n\nSaludos,\nTu ejecutivo/a Mundo",
+    body: "Hola {{nombre}},\n\nTe escribo para dar seguimiento a tu consulta sobre el plan {{plan}} en {{ciudad}}.\n\n¿Tienes alguna duda? Estoy para ayudarte.\n\nSaludos,",
   },
-};
+  {
+    id: "cierre",
+    name: "Cierre",
+    subject: "Mundo · Confirmemos tu solicitud",
+    body: "Hola {{nombre}},\n\nYa casi estamos. ¿Confirmamos tu solicitud del plan {{plan}} para {{ciudad}}?\n\nSolo necesito tu dirección exacta y coordinamos la instalación.\n\nSaludos,",
+  },
+];
+
+const STORAGE_KEY = "mundo-email-templates";
+
+function getInitialEmailState() {
+  if (typeof window === "undefined") {
+    return {
+      templates: DEFAULT_TEMPLATES,
+      selectedTemplateId: DEFAULT_TEMPLATES[0].id,
+      subject: DEFAULT_TEMPLATES[0].subject,
+      body: DEFAULT_TEMPLATES[0].body,
+    };
+  }
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return {
+          templates: parsed,
+          selectedTemplateId: parsed[0].id,
+          subject: parsed[0].subject,
+          body: parsed[0].body,
+        };
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return {
+    templates: DEFAULT_TEMPLATES,
+    selectedTemplateId: DEFAULT_TEMPLATES[0].id,
+    subject: DEFAULT_TEMPLATES[0].subject,
+    body: DEFAULT_TEMPLATES[0].body,
+  };
+}
 
 export default function BulkEmail({ leads, T, isMobile, sellerName, showToast }) {
-  const [template, setTemplate] = useState("default");
-  const [subject, setSubject] = useState(TEMPLATES.default.subject);
-  const [body, setBody] = useState(TEMPLATES.default.body);
+  const initial = getInitialEmailState();
+  const [templates, setTemplates] = useState(initial.templates);
+  const [selectedTemplateId, setSelectedTemplateId] = useState(initial.selectedTemplateId);
+  const [subject, setSubject] = useState(initial.subject);
+  const [body, setBody] = useState(initial.body);
   const [selectedIds, setSelectedIds] = useState([]);
   const [statusFilter, setStatusFilter] = useState("Todos");
   const [cityFilter, setCityFilter] = useState("Todas");
   const [search, setSearch] = useState("");
   const [sending, setSending] = useState(false);
-  const [useSmtp, setUseSmtp] = useState(false);
+  const [sentIds, setSentIds] = useState([]);
+  const [newTemplateName, setNewTemplateName] = useState("");
+  const [showAddTemplate, setShowAddTemplate] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(templates));
+  }, [templates]);
 
   const cities = useMemo(
     () => Array.from(new Set(leads.map((l) => l.city).filter(Boolean))).sort(),
@@ -65,10 +120,43 @@ export default function BulkEmail({ leads, T, isMobile, sellerName, showToast })
     [leads, selectedIds]
   );
 
-  const applyTemplate = (key) => {
-    setTemplate(key);
-    setSubject(TEMPLATES[key].subject);
-    setBody(TEMPLATES[key].body);
+  const selectedTemplate = templates.find((t) => t.id === selectedTemplateId) || templates[0];
+
+  const handleSelectTemplate = (id) => {
+    const tpl = templates.find((t) => t.id === id);
+    if (!tpl) return;
+    setSelectedTemplateId(id);
+    setSubject(tpl.subject);
+    setBody(tpl.body);
+  };
+
+  const saveCurrentAsTemplate = () => {
+    const name = (newTemplateName || "Plantilla personalizada").trim();
+    const id = `custom-${Date.now()}`;
+    const newTemplates = [...templates, { id, name, subject, body }];
+    setTemplates(newTemplates);
+    setSelectedTemplateId(id);
+    setNewTemplateName("");
+    setShowAddTemplate(false);
+    showToast(`Plantilla "${name}" guardada`);
+  };
+
+  const updateSelectedTemplate = () => {
+    setTemplates((prev) => prev.map((t) => (t.id === selectedTemplateId ? { ...t, subject, body } : t)));
+    showToast("Plantilla actualizada");
+  };
+
+  const deleteTemplate = (id) => {
+    const tpl = templates.find((t) => t.id === id);
+    if (!tpl) return;
+    if (!confirm(`¿Eliminar la plantilla "${tpl.name}"?`)) return;
+    const remaining = templates.filter((t) => t.id !== id);
+    setTemplates(remaining);
+    const next = remaining[0];
+    setSelectedTemplateId(next?.id || "");
+    setSubject(next?.subject || "");
+    setBody(next?.body || "");
+    showToast("Plantilla eliminada");
   };
 
   const toggleId = (id) =>
@@ -85,50 +173,67 @@ export default function BulkEmail({ leads, T, isMobile, sellerName, showToast })
     showToast("Lista de correos copiada");
   };
 
-  const send = async () => {
-    if (selectedLeads.length === 0) return;
+  const markSent = (id) => {
+    setSentIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
+  };
 
-    if (useSmtp) {
-      if (!confirm(`Vas a enviar ${selectedLeads.length} correos reales por SMTP. ¿Continuar?`)) return;
-      setSending(true);
-      let ok = 0;
-      let fail = 0;
-      for (const lead of selectedLeads) {
-        const subj = renderTemplate(subject, lead);
-        const txt = renderTemplate(body, lead) + `\n\n— ${sellerName}`;
-        try {
-          const res = await fetch("/api/email/send", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              to: lead.email,
-              subject: subj,
-              body: txt,
-              fromName: sellerName,
-            }),
-          });
-          if (res.ok) ok++;
-          else fail++;
-        } catch {
+  const getRendered = (lead) => ({
+    subject: renderTemplate(subject, lead),
+    body: renderTemplate(body, lead) + `\n\n— ${sellerName || "Tu ejecutivo/a Mundo"}`,
+  });
+
+  const openGmail = (lead) => {
+    const { subject: subj, body: txt } = getRendered(lead);
+    openLink(getGmailComposeUrl(lead.email, subj, txt));
+    markSent(lead.id);
+    showToast(`Gmail abierto para ${lead.name}`);
+  };
+
+  const openOutlook = (lead) => {
+    const { subject: subj, body: txt } = getRendered(lead);
+    openLink(getOutlookComposeUrl(lead.email, subj, txt));
+    markSent(lead.id);
+    showToast(`Outlook abierto para ${lead.name}`);
+  };
+
+  const openMailto = (lead) => {
+    const { subject: subj, body: txt } = getRendered(lead);
+    openLink(getMailtoUrl(lead.email, subj, txt));
+    markSent(lead.id);
+    showToast(`Cliente de correo abierto para ${lead.name}`);
+  };
+
+  const sendSmtpBulk = async () => {
+    if (selectedLeads.length === 0) return;
+    if (!confirm(`Vas a enviar ${selectedLeads.length} correos reales por SMTP. ¿Continuar?`)) return;
+    setSending(true);
+    let ok = 0;
+    let fail = 0;
+    for (const lead of selectedLeads) {
+      const { subject: subj, body: txt } = getRendered(lead);
+      try {
+        const res = await fetch("/api/email/send", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            to: lead.email,
+            subject: subj,
+            body: txt,
+            fromName: sellerName || "Tu ejecutivo/a Mundo",
+          }),
+        });
+        if (res.ok) {
+          ok++;
+          markSent(lead.id);
+        } else {
           fail++;
         }
+      } catch {
+        fail++;
       }
-      setSending(false);
-      showToast(`${ok} correos enviados${fail ? `, ${fail} fallidos` : ""}`);
-      return;
     }
-
-    if (!confirm(`Vas a abrir ${selectedLeads.length} correos en tu cliente. ¿Continuar?`)) return;
-    for (const lead of selectedLeads) {
-      const subj = renderTemplate(subject, lead);
-      const txt = renderTemplate(body, lead) + `\n\n— ${sellerName}`;
-      window.open(
-        `mailto:${lead.email}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(txt)}`,
-        "_blank"
-      );
-      await new Promise((r) => setTimeout(r, 400));
-    }
-    showToast(`${selectedLeads.length} correos preparados`);
+    setSending(false);
+    showToast(`${ok} correos enviados${fail ? `, ${fail} fallidos` : ""}`);
   };
 
   const cardStyle = {
@@ -136,7 +241,8 @@ export default function BulkEmail({ leads, T, isMobile, sellerName, showToast })
     border: `1px solid ${T.border}`,
     borderRadius: "24px",
     padding: isMobile ? "20px" : "30px",
-    boxShadow: "0 20px 50px rgba(0, 0, 0, 0.3)",
+    boxShadow: "0 20px 50px rgba(0, 0, 0, 0.2)",
+    backdropFilter: "blur(20px)",
   };
 
   const labelStyle = {
@@ -183,36 +289,61 @@ export default function BulkEmail({ leads, T, isMobile, sellerName, showToast })
     ...btnBase,
     border: `1px solid ${active ? color : T.border}`,
     background: active ? color : "transparent",
-    color: active ? T.bg : T.muted,
+    color: active ? "#FFFFFF" : T.muted,
+  });
+
+  const emailClientBtn = (color) => ({
+    ...btnBase,
+    border: "none",
+    background: color,
+    color: "#fff",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 6,
   });
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 360px", gap: isMobile ? 16 : 24 }}>
+    <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 420px", gap: isMobile ? 16 : 24 }}>
       <div style={cardStyle}>
-        <h2 style={{ fontSize: "20px", fontWeight: 800, color: T.accent, marginBottom: 6 }}>
-          <i className="bi bi-envelope-fill" style={{ marginRight: 8 }} /> Mensajes por Correo
-        </h2>
         <p style={{ fontSize: "13px", color: T.muted, marginBottom: 24 }}>
-          Selecciona leads con email y envía mensajes personalizados por SMTP o tu cliente de correo.
+          Selecciona leads con email y abre un correo personalizado uno a uno en Gmail, Outlook o tu cliente de correo.
         </p>
 
         <div style={{ marginBottom: 20 }}>
           <label style={labelStyle}>Plantilla</label>
-          <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
-            {[
-              { key: "default", label: "Estándar" },
-              { key: "promo", label: "Promo" },
-              { key: "followup", label: "Seguimiento" },
-            ].map((t) => (
-              <button
-                key={t.key}
-                onClick={() => applyTemplate(t.key)}
-                style={btnActive(template === t.key)}
-              >
-                {t.label}
+          <div style={{ display: "flex", gap: 8, marginTop: 8, marginBottom: 10, flexWrap: "wrap" }}>
+            <select value={selectedTemplateId} onChange={(e) => handleSelectTemplate(e.target.value)} style={{ ...inputStyle, flex: 1, minWidth: 180, marginTop: 0 }}>
+              {templates.map((t) => (
+                <option key={t.id} value={t.id}>{t.name}</option>
+              ))}
+            </select>
+            <button onClick={updateSelectedTemplate} style={btnActive(false, T.accent)} title="Guardar cambios en esta plantilla">
+              <i className="bi bi-save" style={{ marginRight: 4 }}></i> Guardar
+            </button>
+            {templates.length > 1 && (
+              <button onClick={() => deleteTemplate(selectedTemplateId)} style={btnActive(false)} title="Eliminar plantilla">
+                <i className="bi bi-trash"></i>
               </button>
-            ))}
+            )}
           </div>
+
+          {showAddTemplate ? (
+            <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+              <input
+                type="text"
+                placeholder="Nombre de la nueva plantilla"
+                value={newTemplateName}
+                onChange={(e) => setNewTemplateName(e.target.value)}
+                style={{ ...inputStyle, flex: 1, marginTop: 0 }}
+              />
+              <button onClick={saveCurrentAsTemplate} style={btnActive(false, T.accent)}>Crear</button>
+              <button onClick={() => setShowAddTemplate(false)} style={btnActive(false)}>Cancelar</button>
+            </div>
+          ) : (
+            <button onClick={() => setShowAddTemplate(true)} style={{ ...btnActive(false), marginBottom: 12 }}>
+              <i className="bi bi-plus-lg" style={{ marginRight: 4 }}></i> Guardar como nueva plantilla
+            </button>
+          )}
         </div>
 
         <div style={{ marginBottom: 16 }}>
@@ -256,48 +387,9 @@ export default function BulkEmail({ leads, T, isMobile, sellerName, showToast })
           </div>
         </div>
 
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            flexWrap: "wrap",
-            marginBottom: 14,
-            padding: "10px 12px",
-            borderRadius: "10px",
-            background: T.inputBg,
-            border: `1px solid ${T.border}`,
-          }}
-        >
-          <span style={{ fontSize: 12, fontWeight: 700, color: T.text }}>Modo envío:</span>
-          <button onClick={() => setUseSmtp(false)} style={btnActive(!useSmtp)}>
-            Mailto
-          </button>
-          <button onClick={() => setUseSmtp(true)} style={btnActive(useSmtp)}>
-            SMTP corporativo
-          </button>
-        </div>
-
-        {useSmtp && (
-          <div
-            style={{
-              marginBottom: 18,
-              padding: 16,
-              borderRadius: "12px",
-              background: T.inputBg,
-              border: `1px solid ${T.border}`,
-            }}
-          >
-            <p style={{ fontSize: 12, color: T.muted, lineHeight: 1.5 }}>
-              El SMTP se configura de forma segura en las variables de entorno del servidor.
-              Si no está configurado, el envío fallará y podrás usar el modo Mailto.
-            </p>
-          </div>
-        )}
-
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <button
-            onClick={send}
+            onClick={sendSmtpBulk}
             disabled={sending || selectedLeads.length === 0}
             style={{
               padding: "10px 20px",
@@ -305,16 +397,16 @@ export default function BulkEmail({ leads, T, isMobile, sellerName, showToast })
               border: "none",
               cursor: sending || selectedLeads.length === 0 ? "not-allowed" : "pointer",
               background: sending || selectedLeads.length === 0 ? "rgba(255,255,255,0.06)" : T.accent,
-              color: sending || selectedLeads.length === 0 ? T.muted : T.bg,
-              fontWeight: 800,
+              color: sending || selectedLeads.length === 0 ? T.muted : "#FFFFFF",
+              fontWeight: 700,
               fontSize: 13,
               display: "inline-flex",
               alignItems: "center",
               gap: 8,
-              boxShadow: sending || selectedLeads.length === 0 ? "none" : T.glowCyan,
+              boxShadow: sending || selectedLeads.length === 0 ? "none" : T.glowGold,
             }}
           >
-            <i className="bi bi-send-fill" /> {sending ? "Enviando..." : `Enviar a ${selectedLeads.length}`}
+            <i className="bi bi-send-fill" /> {sending ? "Enviando..." : `Enviar ${selectedLeads.length} por SMTP`}
           </button>
           <button
             onClick={copyList}
@@ -324,14 +416,22 @@ export default function BulkEmail({ leads, T, isMobile, sellerName, showToast })
               borderRadius: "10px",
               border: `1px solid ${T.border}`,
               background: "transparent",
-              color: T.text,
+              color: selectedLeads.length === 0 ? T.muted : T.text,
               fontWeight: 700,
               fontSize: 13,
               cursor: selectedLeads.length === 0 ? "not-allowed" : "pointer",
+              opacity: selectedLeads.length === 0 ? 0.5 : 1,
             }}
           >
             Copiar lista
           </button>
+        </div>
+
+        <div style={{ marginTop: 16, padding: "12px 16px", borderRadius: "12px", background: "rgba(253, 220, 2, 0.08)", border: `1px solid ${T.secondary}30`, display: "flex", alignItems: "flex-start", gap: 10 }}>
+          <i className="bi bi-info-circle-fill" style={{ color: T.secondary, fontSize: 16, marginTop: 2 }}></i>
+          <span style={{ fontSize: "12px", color: T.muted, lineHeight: 1.5 }}>
+            <strong style={{ color: T.text }}>Modo manual:</strong> seleccioná los leads y pinchá Gmail, Outlook o &quot;Mi cliente&quot; en cada fila. Se abre el correo con el asunto y cuerpo ya cargados. El envío real lo confirmás vos en cada cliente.
+          </span>
         </div>
       </div>
 
@@ -354,16 +454,16 @@ export default function BulkEmail({ leads, T, isMobile, sellerName, showToast })
         <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 14 }}>
           <input
             type="text"
-            placeholder="Buscar..."
+            placeholder="Buscar nombre / email / ciudad / plan..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            style={inputStyle}
+            style={{ ...inputStyle, marginTop: 0 }}
           />
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              style={{ flex: 1, minWidth: 100, ...inputStyle, padding: "7px 10px" }}
+              style={{ flex: 1, minWidth: 100, ...inputStyle, padding: "7px 10px", marginTop: 0 }}
             >
               <option value="Todos">Todos los estados</option>
               {STATUSES.map((s) => (
@@ -375,7 +475,7 @@ export default function BulkEmail({ leads, T, isMobile, sellerName, showToast })
             <select
               value={cityFilter}
               onChange={(e) => setCityFilter(e.target.value)}
-              style={{ flex: 1, minWidth: 100, ...inputStyle, padding: "7px 10px" }}
+              style={{ flex: 1, minWidth: 100, ...inputStyle, padding: "7px 10px", marginTop: 0 }}
             >
               <option value="Todas">Todas las ciudades</option>
               {cities.map((c) => (
@@ -395,7 +495,7 @@ export default function BulkEmail({ leads, T, isMobile, sellerName, showToast })
           </div>
         </div>
 
-        <div style={{ maxHeight: 450, overflowY: "auto", border: `1px solid ${T.border}`, borderRadius: "12px" }}>
+        <div style={{ maxHeight: 520, overflowY: "auto", border: `1px solid ${T.border}`, borderRadius: "12px" }}>
           {filteredLeads.length === 0 ? (
             <div style={{ padding: "30px 0", textAlign: "center", color: T.muted }}>
               <i className="bi bi-inbox" style={{ fontSize: 28, opacity: 0.5 }} />
@@ -404,6 +504,7 @@ export default function BulkEmail({ leads, T, isMobile, sellerName, showToast })
           ) : (
             filteredLeads.map((lead) => {
               const checked = selectedIds.includes(lead.id);
+              const sent = sentIds.includes(lead.id);
               return (
                 <div
                   key={lead.id}
@@ -416,13 +517,14 @@ export default function BulkEmail({ leads, T, isMobile, sellerName, showToast })
                     borderBottom: `1px solid ${T.border}`,
                     background: checked ? `${T.accent}10` : "transparent",
                     cursor: "pointer",
+                    flexWrap: "wrap",
                   }}
                 >
                   <input
                     type="checkbox"
                     checked={checked}
                     readOnly
-                    style={{ accentColor: T.accent, width: 16, height: 16 }}
+                    style={{ accentColor: T.accent, width: 16, height: 16, flexShrink: 0 }}
                   />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 13, fontWeight: 700, color: T.text }}>{lead.name}</div>
@@ -437,8 +539,26 @@ export default function BulkEmail({ leads, T, isMobile, sellerName, showToast })
                     >
                       {lead.email}
                     </div>
+                    <div style={{ fontSize: 10, color: T.muted, marginTop: 2 }}>{lead.city} · {lead.plan}</div>
                   </div>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: T.muted }}>{lead.city}</span>
+                  {checked && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }} onClick={(e) => e.stopPropagation()}>
+                      {sent && (
+                        <span title="Abierto" style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 800, color: "#25D366" }}>
+                          <i className="bi bi-check-circle-fill"></i>
+                        </span>
+                      )}
+                      <button onClick={() => openGmail(lead)} style={emailClientBtn("#EA4335")} title="Abrir en Gmail">
+                        <i className="bi bi-google"></i> Gmail
+                      </button>
+                      <button onClick={() => openOutlook(lead)} style={emailClientBtn("#0078D4")} title="Abrir en Outlook">
+                        <i className="bi bi-microsoft"></i> Outlook
+                      </button>
+                      <button onClick={() => openMailto(lead)} style={emailClientBtn("#6B7280")} title="Abrir en mi cliente">
+                        <i className="bi bi-envelope"></i> Mi cliente
+                      </button>
+                    </div>
+                  )}
                 </div>
               );
             })

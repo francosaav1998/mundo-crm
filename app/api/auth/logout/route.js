@@ -30,5 +30,6 @@ export async function POST() {
   });
 
   await supabase.auth.signOut();
+  res.cookies.set("mundo-local-auth", "", { path: "/", maxAge: 0 });
   return res;
 }

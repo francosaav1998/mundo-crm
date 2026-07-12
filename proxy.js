@@ -5,6 +5,11 @@ export async function proxy(request) {
   const { response, user } = await updateSession(request);
   const { pathname } = request.nextUrl;
 
+  // Modo demo: permite navegar el dashboard sin autenticación (solo local)
+  if (process.env.DEMO_MODE === "true") {
+    return response;
+  }
+
   // Redirect authenticated users away from login page
   if (pathname === "/dashboard/login" && user) {
     return NextResponse.redirect(new URL("/dashboard", request.url));

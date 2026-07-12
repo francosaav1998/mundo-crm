@@ -19,6 +19,34 @@ const nextConfig = {
         protocol: "https",
         hostname: "api.qrserver.com",
       },
+      {
+        protocol: "https",
+        hostname: "ww2.movistar.cl",
+      },
+      {
+        protocol: "https",
+        hostname: "www.clarochile.cl",
+      },
+      {
+        protocol: "https",
+        hostname: "vtr.com",
+      },
+      {
+        protocol: "https",
+        hostname: "www.vtr.com",
+      },
+      {
+        protocol: "https",
+        hostname: "images.ctfassets.net",
+      },
+      {
+        protocol: "https",
+        hostname: "entel.cdn.modyo.com",
+      },
+      {
+        protocol: "https",
+        hostname: "store.wom.cl",
+      },
     ],
   },
   async headers() {

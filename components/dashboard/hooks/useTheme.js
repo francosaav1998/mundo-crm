@@ -1,26 +1,45 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore, useCallback } from "react";
+
+function getInitialTheme(storageKey) {
+  if (typeof window === "undefined") return "dark";
+  return localStorage.getItem(storageKey) || "dark";
+}
+
+function subscribe(storageKey, callback) {
+  const handler = (e) => {
+    if (e.key === storageKey) callback();
+  };
+  window.addEventListener("storage", handler);
+  return () => window.removeEventListener("storage", handler);
+}
+
+function getSnapshot(storageKey) {
+  if (typeof window === "undefined") return "dark";
+  return localStorage.getItem(storageKey) || "dark";
+}
+
+function getServerSnapshot() {
+  return "dark";
+}
 
 export function useTheme(storageKey = "theme") {
-  const [theme, setThemeState] = useState(() => {
-    if (typeof window === "undefined") return "light";
-    return localStorage.getItem(storageKey) || "light";
-  });
+  const theme = useSyncExternalStore(
+    (cb) => subscribe(storageKey, cb),
+    () => getSnapshot(storageKey),
+    getServerSnapshot
+  );
 
-  useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-  }, [theme]);
-
-  const setTheme = (t) => {
-    setThemeState(t);
+  const setTheme = useCallback((t) => {
     if (typeof window !== "undefined") {
       localStorage.setItem(storageKey, t);
     }
     document.documentElement.setAttribute("data-theme", t);
-  };
+    window.dispatchEvent(new StorageEvent("storage", { key: storageKey, newValue: t }));
+  }, [storageKey]);
 
-  const toggle = () => setTheme(theme === "dark" ? "light" : "dark");
+  const toggle = useCallback(() => setTheme(theme === "dark" ? "light" : "dark"), [theme, setTheme]);
 
   return { theme, setTheme, toggle };
 }

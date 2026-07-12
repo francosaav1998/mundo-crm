@@ -23,7 +23,11 @@ export default async function DashboardPage() {
   let sellerWhere = {};
 
   if (!admin) {
-    seller = await findOrCreateSellerForUser(session.user);
+    const sellerRecord = await findOrCreateSellerForUser(session.user);
+    seller = await prisma.seller.findUnique({
+      where: { id: sellerRecord.id },
+      include: { company: true },
+    });
     sellerWhere = { sellerId: seller.id };
   }
 
@@ -45,10 +49,17 @@ export default async function DashboardPage() {
       isAdmin={admin}
       sellerSlug={seller?.slug || null}
       sellerInfo={seller ? {
+        id: seller.id,
+        slug: seller.slug,
         photo: seller.photo,
         bio: seller.bio,
         phone: seller.phone,
         name: seller.name,
+        gender: seller.gender,
+        landingTheme: seller.landingTheme,
+        footerText: seller.footerText,
+        bgVideoUrl: seller.bgVideoUrl,
+        company: seller.company,
       } : null}
     />
   );

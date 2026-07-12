@@ -47,20 +47,15 @@ function sellerToSettings(seller) {
     whatsappNumber: normalizeWhatsAppNumber(seller.phone || ""),
     metaPixelId: seller.metaPixelId || DEFAULT_SETTINGS.metaPixelId,
     bgVideoUrl: seller.bgVideoUrl || DEFAULT_SETTINGS.bgVideoUrl,
+    sellerMsg: seller.defaultMessage || DEFAULT_SETTINGS.sellerMsg,
   };
 }
 
 function settingsToSellerPayload(settings) {
+  // Los datos de perfil (nombre, foto, bio, etc.) se editan desde el Editor de Landing.
+  // Desde Configuración el vendedor solo edita su mensaje inicial por defecto.
   return {
-    name: settings.sellerName,
-    phone: normalizeWhatsAppNumber(settings.sellerPhone),
-    photo: settings.sellerPhoto ? settings.sellerPhoto.trim() : "",
-    bio: settings.sellerBio,
-    gender: settings.sellerGender || "",
-    landingTheme: settings.landingTheme,
-    footerText: settings.footerText,
-    metaPixelId: settings.metaPixelId ? settings.metaPixelId.trim() : "",
-    bgVideoUrl: settings.bgVideoUrl ? settings.bgVideoUrl.trim() : "",
+    defaultMessage: settings.sellerMsg,
   };
 }
 
@@ -104,6 +99,7 @@ export function useSettings({ isAdmin = false } = {}) {
       metaPixelId: localStorage.getItem("meta_pixel_id") || DEFAULT_SETTINGS.metaPixelId,
       bgVideoUrl: localStorage.getItem("bg_video_url") || DEFAULT_SETTINGS.bgVideoUrl,
       emailUseSmtp: localStorage.getItem("crm_email_use_smtp") === "1",
+      defaultMessage: localStorage.getItem("seller_msg") || DEFAULT_SETTINGS.sellerMsg,
     };
   }, []);
 
@@ -126,6 +122,7 @@ export function useSettings({ isAdmin = false } = {}) {
             metaPixelId: data.meta_pixel_id !== undefined ? data.meta_pixel_id : DEFAULT_SETTINGS.metaPixelId,
             bgVideoUrl: data.bg_video_url !== undefined ? data.bg_video_url : DEFAULT_SETTINGS.bgVideoUrl,
             emailUseSmtp: data.crm_email_use_smtp === "1" || data.crm_email_use_smtp === true,
+            defaultMessage: data.seller_msg || DEFAULT_SETTINGS.sellerMsg,
           });
         } else {
           const res = await fetch("/api/me/seller");
@@ -136,7 +133,6 @@ export function useSettings({ isAdmin = false } = {}) {
             ...DEFAULT_SETTINGS,
             ...local,
             ...sellerToSettings(seller),
-            sellerMsg: local.sellerMsg,
           });
         }
       } catch {
@@ -172,15 +168,16 @@ export function useSettings({ isAdmin = false } = {}) {
           body: JSON.stringify(settingsToGlobalPayload(settingsToSave)),
         });
         if (!res.ok) throw new Error("Error al guardar en el servidor");
+        showToast("Configuración guardada exitosamente");
       } else {
         const res = await fetch("/api/me/seller", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(settingsToSellerPayload(settingsToSave)),
         });
-        if (!res.ok) throw new Error("Error al guardar perfil");
+        if (!res.ok) throw new Error("Error al guardar mensaje por defecto");
+        showToast("Mensaje por defecto guardado");
       }
-      showToast("Configuración guardada exitosamente");
       return true;
     } catch (error) {
       showToast(error.message || "Error al guardar");

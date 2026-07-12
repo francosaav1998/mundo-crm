@@ -18,6 +18,10 @@ function sanitizeRole(input) {
   return VALID_ROLES.has(role) ? role : "user";
 }
 
+function sanitizeCompanySlug(input) {
+  return String(input || "").trim().toLowerCase().slice(0, 60);
+}
+
 async function checkUsersRateLimit(request) {
   const limit = await rateLimit({
     windowMs: 60 * 1000,
@@ -55,6 +59,7 @@ export async function GET(request) {
       id: u.id,
       email: u.email,
       role: u.user_metadata?.role || "user",
+      company: u.user_metadata?.company || null,
       createdAt: u.created_at,
       lastSignInAt: u.last_sign_in_at,
     }));
@@ -75,7 +80,7 @@ export async function POST(request) {
     await requireAdmin();
 
     const body = await request.json();
-    const { email, username, password, role = "user" } = body;
+    const { email, username, password, role = "user", companySlug } = body;
 
     // Support both email and username for backwards compatibility
     const userEmail =
@@ -94,7 +99,13 @@ export async function POST(request) {
     }
 
     const sanitizedRole = sanitizeRole(role);
+    const sanitizedCompanySlug = sanitizeCompanySlug(companySlug);
     const supabase = createServiceClient();
+
+    const userMetadata = { role: sanitizedRole };
+    if (sanitizedCompanySlug) {
+      userMetadata.company = sanitizedCompanySlug;
+    }
 
     if (password) {
       // Create user with password directly
@@ -109,7 +120,7 @@ export async function POST(request) {
         email: userEmail,
         password,
         email_confirm: true,
-        user_metadata: { role: sanitizedRole },
+        user_metadata: userMetadata,
       });
 
       if (error) {
@@ -120,6 +131,7 @@ export async function POST(request) {
         id: data.user.id,
         email: data.user.email,
         role: sanitizedRole,
+        company: sanitizedCompanySlug || null,
         invited: false,
       });
     }
@@ -128,7 +140,7 @@ export async function POST(request) {
     const { data, error } = await supabase.auth.admin.inviteUserByEmail(
       userEmail,
       {
-        data: { role: sanitizedRole },
+        data: userMetadata,
       }
     );
 
@@ -140,6 +152,7 @@ export async function POST(request) {
       id: data.user.id,
       email: data.user.email,
       role: sanitizedRole,
+      company: sanitizedCompanySlug || null,
       invited: true,
     });
   } catch (error) {

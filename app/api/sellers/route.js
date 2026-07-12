@@ -23,7 +23,11 @@ export async function GET(request) {
     if (slug) {
       const seller = await prisma.seller.findUnique({
         where: { slug },
-        include: { _count: { select: { leads: true } } },
+        include: {
+          company: true,
+          planOverrides: { include: { plan: true } },
+          _count: { select: { leads: true } },
+        },
       });
       if (!seller) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
       return NextResponse.json(seller);
@@ -32,7 +36,10 @@ export async function GET(request) {
     await requireAdminFromSession();
     const sellers = await prisma.seller.findMany({
       orderBy: { createdAt: "desc" },
-      include: { _count: { select: { leads: true } } },
+      include: {
+        company: true,
+        _count: { select: { leads: true } },
+      },
     });
     return NextResponse.json(sellers);
   } catch (error) {
@@ -56,7 +63,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { name, email, phone, photo, bio, gender, bgVideoUrl, footerText, metaPixelId, landingTheme } = body;
+    const { name, email, phone, photo, bio, gender, bgVideoUrl, footerText, metaPixelId, landingTheme, companyId, companySlug } = body;
 
     if (!name) return NextResponse.json({ error: "El nombre es obligatorio" }, { status: 400 });
 
@@ -68,6 +75,16 @@ export async function POST(request) {
     }
 
     const userId = session.user.id;
+
+    let resolvedCompanyId = null;
+    if (companyId) {
+      const companyById = await prisma.company.findUnique({ where: { id: companyId }, select: { id: true } });
+      resolvedCompanyId = companyById?.id || null;
+    }
+    if (!resolvedCompanyId && companySlug) {
+      const companyBySlug = await prisma.company.findUnique({ where: { slug: companySlug }, select: { id: true } });
+      resolvedCompanyId = companyBySlug?.id || null;
+    }
 
     const seller = await prisma.seller.create({
       data: {
@@ -83,6 +100,7 @@ export async function POST(request) {
         footerText: String(footerText || "").slice(0, 500),
         metaPixelId: String(metaPixelId || "").slice(0, 50),
         landingTheme: String(landingTheme || "").slice(0, 20),
+        companyId: resolvedCompanyId,
       },
     });
 
@@ -112,6 +130,10 @@ export async function PUT(request) {
     }
 
     const allowed = ["name", "email", "phone", "photo", "bio", "bgVideoUrl", "footerText", "metaPixelId", "landingTheme", "active"];
+    // La compañía se asigna solo en el registro y no se puede cambiar.
+    if ("companyId" in updateData || "company" in updateData) {
+      return NextResponse.json({ error: "No se puede cambiar la compañía" }, { status: 400 });
+    }
     const data = {};
     for (const key of allowed) {
       if (key in updateData) data[key] = String(updateData[key] ?? "").slice(0, 1000);

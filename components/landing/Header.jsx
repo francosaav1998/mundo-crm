@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { getLogoUrl, shouldInvertLogo } from "@/lib/company";
 
 const NAV_LINKS = [
   { id: "inicio", label: "Inicio" },
@@ -10,21 +11,27 @@ const NAV_LINKS = [
   { id: "beneficios", label: "Beneficios" },
 ];
 
-export default function Header({ menuOpen, setMenuOpen, onScrollTo, sellerLabels = {} }) {
+export default function Header({ menuOpen, setMenuOpen, onScrollTo, sellerLabels = {}, company = null, content = {} }) {
+  const companyName = company?.name || "Mundo";
+  const logoUrl = getLogoUrl(company, "header");
+  const invertLogo = shouldInvertLogo(company);
+  const c = content || {};
+  const navLinks = Array.isArray(c.navLinks) && c.navLinks.length > 0 ? c.navLinks : NAV_LINKS;
+
   return (
     <>
       <div className="header-top">
         <div className="container">
           <div className="header-top-info">
             <span>
-              <i className="bi bi-clock-fill"></i> Atención Express: Lun a Dom 9:00 a 21:00
+              <i className="bi bi-clock-fill"></i> {c.topHours || "Atención Express: Lun a Dom 9:00 a 21:00"}
             </span>
             <span>
-              <i className="bi bi-geo-alt-fill"></i> Cobertura en todo Chile
+              <i className="bi bi-geo-alt-fill"></i> {c.topCoverage || "Cobertura en todo Chile"}
             </span>
           </div>
           <div>
-            <span>{sellerLabels.executiveCapitalized || "Ejecutivo/a"} de Ventas Oficial Mundo</span>
+            <span>{sellerLabels.executiveCapitalized || "Ejecutivo/a"} de Ventas Oficial {companyName}</span>
           </div>
         </div>
       </div>
@@ -34,14 +41,18 @@ export default function Header({ menuOpen, setMenuOpen, onScrollTo, sellerLabels
           <nav className="main-nav">
             <a href="#inicio" className="logo" onClick={(e) => { e.preventDefault(); onScrollTo("inicio"); }}>
               <Image
-                src="https://www.tumundo.cl/wp-content/uploads/2022/12/logo-mundo-negative.svg"
-                alt="Mundo Logo"
+                src={logoUrl}
+                alt={`${companyName} Logo`}
                 width={120}
-                height={32}
+                height={40}
+                style={{
+                  objectFit: "contain",
+                  filter: invertLogo ? "brightness(0) invert(1)" : "none",
+                }}
               />
             </a>
             <ul className={`nav-links ${menuOpen ? "mobile-active" : ""}`}>
-              {NAV_LINKS.map((link) => (
+              {navLinks.map((link) => (
                 <li key={link.id}>
                   <a
                     href={`#${link.id}`}
@@ -52,12 +63,12 @@ export default function Header({ menuOpen, setMenuOpen, onScrollTo, sellerLabels
                 </li>
               ))}
               <li>
-                <a href="/politica-de-privacidad">Política de Privacidad</a>
+                <a href={`/politica-de-privacidad?company=${company?.slug || "mundo"}`}>Política de Privacidad</a>
               </li>
             </ul>
             <div className="nav-cta">
               <button onClick={() => onScrollTo("cobertura")} className="btn btn-secondary">
-                <i className="bi bi-geo-fill"></i> Evaluar Factibilidad
+                <i className="bi bi-geo-fill"></i> {c.cta || "Evaluar Factibilidad"}
               </button>
             </div>
             <button

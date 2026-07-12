@@ -27,21 +27,24 @@ const BENEFITS = [
   },
 ];
 
-export default function BenefitsSection() {
+export default function BenefitsSection({ companyName = "Mundo", content = {} }) {
+  const c = content || {};
+  const benefits = Array.isArray(c.items) && c.items.length > 0 ? c.items : BENEFITS;
+
   return (
     <section id="beneficios" className="benefits-section">
       <div className="container">
-        <div className="section-header scroll-animate fade-in-up">
+        <div className="section-header">
           <h2>
-            ¿Por qué contratar <span>Mundo</span>?
+            {c.title || "¿Por qué contratar"} <span>{companyName}</span>{c.titleSuffix || "?"}
           </h2>
-          <p>Únete a la red que está revolucionando la conectividad en el país.</p>
+          <p>{c.description || "Únete a la red que está revolucionando la conectividad en el país."}</p>
         </div>
         <div className="benefits-grid">
-          {BENEFITS.map((benefit, index) => (
+          {benefits.map((benefit, index) => (
             <div
               key={benefit.title}
-              className={`benefit-card scroll-animate fade-in-up delay-${index + 1}`}
+              className="benefit-card"
             >
               <div className="benefit-icon">
                 <i className={`bi ${benefit.icon}`}></i>

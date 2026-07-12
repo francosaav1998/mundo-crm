@@ -4,7 +4,7 @@ import { STATUSES } from "@/lib/dashboard/constants";
 
 export default function LeadFilters({ filter, setFilter, search, setSearch, T, isMobile }) {
   return (
-    <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: isMobile ? 16 : 30, alignItems: "center", justifyContent: "space-between" }}>
+    <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: isMobile ? 16 : 28, alignItems: "center", justifyContent: "space-between" }}>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
         {["Todos", ...STATUSES].map((status) => {
           const active = filter === status;
@@ -13,14 +13,14 @@ export default function LeadFilters({ filter, setFilter, search, setSearch, T, i
               key={status}
               onClick={() => setFilter(status)}
               style={{
-                padding: "6px 12px",
-                borderRadius: "10px",
-                fontSize: isMobile ? "11px" : "13px",
-                fontWeight: 700,
+                padding: "7px 14px",
+                borderRadius: "9999px",
+                fontSize: isMobile ? "11px" : "12px",
+                fontWeight: 600,
                 cursor: "pointer",
-                border: `1px solid ${T.border}`,
-                background: active ? T.accent : "rgba(255,255,255,0.03)",
-                color: active ? T.bg : T.muted,
+                border: `1px solid ${active ? `${T.accent}45` : T.border}`,
+                background: active ? `${T.accent}15` : "rgba(255,255,255,0.03)",
+                color: active ? T.accent : T.muted,
                 transition: "all 0.2s",
               }}
             >
@@ -30,7 +30,7 @@ export default function LeadFilters({ filter, setFilter, search, setSearch, T, i
         })}
       </div>
 
-      <div style={{ position: "relative", minWidth: isMobile ? "100%" : 280 }}>
+      <div style={{ position: "relative", minWidth: isMobile ? "100%" : 320 }}>
         <i className="bi bi-search" style={{ position: "absolute", left: 14, top: 12, color: T.muted }} />
         <input
           type="text"
@@ -40,12 +40,13 @@ export default function LeadFilters({ filter, setFilter, search, setSearch, T, i
           style={{
             width: "100%",
             padding: "10px 16px 10px 40px",
-            borderRadius: "10px",
+            borderRadius: "12px",
             background: T.inputBg,
             border: `1px solid ${T.border}`,
             color: T.text,
             fontSize: "13px",
             outline: "none",
+            transition: "all 0.2s",
           }}
         />
       </div>

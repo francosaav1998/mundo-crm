@@ -18,12 +18,13 @@ export default function Pagination({ page, totalPages, onPageChange, T }) {
         disabled={page <= 1}
         style={{
           padding: "8px 14px",
-          borderRadius: "10px",
+          borderRadius: "12px",
           border: `1px solid ${T.border}`,
-          background: "transparent",
+          background: "rgba(255,255,255,0.03)",
           color: page <= 1 ? T.muted : T.text,
-          fontWeight: 700,
+          fontWeight: 600,
           cursor: page <= 1 ? "not-allowed" : "pointer",
+          transition: "all 0.2s",
         }}
       >
         <i className="bi bi-chevron-left"></i>
@@ -35,12 +36,13 @@ export default function Pagination({ page, totalPages, onPageChange, T }) {
           onClick={() => onPageChange(p)}
           style={{
             padding: "8px 14px",
-            borderRadius: "10px",
-            border: `1px solid ${p === page ? T.accent : T.border}`,
-            background: p === page ? T.accent : "transparent",
-            color: p === page ? T.bg : T.text,
-            fontWeight: 700,
+            borderRadius: "12px",
+            border: `1px solid ${p === page ? `${T.accent}50` : T.border}`,
+            background: p === page ? `${T.accent}15` : "rgba(255,255,255,0.03)",
+            color: p === page ? T.accent : T.text,
+            fontWeight: 600,
             cursor: "pointer",
+            transition: "all 0.2s",
           }}
         >
           {p}
@@ -52,12 +54,13 @@ export default function Pagination({ page, totalPages, onPageChange, T }) {
         disabled={page >= totalPages}
         style={{
           padding: "8px 14px",
-          borderRadius: "10px",
+          borderRadius: "12px",
           border: `1px solid ${T.border}`,
-          background: "transparent",
+          background: "rgba(255,255,255,0.03)",
           color: page >= totalPages ? T.muted : T.text,
-          fontWeight: 700,
+          fontWeight: 600,
           cursor: page >= totalPages ? "not-allowed" : "pointer",
+          transition: "all 0.2s",
         }}
       >
         <i className="bi bi-chevron-right"></i>

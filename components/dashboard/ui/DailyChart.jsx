@@ -33,21 +33,20 @@ export default function DailyChart({ leads, data, T }) {
 
   return (
     <div
+      className="glass-card"
       style={{
-        background: T.bgCard,
-        border: `1px solid ${T.border}`,
-        borderRadius: "24px",
-        padding: "30px",
+        padding: "28px",
         display: "flex",
         flexDirection: "column",
-        boxShadow: "0 0 30px rgba(0,229,255,0.05)",
       }}
     >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <h3 style={{ fontSize: "16px", fontWeight: 700, color: T.accent, textShadow: `0 0 10px ${T.accent}40` }}>
-          <i className="bi bi-bar-chart-fill" style={{ marginRight: 6 }}></i>
-          Volumen Diario
-        </h3>
+        <div>
+          <div className="eyebrow" style={{ marginBottom: 6 }}>Tendencia</div>
+          <h3 style={{ fontSize: "18px", fontWeight: 700, color: T.text, fontFamily: "var(--font-heading), 'Outfit', sans-serif", letterSpacing: "-0.01em" }}>
+            Volumen Diario
+          </h3>
+        </div>
       </div>
 
       <div style={{ position: "relative", width: "100%", height: "170px", marginTop: "10px" }}>
@@ -65,7 +64,7 @@ export default function DailyChart({ leads, data, T }) {
                   <feMergeNode in="SourceGraphic" />
                 </feMerge>
               </filter>
-              <filter id={`${baseId}-neonGlowYellow`} x="-50%" y="-50%" width="200%" height="200%">
+              <filter id={`${baseId}-neonGlowLilac`} x="-50%" y="-50%" width="200%" height="200%">
                 <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur1" />
                 <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur2" />
                 <feGaussianBlur in="SourceGraphic" stdDeviation="16" result="blur3" />
@@ -81,10 +80,10 @@ export default function DailyChart({ leads, data, T }) {
                 <stop offset="50%" stopColor={T.accent} stopOpacity="0.7" />
                 <stop offset="100%" stopColor={T.accent2} stopOpacity="0.3" />
               </linearGradient>
-              <linearGradient id={`${baseId}-barGradYellow`} x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id={`${baseId}-barGradLilac`} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor={T.secondary} stopOpacity="1" />
                 <stop offset="50%" stopColor={T.secondary} stopOpacity="0.7" />
-                <stop offset="100%" stopColor="#D9A300" stopOpacity="0.3" />
+                <stop offset="100%" stopColor="#5a50d6" stopOpacity="0.3" />
               </linearGradient>
             </defs>
 
@@ -115,7 +114,7 @@ export default function DailyChart({ leads, data, T }) {
                     ry="8"
                     fill={isMax ? T.secondary : T.accent}
                     opacity="0.3"
-                    filter={`url(#${baseId}-${isMax ? "neonGlowYellow" : "neonGlow"})`}
+                    filter={`url(#${baseId}-${isMax ? "neonGlowLilac" : "neonGlow"})`}
                   />
                   <rect
                     x={bar.x}
@@ -124,7 +123,7 @@ export default function DailyChart({ leads, data, T }) {
                     height={bar.barHeight}
                     rx="6"
                     ry="6"
-                    fill={`url(#${baseId}-${isMax ? "barGradYellow" : "barGrad"})`}
+                    fill={`url(#${baseId}-${isMax ? "barGradLilac" : "barGrad"})`}
                     style={{ transition: "all 0.3s", cursor: "pointer" }}
                   />
                   <text
@@ -132,9 +131,9 @@ export default function DailyChart({ leads, data, T }) {
                     y={bar.y - 10}
                     fill={isMax ? T.secondary : T.text}
                     fontSize="12px"
-                    fontWeight="900"
+                    fontWeight="700"
                     textAnchor="middle"
-                    filter={isMax ? `url(#${baseId}-neonGlowYellow)` : "none"}
+                    filter={isMax ? `url(#${baseId}-neonGlowLilac)` : "none"}
                   >
                     {bar.count}
                   </text>

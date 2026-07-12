@@ -1,21 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 export const dynamic = "force-dynamic";
-
-function slugify(text) {
-  return String(text)
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-zA-Z0-9\s-]/g, "")
-    .trim()
-    .replace(/\s+/g, "-")
-    .toLowerCase()
-    .slice(0, 60);
-}
 
 function normalizeWhatsApp(number) {
   if (!number) return "";
@@ -34,7 +23,9 @@ export default function RegistroPage() {
     city: "",
     bio: "",
     password: "",
+    company: "",
   });
+  const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -43,6 +34,23 @@ export default function RegistroPage() {
   const supabase = createClient();
 
   const update = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
+
+  useEffect(() => {
+    async function loadCompanies() {
+      try {
+        const res = await fetch("/api/companies");
+        if (!res.ok) return;
+        const data = await res.json();
+        setCompanies(data);
+        if (data.length > 0 && !form.company) {
+          setForm((prev) => ({ ...prev, company: data[0].slug }));
+        }
+      } catch {
+        // Fallback silencioso
+      }
+    }
+    loadCompanies();
+  }, [form.company]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -61,6 +69,12 @@ export default function RegistroPage() {
       return;
     }
 
+    if (!form.company) {
+      setError("Debes seleccionar la compañía a la que perteneces");
+      setLoading(false);
+      return;
+    }
+
     const normalizedPhone = normalizeWhatsApp(form.phone);
 
     try {
@@ -68,7 +82,10 @@ export default function RegistroPage() {
         email: form.email,
         password: form.password,
         options: {
-          data: { full_name: form.name },
+          data: {
+            full_name: form.name,
+            company: form.company,
+          },
         },
       });
 
@@ -293,11 +310,42 @@ export default function RegistroPage() {
             </div>
 
             <div>
+              <label style={{ ...labelStyle, color: "#DC2626" }}>Compañía a la que vendes *</label>
+              <select
+                value={form.company}
+                onChange={(e) => update("company", e.target.value)}
+                required
+                style={{
+                  ...inputStyle,
+                  appearance: "none",
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2364748B' viewBox='0 0 16 16'%3E%3Cpath d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E")`,
+                  backgroundRepeat: "no-repeat",
+                  backgroundPosition: "right 1rem center",
+                  paddingRight: "2.5rem",
+                }}
+                onFocus={(e) => (e.target.style.borderColor = "#00748E")}
+                onBlur={(e) => (e.target.style.borderColor = "#E2E8F0")}
+              >
+                <option value="" disabled>
+                  Selecciona tu compañía
+                </option>
+                {companies.map((c) => (
+                  <option key={c.slug} value={c.slug}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+              <p style={{ fontSize: "11px", color: "#64748B", marginTop: "4px" }}>
+                Esta compañía quedará asignada permanentemente a tu cuenta.
+              </p>
+            </div>
+
+            <div>
               <label style={labelStyle}>Bio / Presentación (opcional)</label>
               <textarea
                 value={form.bio}
                 onChange={(e) => update("bio", e.target.value)}
-                placeholder="Como tu ejecutiva comercial especializada de Mundo, te ayudo a gestionar tu contrato..."
+                placeholder="Como tu ejecutiva comercial especializada, te ayudo a gestionar tu contrato..."
                 rows={3}
                 style={{ ...inputStyle, resize: "none", lineHeight: "1.5" }}
                 onFocus={(e) => (e.target.style.borderColor = "#00748E")}

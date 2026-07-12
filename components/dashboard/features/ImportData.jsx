@@ -98,7 +98,7 @@ export default function ImportData({ leads, T, isMobile, showToast, onImportSucc
           Importar Base de Datos Excel
         </h2>
         <p style={{ fontSize: "13px", color: T.muted, marginBottom: 30 }}>
-          Sube un archivo Excel (.xlsx o .csv) con tus clientes. Columnas esperadas: Nombre, Telefono, Ciudad, Direccion, Plan, Estado.
+          Sube un archivo Excel (.xlsx o .csv) con tus clientes. Solo Nombre y Teléfono son obligatorios. Las demás columnas son opcionales y las filas incompletas se omiten.
         </p>
 
         <label
@@ -156,26 +156,29 @@ export default function ImportData({ leads, T, isMobile, showToast, onImportSucc
         >
           <i className="bi bi-info-circle-fill" style={{ color: T.accent, fontSize: 16 }}></i>
           <span style={{ fontSize: "12px", color: T.muted, flex: 1 }}>
-            Tu Excel debe tener estos encabezados en la primera fila:
+            Recomendamos estos encabezados en la primera fila (solo Nombre y Teléfono son obligatorios):
           </span>
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 10 }}>
-          {["Nombre", "Telefono", "Ciudad", "Direccion", "Plan", "Estado"].map((col) => (
-            <span
-              key={col}
-              style={{
-                padding: "4px 12px",
-                borderRadius: "8px",
-                background: `${T.accent}15`,
-                border: `1px solid ${T.accent}30`,
-                color: T.accent,
-                fontSize: "12px",
-                fontWeight: 700,
-              }}
-            >
-              {col}
-            </span>
-          ))}
+          {["Nombre", "Telefono", "Ciudad", "Direccion", "Plan", "Estado"].map((col) => {
+            const required = col === "Nombre" || col === "Telefono";
+            return (
+              <span
+                key={col}
+                style={{
+                  padding: "4px 12px",
+                  borderRadius: "8px",
+                  background: required ? `${T.accent}25` : `${T.accent}10`,
+                  border: required ? `1px solid ${T.accent}70` : `1px solid ${T.accent}30`,
+                  color: required ? T.text : T.accent,
+                  fontSize: "12px",
+                  fontWeight: 700,
+                }}
+              >
+                {col}{required && " *"}
+              </span>
+            );
+          })}
         </div>
 
         <div style={{ display: "flex", gap: 12, marginTop: 24 }}>
@@ -197,7 +200,7 @@ export default function ImportData({ leads, T, isMobile, showToast, onImportSucc
               alignItems: "center",
               justifyContent: "center",
               gap: 8,
-              boxShadow: T.glowCyan,
+              boxShadow: T.glowGold,
               transition: "all 0.2s",
             }}
           >

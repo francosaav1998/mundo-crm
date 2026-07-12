@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import StatusIcons from "./StatusIcons";
+import MessageActionButtons from "./MessageActionButtons";
 import { formatDate, formatTime } from "@/lib/dashboard/utils";
+import { STATUS_CONFIG } from "@/lib/dashboard/constants";
 
 function AssignedCell({ lead, isAdmin, T }) {
   const [value, setValue] = useState(lead.assignedTo || "");
@@ -51,13 +53,14 @@ function AssignedCell({ lead, isAdmin, T }) {
         placeholder="email vendedor"
         style={{
           width: 140,
-          padding: "6px 10px",
+          padding: "7px 12px",
           background: T.inputBg,
           border: `1px solid ${T.border}`,
-          borderRadius: "8px",
+          borderRadius: "10px",
           color: T.text,
           fontSize: "12px",
           outline: "none",
+          transition: "all 0.2s",
         }}
       />
       {saving && (
@@ -78,17 +81,37 @@ function AssignedCell({ lead, isAdmin, T }) {
   );
 }
 
-export default function LeadTable({ leads, onUpdateStatus, updating, T, isMobile, isAdmin = false }) {
+export default function LeadTable({ leads, onUpdateStatus, updating, T, isMobile, isAdmin = false, defaultMessage = "", sellerName = "", showToast }) {
+  const [sentIds, setSentIds] = useState([]);
+
   if (leads.length === 0) {
     return (
       <div style={{ padding: "60px 0", textAlign: "center", color: T.muted }}>
-        <i className="bi bi-inbox" style={{ fontSize: 40, color: T.muted, opacity: 0.5 }} />
-        <p style={{ marginTop: 16, fontWeight: 700 }}>No se encontraron leads para esta búsqueda.</p>
+        <div
+          style={{
+            width: 72,
+            height: 72,
+            borderRadius: "20px",
+            background: `${T.accent}10`,
+            border: `1px solid ${T.accent}25`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            margin: "0 auto",
+          }}
+        >
+          <i className="bi bi-inbox" style={{ fontSize: 32, color: T.accent, opacity: 0.8 }} />
+        </div>
+        <p style={{ marginTop: 16, fontWeight: 600, fontSize: 15 }}>No se encontraron leads para esta búsqueda.</p>
       </div>
     );
   }
 
-  const desktopHeaders = ["Fecha", "Cliente", "Teléfono", "Email", "Ciudad/Comuna", "Dirección", "Plan Solicitado", "Asignado a", "Acción/Estado"];
+  const markSent = (id) => {
+    setSentIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
+  };
+
+  const desktopHeaders = ["Fecha", "Cliente", "Teléfono", "Email", "Ciudad/Comuna", "Dirección", "Plan Solicitado", "Asignado a", "Estado", "Acciones"];
 
   return (
     <div style={{ overflowX: "auto" }}>
@@ -97,12 +120,12 @@ export default function LeadTable({ leads, onUpdateStatus, updating, T, isMobile
           <tr style={{ borderBottom: `1px solid ${T.border}` }}>
             {isMobile
               ? ["Cliente", "Estado"].map((h) => (
-                  <th key={h} style={{ padding: "10px 12px", fontSize: "11px", fontWeight: 800, color: T.muted, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                  <th key={h} style={{ padding: "12px 14px", fontSize: "10px", fontWeight: 600, color: T.muted, textTransform: "uppercase", letterSpacing: "0.2em" }}>
                     {h}
                   </th>
                 ))
               : desktopHeaders.map((h) => (
-                  <th key={h} style={{ padding: "14px 20px", fontSize: "11px", fontWeight: 800, color: T.muted, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                  <th key={h} style={{ padding: "16px 20px", fontSize: "10px", fontWeight: 600, color: T.muted, textTransform: "uppercase", letterSpacing: "0.2em" }}>
                     {h}
                   </th>
                 ))}
@@ -113,54 +136,64 @@ export default function LeadTable({ leads, onUpdateStatus, updating, T, isMobile
             const statusIcons = (
               <StatusIcons lead={lead} onUpdate={onUpdateStatus} updating={updating} T={T} isMobile={isMobile} />
             );
+            const actions = (
+              <MessageActionButtons
+                lead={lead}
+                T={T}
+                whatsappText={defaultMessage}
+                showToast={showToast}
+                sent={sentIds.includes(lead.id)}
+                onSent={() => markSent(lead.id)}
+              />
+            );
+
+            const currentStatusBadge = (
+              <span style={{ fontSize: "10px", fontWeight: 800, padding: "3px 8px", borderRadius: "10px", background: STATUS_CONFIG[lead.status]?.bg, color: STATUS_CONFIG[lead.status]?.text, whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: 4 }}>
+                <i className={`bi ${STATUS_CONFIG[lead.status]?.icon}`}></i>
+                {lead.status}
+              </span>
+            );
 
             return isMobile ? (
-              <tr key={lead.id} style={{ borderBottom: `1px solid ${T.border}` }}>
-                <td style={{ padding: "12px" }}>
-                  <div style={{ fontSize: "14px", fontWeight: 700, color: T.text, marginBottom: 4 }}>{lead.name}</div>
-                  <a
-                    href={`https://wa.me/56${lead.phone.replace(/\D/g, "").slice(-9)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: "12px", fontWeight: 600, color: "#25D366", marginBottom: 8 }}
-                  >
-                    <i className="bi bi-whatsapp" /> +56 {lead.phone}
-                  </a>
-                  <div style={{ fontSize: "11px", color: T.muted }}>
+              <tr key={lead.id} style={{ borderBottom: `1px solid ${T.border}`, transition: "background 0.2s" }}>
+                <td style={{ padding: "14px" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 4 }}>
+                    <div style={{ fontSize: "14px", fontWeight: 600, color: T.text, fontFamily: "var(--font-heading), 'Outfit', sans-serif" }}>{lead.name}</div>
+                    {currentStatusBadge}
+                  </div>
+                  <div style={{ fontSize: "12px", fontWeight: 600, color: "#25D366", marginBottom: 4 }}>
+                    <i className="bi bi-whatsapp" style={{ marginRight: 4 }} /> +56 {lead.phone}
+                  </div>
+                  <div style={{ fontSize: "11px", color: T.muted, marginBottom: 10 }}>
                     {lead.plan} · {lead.city}
                   </div>
+                  {actions}
                 </td>
-                <td style={{ padding: "12px", verticalAlign: "top" }}>{statusIcons}</td>
+                <td style={{ padding: "14px", verticalAlign: "top" }}>{statusIcons}</td>
               </tr>
             ) : (
-              <tr key={lead.id} style={{ borderBottom: `1px solid ${T.border}` }}>
-                <td style={{ padding: "20px" }}>
-                  <div style={{ fontSize: "13px", fontWeight: 700 }}>{formatDate(lead.createdAt)}</div>
-                  <div style={{ fontSize: "11px", color: "#8B9CB8", marginTop: 2 }}>{formatTime(lead.createdAt)}</div>
+              <tr key={lead.id} style={{ borderBottom: `1px solid ${T.border}`, transition: "background 0.2s" }}>
+                <td style={{ padding: "18px 20px" }}>
+                  <div style={{ fontSize: "13px", fontWeight: 600, color: T.text }}>{formatDate(lead.createdAt)}</div>
+                  <div style={{ fontSize: "11px", color: T.muted, marginTop: 2 }}>{formatTime(lead.createdAt)}</div>
                 </td>
-                <td style={{ padding: "20px", fontSize: "14px", fontWeight: 700, color: T.text }}>{lead.name}</td>
-                <td style={{ padding: "20px" }}>
-                  <a
-                    href={`https://wa.me/56${lead.phone.replace(/\D/g, "").slice(-9)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: "13px", fontWeight: 700, color: "#25D366" }}
-                  >
-                    <i className="bi bi-whatsapp" /> +56 {lead.phone}
-                  </a>
+                <td style={{ padding: "18px 20px", fontSize: "14px", fontWeight: 600, color: T.text, fontFamily: "var(--font-heading), 'Outfit', sans-serif" }}>{lead.name}</td>
+                <td style={{ padding: "18px 20px", fontSize: "13px", fontWeight: 600, color: T.text }}>
+                  <i className="bi bi-whatsapp" style={{ color: "#25D366", marginRight: 6 }} /> +56 {lead.phone}
                 </td>
-                <td style={{ padding: "20px", fontSize: "13px", color: T.text }}>{lead.email || <span style={{ color: T.muted, fontStyle: "italic" }}>—</span>}</td>
-                <td style={{ padding: "20px", fontSize: "13px", color: "#8B9CB8" }}>{lead.city}</td>
-                <td style={{ padding: "20px", fontSize: "13px", color: T.muted, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.address}</td>
-                <td style={{ padding: "20px" }}>
-                  <span style={{ fontSize: "12px", fontWeight: 700, padding: "4px 10px", borderRadius: "8px", background: `${T.accent}20`, color: T.accent }}>
+                <td style={{ padding: "18px 20px", fontSize: "13px", color: T.text }}>{lead.email || <span style={{ color: T.muted, fontStyle: "italic" }}>—</span>}</td>
+                <td style={{ padding: "18px 20px", fontSize: "13px", color: T.muted }}>{lead.city}</td>
+                <td style={{ padding: "18px 20px", fontSize: "13px", color: T.muted, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.address}</td>
+                <td style={{ padding: "18px 20px" }}>
+                  <span style={{ fontSize: "11px", fontWeight: 600, padding: "4px 10px", borderRadius: "9999px", background: `${T.accent}15`, color: T.accent, border: `1px solid ${T.accent}30` }}>
                     {lead.plan}
                   </span>
                 </td>
-                <td style={{ padding: "20px" }}>
+                <td style={{ padding: "18px 20px" }}>
                   <AssignedCell lead={lead} isAdmin={isAdmin} T={T} />
                 </td>
-                <td style={{ padding: "20px" }}>{statusIcons}</td>
+                <td style={{ padding: "18px 20px" }}>{statusIcons}</td>
+                <td style={{ padding: "18px 20px" }}>{actions}</td>
               </tr>
             );
           })}

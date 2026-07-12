@@ -6,20 +6,21 @@ import { formatDate } from "@/lib/dashboard/utils";
 export default function RecentLeads({ leads, T, onViewAll }) {
   return (
     <div
+      className="glass-card"
       style={{
-        background: T.bgCard,
-        border: `1px solid ${T.border}`,
-        borderRadius: "24px",
-        padding: "30px",
+        padding: "28px",
       }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-        <h3 style={{ fontSize: "16px", fontWeight: 700, color: T.accent }}>Leads Recientes</h3>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
+        <div>
+          <div className="eyebrow" style={{ marginBottom: 6 }}>Actividad reciente</div>
+          <h3 style={{ fontSize: "18px", fontWeight: 700, color: T.text, fontFamily: "var(--font-heading), 'Outfit', sans-serif", letterSpacing: "-0.01em" }}>Leads Recientes</h3>
+        </div>
         <button
           onClick={onViewAll}
-          style={{ background: "transparent", border: "none", color: T.secondary, fontWeight: 700, fontSize: "13px", cursor: "pointer" }}
+          style={{ background: "transparent", border: "none", color: T.accent, fontWeight: 600, fontSize: "13px", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4 }}
         >
-          Ver todos los leads →
+          Ver todos <i className="bi bi-arrow-right" style={{ fontSize: 12 }} />
         </button>
       </div>
       <div style={{ overflowX: "auto" }}>
@@ -27,7 +28,7 @@ export default function RecentLeads({ leads, T, onViewAll }) {
           <thead>
             <tr style={{ borderBottom: `1px solid ${T.border}` }}>
               {["Fecha", "Cliente", "Teléfono", "Comuna", "Plan", "Estado"].map((h) => (
-                <th key={h} style={{ padding: "10px 16px", fontSize: "11px", fontWeight: 800, color: T.muted, textTransform: "uppercase" }}>
+                <th key={h} style={{ padding: "12px 16px", fontSize: "10px", fontWeight: 600, color: T.muted, textTransform: "uppercase", letterSpacing: "0.2em" }}>
                   {h}
                 </th>
               ))}
@@ -36,24 +37,25 @@ export default function RecentLeads({ leads, T, onViewAll }) {
           <tbody>
             {leads.slice(0, 5).map((l) => (
               <tr key={l.id} style={{ borderBottom: `1px solid ${T.border}` }}>
-                <td style={{ padding: "12px 16px", fontSize: "13px", color: T.text }}>{formatDate(l.createdAt)}</td>
-                <td style={{ padding: "12px 16px", fontSize: "13px", fontWeight: 700, color: T.text }}>{l.name}</td>
-                <td style={{ padding: "12px 16px", fontSize: "13px", color: T.text }}>{l.phone}</td>
-                <td style={{ padding: "12px 16px", fontSize: "13px", color: T.muted }}>{l.city}</td>
-                <td style={{ padding: "12px 16px", fontSize: "12px" }}>
-                  <span style={{ padding: "3px 8px", borderRadius: "6px", background: `${T.accent}20`, color: T.accent, fontWeight: 600 }}>
+                <td style={{ padding: "14px 16px", fontSize: "13px", color: T.text, fontWeight: 500 }}>{formatDate(l.createdAt)}</td>
+                <td style={{ padding: "14px 16px", fontSize: "14px", fontWeight: 600, color: T.text, fontFamily: "var(--font-heading), 'Outfit', sans-serif" }}>{l.name}</td>
+                <td style={{ padding: "14px 16px", fontSize: "13px", color: T.text, fontWeight: 500 }}>{l.phone}</td>
+                <td style={{ padding: "14px 16px", fontSize: "13px", color: T.muted, fontWeight: 500 }}>{l.city}</td>
+                <td style={{ padding: "14px 16px", fontSize: "12px" }}>
+                  <span style={{ padding: "4px 10px", borderRadius: "9999px", background: `${T.accent}12`, color: T.accent, fontWeight: 600, border: `1px solid ${T.accent}25` }}>
                     {l.plan}
                   </span>
                 </td>
-                <td style={{ padding: "12px 16px" }}>
+                <td style={{ padding: "14px 16px" }}>
                   <span
                     style={{
                       fontSize: "11px",
-                      fontWeight: 800,
-                      padding: "3px 8px",
-                      borderRadius: "10px",
+                      fontWeight: 600,
+                      padding: "4px 10px",
+                      borderRadius: "9999px",
                       background: STATUS_CONFIG[l.status]?.bg,
                       color: STATUS_CONFIG[l.status]?.text,
+                      border: `1px solid ${STATUS_CONFIG[l.status]?.text}25`,
                     }}
                   >
                     {l.status}

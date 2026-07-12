@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { useTheme } from "./dashboard/hooks/useTheme";
 import { useMediaQuery } from "./dashboard/hooks/useMediaQuery";
 import { useSettings } from "./dashboard/hooks/useSettings";
@@ -14,6 +15,8 @@ import BulkWhatsApp from "./dashboard/features/BulkWhatsApp";
 import ImportData from "./dashboard/features/ImportData";
 import UserManager from "./dashboard/features/UserManager";
 import SettingsForm from "./dashboard/features/SettingsForm";
+import LandingEditor from "./dashboard/features/LandingEditor";
+import LandingManager from "./dashboard/features/LandingManager";
 
 const PAGE_TITLES = {
   dashboard: "Dashboard",
@@ -23,6 +26,8 @@ const PAGE_TITLES = {
   import: "Importar Datos",
   users: "Usuarios",
   settings: "Configuración",
+  landing: "Editor de Landing",
+  landings: "Landings por Compañía",
 };
 
 export default function DashboardClient({ initialLeads = [], initialTotal = 0, initialStats = null, username, isAdmin = false, sellerSlug = null, sellerInfo = null }) {
@@ -31,12 +36,27 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
 
   const isMobile = useMediaQuery("(max-width: 768px)");
   const isTablet = useMediaQuery("(max-width: 1024px)");
+  const searchParams = useSearchParams();
 
-  const [activeMenu, setActiveMenu] = useState("dashboard");
-  const [sidebarOpen, setSidebarOpen] = useState(() => {
-    if (typeof window === "undefined") return true;
-    return window.innerWidth > 768;
+  const [activeMenu, setActiveMenu] = useState(() => {
+    const tab = searchParams.get("tab");
+    return PAGE_TITLES[tab] ? tab : "dashboard";
   });
+  // Iniciar sidebar cerrado para evitar layout roto en mobile durante hidratación
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Abrir sidebar automáticamente solo en desktop al montar
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setSidebarOpen(window.innerWidth > 768);
+  }, []);
+
+  // Cerrar sidebar cuando se detecta mobile
+  useEffect(() => {
+    if (isMobile && sidebarOpen) {
+      setSidebarOpen(false);
+    }
+  }, [isMobile]);
 
   const [updating, setUpdating] = useState(null);
 
@@ -98,7 +118,7 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
 
   const handleSaveSettings = useCallback(async (settingsToSave) => {
     const ok = await saveSettings(settingsToSave);
-    if (ok && typeof window !== "undefined") {
+    if (ok && typeof window !== "undefined" && settingsToSave.landingTheme) {
       document.documentElement.setAttribute("data-landing-theme", settingsToSave.landingTheme);
     }
   }, [saveSettings]);
@@ -112,8 +132,9 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
       T={T}
       theme={theme}
       toggleTheme={toggleTheme}
-      sellerName={settings.sellerName}
+      sellerName={sellerInfo?.name || username}
       username={username}
+      company={sellerInfo?.company || null}
       dateFilter={dateFilter}
       setDateFilter={setDateFilter}
       customDate={customDate}
@@ -150,6 +171,9 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
           T={T}
           isMobile={isMobile || isTablet}
           isAdmin={isAdmin}
+          defaultMessage={settings.sellerMsg}
+          sellerName={sellerInfo?.name || settings.sellerName || username}
+          showToast={showToast}
         />
       )}
 
@@ -158,7 +182,7 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
           leads={leads}
           T={T}
           isMobile={isMobile}
-          sellerName={settings.sellerName}
+          sellerName={sellerInfo?.name || settings.sellerName || username}
           showToast={showToast}
         />
       )}
@@ -169,6 +193,7 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
           T={T}
           isMobile={isMobile}
           showToast={showToast}
+          defaultMessage={settings.sellerMsg}
         />
       )}
 
@@ -198,6 +223,24 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
           T={T}
           isMobile={isMobile}
           showToast={showToast}
+          isAdmin={isAdmin}
+        />
+      )}
+
+      {activeMenu === "landing" && (
+        <LandingEditor
+          sellerInfo={sellerInfo}
+          T={T}
+          isMobile={isMobile}
+          showToast={showToast}
+        />
+      )}
+
+      {activeMenu === "landings" && (
+        <LandingManager
+          T={T}
+          isMobile={isMobile}
+          showToast={showToast}
         />
       )}
 
@@ -209,13 +252,15 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
             bottom: isMobile ? "16px" : "24px",
             right: isMobile ? "16px" : "24px",
             left: isMobile ? "16px" : "auto",
-            background: T.accent,
-            color: T.bg,
+            background: `${T.accent}18`,
+            border: `1px solid ${T.accent}45`,
+            color: T.accent,
             padding: isMobile ? "12px 16px" : "12px 24px",
-            borderRadius: "10px",
-            fontWeight: 800,
+            borderRadius: "14px",
+            fontWeight: 700,
             fontSize: isMobile ? "13px" : "14px",
-            boxShadow: T.glowCyan,
+            boxShadow: T.glowGold,
+            backdropFilter: "blur(12px)",
             zIndex: 1000,
             textAlign: isMobile ? "center" : "left",
           }}

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { SELLER_CONFIG } from "@/lib/seller";
+import { getLogoUrl, shouldInvertLogo } from "@/lib/company";
 
 const FOOTER_LINKS = [
   { id: "inicio", label: "Inicio" },
@@ -10,24 +11,43 @@ const FOOTER_LINKS = [
   { id: "cobertura", label: "Evaluar Cobertura" },
 ];
 
-export default function Footer({ footerText, onScrollTo, sellerLabels = {}, sellerPhone = "" }) {
+export default function Footer({ footerText, onScrollTo, sellerLabels = {}, sellerPhone = "", company = null, content = {} }) {
+  const companyName = company?.name || "Mundo";
+  const logoUrl = getLogoUrl(company, "footer");
+  const invertLogo = shouldInvertLogo(company);
+  const c = content || {};
+  const footerLinks = Array.isArray(c.links) && c.links.length > 0 ? c.links : FOOTER_LINKS;
+
+  const contactTitle = (c.contactTitle || "Contacto {executiveLabel}").replace(
+    /{executiveLabel}/g,
+    sellerLabels.executiveCapitalized || "Ejecutivo/a"
+  );
+  const nameLabel = (c.nameLabel || "Nombre {executiveLabel}").replace(
+    /{executiveLabel}/g,
+    sellerLabels.executiveCapitalized || "Ejecutivo/a"
+  );
+
   return (
     <footer className="site-footer">
       <div className="container">
         <div className="footer-layout">
           <div className="footer-about">
             <Image
-              src="https://www.tumundo.cl/wp-content/uploads/2022/12/logo-mundo.svg"
-              alt="Mundo Logo Footer"
-              width={120}
-              height={32}
+              src={logoUrl}
+              alt={`${companyName} Logo Footer`}
+              width={140}
+              height={48}
+              style={{
+                objectFit: "contain",
+                filter: invertLogo ? "brightness(0) invert(1)" : "none",
+              }}
             />
             <p>{footerText}</p>
           </div>
           <div className="footer-links">
-            <h4>Navegación</h4>
+            <h4>{c.navTitle || "Navegación"}</h4>
             <ul>
-              {FOOTER_LINKS.map((link) => (
+              {footerLinks.map((link) => (
                 <li key={link.id}>
                   <a
                     href={`#${link.id}`}
@@ -40,19 +60,19 @@ export default function Footer({ footerText, onScrollTo, sellerLabels = {}, sell
             </ul>
           </div>
           <div className="footer-contact">
-            <h4>Contacto {sellerLabels.executiveCapitalized || "Ejecutivo/a"}</h4>
+            <h4>{contactTitle}</h4>
             <ul>
               <li>
                 <i className="bi bi-person-fill"></i>
                 <div>
-                  <span className="footer-contact-title">Nombre {sellerLabels.executiveCapitalized || "Ejecutivo/a"}</span>
+                  <span className="footer-contact-title">{nameLabel}</span>
                   <span className="seller-name-placeholder">{SELLER_CONFIG.name}</span>
                 </div>
               </li>
               <li>
                 <i className="bi bi-whatsapp"></i>
                 <div>
-                  <span className="footer-contact-title">WhatsApp de Ventas</span>
+                  <span className="footer-contact-title">{c.whatsappLabel || "WhatsApp de Ventas"}</span>
                   {sellerPhone ? (
                     <a
                       href={`https://wa.me/${sellerPhone}`}
@@ -71,16 +91,16 @@ export default function Footer({ footerText, onScrollTo, sellerLabels = {}, sell
           </div>
         </div>
         <div className="footer-bottom">
-          <p>&copy; 2026 Mundo Telecomunicaciones. Página web de {sellerLabels.executiveCapitalized || "Ejecutivo/a"} de Ventas Oficial Independiente.</p>
+          <p>&copy; 2026 {companyName}. Página web de {sellerLabels.executiveCapitalized || "Ejecutivo/a"} de Ventas Oficial Independiente.</p>
           <p style={{ marginTop: "0.5rem", fontSize: "0.75rem" }}>
-            Los logotipos, marcas comerciales y nombres de servicios exhibidos en este sitio son
-            propiedad exclusiva de Mundo Pacífico S.A. y sus filiales. Este sitio tiene propósitos
-            informativos y de captación comercial por parte de una ejecutiva oficial independiente.
+            {(c.bottomText || "Los logotipos, marcas comerciales y nombres de servicios exhibidos en este sitio son propiedad exclusiva de {companyName} y sus filiales. Este sitio tiene propósitos informativos y de captación comercial por parte de un {executive} oficial independiente.")
+              .replace(/{companyName}/g, companyName)
+              .replace(/{executive}/g, sellerLabels.executive || "ejecutivo")}
           </p>
           <p style={{ marginTop: "0.75rem" }}>
             <a
-              href="/politica-de-privacidad"
-              className="text-[#00748E] hover:text-[#005A6F] hover:underline font-medium"
+              href={`/politica-de-privacidad?company=${company?.slug || "mundo"}`}
+              className="text-[var(--color-primary)] hover:underline font-medium"
             >
               Política de Privacidad y Cookies
             </a>

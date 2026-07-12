@@ -4,7 +4,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { updateSellerConfig, getSellerLabels } from "@/lib/seller";
+import { getCompanyVars } from "@/lib/company";
+import { getLandingContent, getMergedPlans } from "@/lib/landing";
 import MetaPixel from "@/components/landing/MetaPixel";
+import CompanyFonts from "@/components/landing/CompanyFonts";
 import Header from "@/components/landing/Header";
 import Hero from "@/components/landing/Hero";
 import SellerSection from "@/components/landing/SellerSection";
@@ -21,6 +24,8 @@ export default function SellerLanding() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [seller, setSeller] = useState(null);
+  const [company, setCompany] = useState(null);
+  const [plans, setPlans] = useState([]);
   const [menuOpen, setMenuOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -28,7 +33,7 @@ export default function SellerLanding() {
     email: "",
     city: "",
     address: "",
-    plan: "Plan Fibra 800 Megas ($12.990)",
+    plan: "",
   });
   const [formStatus, setFormStatus] = useState({ type: "", message: "" });
   const [submitting, setSubmitting] = useState(false);
@@ -46,14 +51,37 @@ export default function SellerLanding() {
         }
         const data = await res.json();
         setSeller(data);
+        setCompany(data.company);
+
+        // Si la compañía no es Mundo, usar la landing HTML estática personalizada
+        const companySlug = data.company?.slug;
+        if (companySlug && companySlug !== "mundo" && typeof window !== "undefined") {
+          const params = new URLSearchParams(window.location.search);
+          params.set("slug", slug);
+          window.location.replace(`/landings/${companySlug}.html?${params.toString()}`);
+          return;
+        }
 
         updateSellerConfig({
           name: data.name,
           phone: data.phone,
+          defaultMessage: data.defaultMessage || undefined,
         });
 
         if (data.landingTheme) {
           document.documentElement.setAttribute("data-landing-theme", data.landingTheme);
+        }
+
+        // Cargar planes de la compañía
+        if (companySlug) {
+          const plansRes = await fetch(`/api/plans?companySlug=${encodeURIComponent(companySlug)}`);
+          if (plansRes.ok) {
+            const plansData = await plansRes.json();
+            setPlans(plansData);
+            if (plansData.length > 0) {
+              setFormData((prev) => ({ ...prev, plan: plansData[0].value }));
+            }
+          }
         }
       } catch {
         setError("Error de conexión");
@@ -74,10 +102,24 @@ export default function SellerLanding() {
           }
         });
       },
-      { threshold: 0.1, rootMargin: "0px 0px -50px 0px" }
+      { threshold: 0, rootMargin: "0px 0px -30px 0px" }
     );
     document.querySelectorAll(".scroll-animate").forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
+
+    // Fallback: activar elementos que ya están en viewport tras el primer paint
+    const timer = setTimeout(() => {
+      document.querySelectorAll(".scroll-animate:not(.active)").forEach((el) => {
+        const rect = el.getBoundingClientRect();
+        if (rect.top < window.innerHeight && rect.bottom > 0) {
+          el.classList.add("active");
+        }
+      });
+    }, 100);
+
+    return () => {
+      observer.disconnect();
+      clearTimeout(timer);
+    };
   }, [loading]);
 
   const scrollToSection = (id) => {
@@ -106,10 +148,15 @@ export default function SellerLanding() {
     setFormStatus({ type: "", message: "" });
 
     try {
+      const selectedPlan = plans.find((p) => p.value === formData.plan);
       const res = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, sellerId: seller?.id }),
+        body: JSON.stringify({
+          ...formData,
+          sellerId: seller?.id,
+          planId: selectedPlan?.id,
+        }),
       });
 
       if (!res.ok) {
@@ -145,25 +192,47 @@ export default function SellerLanding() {
   }
 
   const sellerPhoto = seller?.photo || "";
-  const sellerBio = seller?.bio || "Como tu ejecutiva comercial especializada de Mundo, te ayudo a gestionar tu contrato de forma rápida y transparente.";
-  const footerText = seller?.footerText || "Tu asesora comercial autorizada de Mundo. Gestión ágil, directa y transparente.";
+  const sellerBio = seller?.bio || "";
+  const footerText = seller?.footerText || "";
   const bgVideoUrl = seller?.bgVideoUrl || "";
   const metaPixelId = seller?.metaPixelId || "";
   const sellerLabels = getSellerLabels(seller?.gender || "");
+  const companyVars = getCompanyVars(company);
+  const landingContent = getLandingContent(seller);
+  const mergedPlans = getMergedPlans(plans, seller?.planOverrides);
+  const featuredPlan = mergedPlans.find((p) => p.featured) || mergedPlans[0] || null;
 
   return (
-    <>
+    <div data-company={company?.slug || "mundo"} style={companyVars}>
+      <CompanyFonts company={company} />
       <MetaPixel pixelId={metaPixelId} />
-      <Header menuOpen={menuOpen} setMenuOpen={setMenuOpen} onScrollTo={scrollToSection} sellerLabels={sellerLabels} />
+      <Header
+        menuOpen={menuOpen}
+        setMenuOpen={setMenuOpen}
+        onScrollTo={scrollToSection}
+        sellerLabels={sellerLabels}
+        company={company}
+        content={landingContent.header}
+      />
       <main>
-        <Hero bgVideoUrl={bgVideoUrl} onScrollTo={scrollToSection} onSelectPlan={handlePlanClick} onOpenModal={openModal} />
+        <Hero
+          bgVideoUrl={bgVideoUrl}
+          onScrollTo={scrollToSection}
+          onSelectPlan={handlePlanClick}
+          onOpenModal={openModal}
+          company={company}
+          featuredPlan={featuredPlan}
+          content={landingContent.hero}
+        />
         <SellerSection
           sellerPhotoUrl={sellerPhoto}
           sellerBioText={sellerBio}
           sellerLabels={sellerLabels}
           onScrollTo={scrollToSection}
+          company={company}
+          content={landingContent.seller}
         />
-        <PlansSection onSelectPlan={handlePlanClick} />
+        <PlansSection plans={mergedPlans} onSelectPlan={handlePlanClick} company={company} content={landingContent.plans} />
         <CoverageSection
           formData={formData}
           setFormData={setFormData}
@@ -171,10 +240,19 @@ export default function SellerLanding() {
           submitting={submitting}
           onSubmit={handleSubmit}
           sellerLabels={sellerLabels}
+          plans={mergedPlans}
+          content={landingContent.coverage}
         />
-        <BenefitsSection />
+        <BenefitsSection companyName={company?.name || "Mundo"} content={landingContent.benefits} />
       </main>
-      <Footer footerText={footerText} onScrollTo={scrollToSection} sellerLabels={sellerLabels} sellerPhone={seller?.phone || ""} />
+      <Footer
+        footerText={footerText}
+        onScrollTo={scrollToSection}
+        sellerLabels={sellerLabels}
+        sellerPhone={seller?.phone || ""}
+        company={company}
+        content={landingContent.footer}
+      />
       <WhatsAppFloat />
       <LeadModal
         key={modalOpen ? modalPlan : "closed"}
@@ -183,7 +261,9 @@ export default function SellerLanding() {
         initialPlan={modalPlan}
         sellerId={seller?.id}
         sellerName={seller?.name}
+        plans={plans}
+        companySlug={company?.slug || "mundo"}
       />
-    </>
+    </div>
   );
 }

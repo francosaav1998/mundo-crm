@@ -148,7 +148,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { name, phone, email, city, address, plan, sellerId } = body;
+    const { name, phone, email, city, address, plan, sellerId, planId } = body;
 
     if (!name || !phone || !city || !address || !plan) {
       return NextResponse.json(
@@ -185,6 +185,7 @@ export async function POST(request) {
         plan: sanitizeString(plan, MAX_LENGTHS.plan),
         assignedTo,
         sellerId: sellerId || null,
+        planId: planId || null,
       },
     });
 
