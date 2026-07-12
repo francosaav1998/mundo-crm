@@ -1629,8 +1629,4 @@ ul {
   .dashboard-card {
     padding: 16px !important;
   }
-
-  .hide-mobile {
-    display: none !important;
-  }
 }
