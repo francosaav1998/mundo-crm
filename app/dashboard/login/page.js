@@ -92,7 +92,7 @@ export default function LoginPage() {
             background: "rgba(255, 255, 255, 0.03)",
             border: "1px solid rgba(255, 255, 255, 0.06)",
             borderRadius: "24px",
-            padding: "36px",
+            padding: "clamp(24px, 4vw, 36px)",
             boxShadow: "0 20px 50px rgba(0, 0, 0, 0.25)",
             backdropFilter: "blur(20px)",
           }}

@@ -1,6 +1,6 @@
 "use client";
 
-export default function KpiCards({ kpis, T, isMobile }) {
+export default function KpiCards({ kpis, T }) {
   const cards = [
     { label: "Total Leads", value: kpis.total, icon: "bi-people-fill", color: T.accent },
     { label: "Pendientes", value: kpis.nuevos, icon: "bi-star-fill", color: T.secondary },
@@ -9,29 +9,29 @@ export default function KpiCards({ kpis, T, isMobile }) {
   ];
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: `repeat(auto-fit, minmax(${isMobile ? "140px" : "200px"}, 1fr))`, gap: isMobile ? 12 : 20, marginBottom: isMobile ? 24 : 40 }}>
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 180px), 1fr))", gap: "clamp(12px, 1vw + 6px, 20px)", marginBottom: "clamp(24px, 2vw + 14px, 40px)" }}>
       {cards.map((kpi) => (
         <div
           key={kpi.label}
           className="glass-card"
           style={{
-            padding: isMobile ? "18px" : "24px",
+            padding: "clamp(16px, 1vw + 10px, 24px)",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
             transition: "all 0.3s",
           }}
         >
-          <div>
-            <span style={{ fontSize: "11px", color: T.muted, textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.2em" }}>
+          <div style={{ minWidth: 0 }}>
+            <span style={{ fontSize: "clamp(10px, 0.5vw + 8px, 11px)", color: T.muted, textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.15em" }}>
               {kpi.label}
             </span>
-            <div style={{ fontSize: isMobile ? "28px" : "34px", fontWeight: 700, color: T.text, marginTop: 8, fontFamily: "var(--font-heading), 'Outfit', sans-serif", letterSpacing: "-0.02em" }}>{kpi.value}</div>
+            <div style={{ fontSize: "clamp(26px, 1.5vw + 20px, 34px)", fontWeight: 700, color: T.text, marginTop: 8, fontFamily: "var(--font-heading), 'Outfit', sans-serif", letterSpacing: "-0.02em" }}>{kpi.value}</div>
           </div>
           <div
             style={{
-              width: isMobile ? 42 : 50,
-              height: isMobile ? 42 : 50,
+              width: "clamp(40px, 2vw + 32px, 50px)",
+              height: "clamp(40px, 2vw + 32px, 50px)",
               borderRadius: "14px",
               background: `${kpi.color}15`,
               display: "flex",
@@ -42,7 +42,7 @@ export default function KpiCards({ kpis, T, isMobile }) {
               flexShrink: 0,
             }}
           >
-            <i className={`bi ${kpi.icon}`} style={{ color: kpi.color, fontSize: isMobile ? 18 : 20 }} />
+            <i className={`bi ${kpi.icon}`} style={{ color: kpi.color, fontSize: "clamp(16px, 1vw + 12px, 20px)" }} />
           </div>
         </div>
       ))}

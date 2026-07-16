@@ -42,21 +42,9 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
     const tab = searchParams.get("tab");
     return PAGE_TITLES[tab] ? tab : "dashboard";
   });
-  // Iniciar sidebar cerrado para evitar layout roto en mobile durante hidratación
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  // Abrir sidebar automáticamente solo en desktop al montar
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    setSidebarOpen(window.innerWidth > 768);
-  }, []);
-
-  // Cerrar sidebar cuando se detecta mobile
-  useEffect(() => {
-    if (isMobile && sidebarOpen) {
-      setSidebarOpen(false);
-    }
-  }, [isMobile]);
+  // Sidebar: null = usar valor por defecto según viewport; true/false = preferencia del usuario
+  const [sidebarOpen, setSidebarOpen] = useState(null);
+  const effectiveSidebarOpen = sidebarOpen ?? !isMobile;
 
   const [updating, setUpdating] = useState(null);
 
@@ -127,7 +115,7 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
     <DashboardLayout
       activeMenu={activeMenu}
       onMenuChange={handleMenuChange}
-      sidebarOpen={sidebarOpen}
+      sidebarOpen={effectiveSidebarOpen}
       setSidebarOpen={setSidebarOpen}
       T={T}
       theme={theme}

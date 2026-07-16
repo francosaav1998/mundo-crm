@@ -103,7 +103,7 @@ export default function LeadModal({ isOpen, onClose, sellerId, sellerName, initi
           overflowY: "auto",
           background: "#FFFFFF",
           borderRadius: "24px",
-          padding: "28px",
+          padding: "clamp(20px, 4vw, 28px)",
           boxShadow: "0 25px 60px rgba(0,0,0,0.35)",
           position: "relative",
         }}
@@ -218,7 +218,7 @@ export default function LeadModal({ isOpen, onClose, sellerId, sellerName, initi
             />
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px" }}>
             <div>
               <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1E293B", marginBottom: "6px" }}>
                 Comuna / Ciudad *
