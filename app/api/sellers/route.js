@@ -63,7 +63,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { name, email, phone, photo, bio, gender, bgVideoUrl, footerText, metaPixelId, landingTheme, companyId, companySlug } = body;
+    const { name, email, phone, photo, bio, gender, footerText, metaPixelId, landingTheme, companyId, companySlug } = body;
 
     if (!name) return NextResponse.json({ error: "El nombre es obligatorio" }, { status: 400 });
 
@@ -96,7 +96,6 @@ export async function POST(request) {
         photo: String(photo || "").slice(0, 500),
         bio: String(bio || "").slice(0, 1000),
         gender: gender || inferGender(name),
-        bgVideoUrl: String(bgVideoUrl || "").slice(0, 500),
         footerText: String(footerText || "").slice(0, 500),
         metaPixelId: String(metaPixelId || "").slice(0, 50),
         landingTheme: String(landingTheme || "").slice(0, 20),
@@ -129,7 +128,7 @@ export async function PUT(request) {
       throw new Error("Forbidden");
     }
 
-    const allowed = ["name", "email", "phone", "photo", "bio", "bgVideoUrl", "footerText", "metaPixelId", "landingTheme", "active"];
+    const allowed = ["name", "email", "phone", "photo", "bio", "footerText", "metaPixelId", "landingTheme", "active"];
     // La compañía se asigna solo en el registro y no se puede cambiar.
     if ("companyId" in updateData || "company" in updateData) {
       return NextResponse.json({ error: "No se puede cambiar la compañía" }, { status: 400 });

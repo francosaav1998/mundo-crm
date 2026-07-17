@@ -194,7 +194,6 @@ export default function SellerLanding() {
   const sellerPhoto = seller?.photo || "";
   const sellerBio = seller?.bio || "";
   const footerText = seller?.footerText || "";
-  const bgVideoUrl = seller?.bgVideoUrl || "";
   const metaPixelId = seller?.metaPixelId || "";
   const sellerLabels = getSellerLabels(seller?.gender || "");
   const companyVars = getCompanyVars(company);
@@ -216,7 +215,6 @@ export default function SellerLanding() {
       />
       <main>
         <Hero
-          bgVideoUrl={bgVideoUrl}
           onScrollTo={scrollToSection}
           onSelectPlan={handlePlanClick}
           onOpenModal={openModal}

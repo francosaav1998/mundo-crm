@@ -11,17 +11,40 @@ const NAV_LINKS = [
   { id: "beneficios", label: "Beneficios" },
 ];
 
+function MarqueeBar({ items = [] }) {
+  const displayItems = items.length > 0 ? items : [
+    { icon: "bi-lightning-charge-fill", text: "Fibra Óptica de alta velocidad en todo Chile" },
+    { icon: "bi-currency-dollar", text: "Planes desde $12.990/mes con precio fijo" },
+    { icon: "bi-router-fill", text: "Router Wi-Fi de última generación incluido" },
+  ];
+  // Duplicar items para crear el efecto de scroll infinito
+  const loop = [...displayItems, ...displayItems];
+  return (
+    <div className="marquee-bar" aria-hidden="true">
+      <div className="marquee-list">
+        {loop.map((item, idx) => (
+          <span key={idx} className="marquee-item">
+            <i className={`bi ${item.icon || "bi-star-fill"}`}></i>
+            <span>{item.text}</span>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function Header({ menuOpen, setMenuOpen, onScrollTo, sellerLabels = {}, company = null, content = {} }) {
   const companyName = company?.name || "Mundo";
   const logoUrl = getLogoUrl(company, "header");
   const invertLogo = shouldInvertLogo(company);
   const c = content || {};
   const navLinks = Array.isArray(c.navLinks) && c.navLinks.length > 0 ? c.navLinks : NAV_LINKS;
+  const marqueeItems = Array.isArray(c.marqueeItems) && c.marqueeItems.length > 0 ? c.marqueeItems : [];
 
   return (
     <>
       <div className="header-top">
-        <div className="container">
+        <div className="container header-top-inner">
           <div className="header-top-info">
             <span>
               <i className="bi bi-clock-fill"></i> {c.topHours || "Atención Express: Lun a Dom 9:00 a 21:00"}
@@ -34,6 +57,7 @@ export default function Header({ menuOpen, setMenuOpen, onScrollTo, sellerLabels
             <span>{sellerLabels.executiveCapitalized || "Ejecutivo/a"} de Ventas Oficial {companyName}</span>
           </div>
         </div>
+        <MarqueeBar items={marqueeItems} />
       </div>
 
       <header className="site-header">

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { SELLER_CONFIG, updateSellerConfig, inferGender, getSellerLabels } from "@/lib/seller";
+import { getLandingContent } from "@/lib/landing";
 import MetaPixel from "./landing/MetaPixel";
 import Header from "./landing/Header";
 import Hero from "./landing/Hero";
@@ -34,7 +35,6 @@ export default function LandingPage() {
   const [footerText, setFooterText] = useState(
     "Tu ejecutiva comercial autorizada de Mundo. Gestión ágil, directa y transparente de tus planes de internet fibra, televisión digital y telefonía móvil."
   );
-  const [bgVideoUrl, setBgVideoUrl] = useState("");
   const [sellerName, setSellerName] = useState(SELLER_CONFIG.name);
   const [sellerGender, setSellerGender] = useState("");
   const [metaPixelId, setMetaPixelId] = useState("");
@@ -59,7 +59,6 @@ export default function LandingPage() {
         if (settings.seller_bio) setSellerBioText(settings.seller_bio);
         if (settings.seller_photo) setSellerPhotoUrl(settings.seller_photo);
         if (settings.footer_text !== undefined) setFooterText(settings.footer_text);
-        if (settings.bg_video_url !== undefined) setBgVideoUrl(settings.bg_video_url || "");
         if (settings.meta_pixel_id !== undefined) setMetaPixelId(settings.meta_pixel_id);
         if (settings.landing_theme) {
           document.documentElement.setAttribute("data-landing-theme", settings.landing_theme);
@@ -135,9 +134,9 @@ export default function LandingPage() {
   return (
     <>
       <MetaPixel pixelId={metaPixelId} />
-      <Header menuOpen={menuOpen} setMenuOpen={setMenuOpen} onScrollTo={scrollToSection} sellerLabels={sellerLabels} />
+      <Header menuOpen={menuOpen} setMenuOpen={setMenuOpen} onScrollTo={scrollToSection} sellerLabels={sellerLabels} content={getLandingContent(null).header} />
       <main>
-        <Hero bgVideoUrl={bgVideoUrl} onScrollTo={scrollToSection} onSelectPlan={handlePlanClick} onOpenModal={openModal} />
+        <Hero onScrollTo={scrollToSection} onSelectPlan={handlePlanClick} onOpenModal={openModal} />
         <SellerSection
           sellerPhotoUrl={sellerPhotoUrl}
           sellerBioText={sellerBioText}

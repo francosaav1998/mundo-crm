@@ -5,7 +5,6 @@ import { STATUSES } from "@/lib/dashboard/constants";
 import {
   getGmailComposeUrl,
   getOutlookComposeUrl,
-  getMailtoUrl,
   openLink,
 } from "@/lib/messaging";
 
@@ -85,7 +84,6 @@ export default function BulkEmail({ leads, T, isMobile, sellerName, showToast })
   const [statusFilter, setStatusFilter] = useState("Todos");
   const [cityFilter, setCityFilter] = useState("Todas");
   const [search, setSearch] = useState("");
-  const [sending, setSending] = useState(false);
   const [sentIds, setSentIds] = useState([]);
   const [newTemplateName, setNewTemplateName] = useState("");
   const [showAddTemplate, setShowAddTemplate] = useState(false);
@@ -196,46 +194,6 @@ export default function BulkEmail({ leads, T, isMobile, sellerName, showToast })
     showToast(`Outlook abierto para ${lead.name}`);
   };
 
-  const openMailto = (lead) => {
-    const { subject: subj, body: txt } = getRendered(lead);
-    openLink(getMailtoUrl(lead.email, subj, txt));
-    markSent(lead.id);
-    showToast(`Cliente de correo abierto para ${lead.name}`);
-  };
-
-  const sendSmtpBulk = async () => {
-    if (selectedLeads.length === 0) return;
-    if (!confirm(`Vas a enviar ${selectedLeads.length} correos reales por SMTP. ¿Continuar?`)) return;
-    setSending(true);
-    let ok = 0;
-    let fail = 0;
-    for (const lead of selectedLeads) {
-      const { subject: subj, body: txt } = getRendered(lead);
-      try {
-        const res = await fetch("/api/email/send", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            to: lead.email,
-            subject: subj,
-            body: txt,
-            fromName: sellerName || "Tu ejecutivo/a Mundo",
-          }),
-        });
-        if (res.ok) {
-          ok++;
-          markSent(lead.id);
-        } else {
-          fail++;
-        }
-      } catch {
-        fail++;
-      }
-    }
-    setSending(false);
-    showToast(`${ok} correos enviados${fail ? `, ${fail} fallidos` : ""}`);
-  };
-
   const cardStyle = {
     background: T.bgCard,
     border: `1px solid ${T.border}`,
@@ -341,7 +299,7 @@ export default function BulkEmail({ leads, T, isMobile, sellerName, showToast })
             </div>
           ) : (
             <button onClick={() => setShowAddTemplate(true)} style={{ ...btnActive(false), marginBottom: 12 }}>
-              <i className="bi bi-plus-lg" style={{ marginRight: 4 }}></i> Guardar como nueva plantilla
+              <i className="bi bi-plus-lg" style={{ marginRight: 4 }}></i> Agregar nueva plantilla
             </button>
           )}
         </div>
@@ -387,50 +345,10 @@ export default function BulkEmail({ leads, T, isMobile, sellerName, showToast })
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <button
-            onClick={sendSmtpBulk}
-            disabled={sending || selectedLeads.length === 0}
-            style={{
-              padding: "10px 20px",
-              borderRadius: "10px",
-              border: "none",
-              cursor: sending || selectedLeads.length === 0 ? "not-allowed" : "pointer",
-              background: sending || selectedLeads.length === 0 ? "rgba(255,255,255,0.06)" : T.accent,
-              color: sending || selectedLeads.length === 0 ? T.muted : "#FFFFFF",
-              fontWeight: 700,
-              fontSize: 13,
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              boxShadow: sending || selectedLeads.length === 0 ? "none" : T.glowGold,
-            }}
-          >
-            <i className="bi bi-send-fill" /> {sending ? "Enviando..." : `Enviar ${selectedLeads.length} por SMTP`}
-          </button>
-          <button
-            onClick={copyList}
-            disabled={selectedLeads.length === 0}
-            style={{
-              padding: "10px 20px",
-              borderRadius: "10px",
-              border: `1px solid ${T.border}`,
-              background: "transparent",
-              color: selectedLeads.length === 0 ? T.muted : T.text,
-              fontWeight: 700,
-              fontSize: 13,
-              cursor: selectedLeads.length === 0 ? "not-allowed" : "pointer",
-              opacity: selectedLeads.length === 0 ? 0.5 : 1,
-            }}
-          >
-            Copiar lista
-          </button>
-        </div>
-
         <div style={{ marginTop: 16, padding: "12px 16px", borderRadius: "12px", background: "rgba(253, 220, 2, 0.08)", border: `1px solid ${T.secondary}30`, display: "flex", alignItems: "flex-start", gap: 10 }}>
           <i className="bi bi-info-circle-fill" style={{ color: T.secondary, fontSize: 16, marginTop: 2 }}></i>
           <span style={{ fontSize: "12px", color: T.muted, lineHeight: 1.5 }}>
-            <strong style={{ color: T.text }}>Modo manual:</strong> seleccioná los leads y pinchá Gmail, Outlook o &quot;Mi cliente&quot; en cada fila. Se abre el correo con el asunto y cuerpo ya cargados. El envío real lo confirmás vos en cada cliente.
+            <strong style={{ color: T.text }}>Modo manual:</strong> seleccioná los leads y pinchá Gmail o Outlook en cada fila. Se abre el correo con el asunto y cuerpo ya cargados. El envío real lo confirmás vos en cada cliente.
           </span>
         </div>
       </div>
@@ -553,9 +471,6 @@ export default function BulkEmail({ leads, T, isMobile, sellerName, showToast })
                       </button>
                       <button onClick={() => openOutlook(lead)} style={emailClientBtn("#0078D4")} title="Abrir en Outlook">
                         <i className="bi bi-microsoft"></i> Outlook
-                      </button>
-                      <button onClick={() => openMailto(lead)} style={emailClientBtn("#6B7280")} title="Abrir en mi cliente">
-                        <i className="bi bi-envelope"></i> Mi cliente
                       </button>
                     </div>
                   )}

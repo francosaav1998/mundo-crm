@@ -13,8 +13,6 @@ const ALLOWED_KEYS = new Set([
   "footer_text",
   "whatsapp_number",
   "meta_pixel_id",
-  "bg_video_url",
-  "crm_email_use_smtp",
 ]);
 
 const MAX_KEY_LENGTH = 64;

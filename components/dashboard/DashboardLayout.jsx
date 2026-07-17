@@ -414,7 +414,7 @@ export default function DashboardLayout({
                   ¡Bienvenida! Tu landing está casi lista
                 </h3>
                 <p style={{ fontSize: "13px", color: T.muted, fontWeight: 500 }}>
-                  Personaliza tu foto, bio, video de fondo y verifica tu WhatsApp para que los clientes te encuentren.
+                  Personaliza tu foto, bio y verifica tu WhatsApp para que los clientes te encuentren.
                 </p>
               </div>
             </div>

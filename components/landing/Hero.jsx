@@ -1,9 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
-
 export default function Hero({
-  bgVideoUrl,
   onScrollTo,
   onSelectPlan,
   onOpenModal,
@@ -11,58 +8,11 @@ export default function Hero({
   featuredPlan = null,
   content = {},
 }) {
-  const videoRef = useRef(null);
   const companyName = company?.name || "Mundo";
   const c = content || {};
 
-  const videoType = bgVideoUrl
-    ? bgVideoUrl.match(/\.(webm)$/i)
-      ? "video/webm"
-      : bgVideoUrl.match(/\.(mov)$/i)
-      ? "video/quicktime"
-      : "video/mp4"
-    : "video/mp4";
-
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    const start = () => {
-      v.muted = true;
-      v.play().catch(() => {
-        v.muted = true;
-        v.play().catch(() => {});
-      });
-    };
-    start();
-    document.addEventListener("touchstart", start, { once: true });
-    document.addEventListener("click", start, { once: true });
-    window.addEventListener("scroll", () => { if (!v.paused) return; start(); }, { once: true, passive: true });
-    return () => {
-      document.removeEventListener("touchstart", start);
-      document.removeEventListener("click", start);
-    };
-  }, [bgVideoUrl]);
-
   return (
     <section id="inicio" className="hero">
-      {bgVideoUrl && (
-        <div className="hero-video-bg" aria-hidden="true">
-          <video
-            ref={videoRef}
-            className="hero-video-bg__el"
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
-            onCanPlay={(e) => { e.target.play().catch(() => {}); }}
-            onLoadedMetadata={(e) => { const v = e.target; v.muted = true; v.play().catch(() => {}); }}
-          >
-            <source src={bgVideoUrl} type={videoType} />
-          </video>
-          <div className="hero-video-bg__overlay" />
-        </div>
-      )}
       <div className="container">
         <div className="hero-content">
           <span className="badge-promo">

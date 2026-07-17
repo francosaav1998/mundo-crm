@@ -218,7 +218,7 @@ export default function BulkWhatsApp({ leads, T, isMobile, showToast, defaultMes
             </div>
           ) : (
             <button onClick={() => setShowAddTemplate(true)} style={{ ...ghostBtn, marginBottom: 12 }}>
-              <i className="bi bi-plus-lg" style={{ marginRight: 4 }}></i> Guardar como nueva plantilla
+              <i className="bi bi-plus-lg" style={{ marginRight: 4 }}></i> Agregar nueva plantilla
             </button>
           )}
 

@@ -43,6 +43,9 @@ export async function POST(request) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
+    const fileName = String(file.name || "").toLowerCase();
+    const fileType = fileName.endsWith(".csv") ? "csv" : "xlsx";
+
     let sellerId = null;
     let assignedTo = process.env.ADMIN_EMAIL || "";
 
@@ -55,7 +58,7 @@ export async function POST(request) {
       assignedTo = seller.email || session.user.email || "";
     }
 
-    const { leads: leadsToCreate, skipped, total } = await parseLeadsFromExcel(buffer, {
+    const { leads: leadsToCreate, skipped, total } = await parseLeadsFromExcel(buffer, fileType, {
       assignedTo,
       sellerId,
     });

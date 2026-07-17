@@ -6,7 +6,6 @@ import {
   getGmailComposeUrl,
   getOutlookComposeUrl,
   openLink,
-  openMailto,
 } from "@/lib/messaging";
 
 export default function MessageActionButtons({
@@ -55,8 +54,6 @@ export default function MessageActionButtons({
       openLink(getGmailComposeUrl(lead.email, subject, body));
     } else if (client === "outlook") {
       openLink(getOutlookComposeUrl(lead.email, subject, body));
-    } else {
-      openMailto(lead.email, subject, body);
     }
     setEmailOpen(false);
     onSent?.();
@@ -141,7 +138,6 @@ export default function MessageActionButtons({
             {[
               { id: "gmail", icon: "bi-google", label: "Gmail" },
               { id: "outlook", icon: "bi-microsoft", label: "Outlook" },
-              { id: "mailto", icon: "bi-envelope", label: "Mi cliente" },
             ].map((opt) => (
               <button
                 key={opt.id}

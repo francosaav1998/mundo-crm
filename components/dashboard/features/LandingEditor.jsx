@@ -926,7 +926,6 @@ function HeaderControls({ content, updateContent, updateArrayItem, addArrayItem,
 
 function ProfileControls({ profile, updateProfile, T, showToast }) {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
-  const [uploadingVideo, setUploadingVideo] = useState(false);
 
   const handlePhotoUpload = async (e) => {
     const file = e.target.files[0];
@@ -940,25 +939,6 @@ function ProfileControls({ profile, updateProfile, T, showToast }) {
       showToast(err.message || "Error al subir foto");
     } finally {
       setUploadingPhoto(false);
-    }
-  };
-
-  const handleVideoUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      showToast("El video no debe pesar más de 5 MB");
-      return;
-    }
-    setUploadingVideo(true);
-    try {
-      const { url } = await uploadFileBrowser(file, "videos");
-      updateProfile({ bgVideoUrl: url });
-      showToast("Video de fondo actualizado");
-    } catch (err) {
-      showToast(err.message || "Error al subir video");
-    } finally {
-      setUploadingVideo(false);
     }
   };
 
@@ -1088,22 +1068,6 @@ function ProfileControls({ profile, updateProfile, T, showToast }) {
             ))}
           </div>
         </Field>
-      </SectionBlock>
-
-      <SectionBlock title="Video de Fondo" T={T}>
-        <Field label="URL del video" T={T}>
-          <Input type="text" T={T} value={profile.bgVideoUrl || ""} onChange={(e) => updateProfile({ bgVideoUrl: e.target.value })} placeholder="https://..." />
-        </Field>
-        <label style={{ ...uploadBtnStyle, marginTop: 8, opacity: uploadingVideo ? 0.6 : 1, cursor: uploadingVideo ? "not-allowed" : "pointer" }}>
-          <i className={`bi ${uploadingVideo ? "bi-arrow-clockwise" : "bi-upload"}`}></i>
-          {uploadingVideo ? "Subiendo..." : "Subir video desde mi PC"}
-          <input type="file" accept="video/mp4,video/webm" disabled={uploadingVideo} onChange={handleVideoUpload} style={{ display: "none" }} />
-        </label>
-        {profile.bgVideoUrl && (
-          <div style={{ marginTop: 12, borderRadius: 12, overflow: "hidden", border: `1px solid ${T.border}`, background: "#000" }}>
-            <video src={profile.bgVideoUrl} autoPlay muted loop playsInline style={{ width: "100%", height: 120, objectFit: "cover", display: "block" }} />
-          </div>
-        )}
       </SectionBlock>
 
       <SectionBlock title="Meta Pixel" T={T}>

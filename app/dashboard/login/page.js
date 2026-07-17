@@ -119,38 +119,6 @@ export default function LoginPage() {
           )}
 
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-            <button
-              type="button"
-              onClick={() => router.push("/dashboard")}
-              style={{
-                width: "100%",
-                background: "rgba(128, 128, 255, 0.12)",
-                color: "#8080ff",
-                fontWeight: 700,
-                padding: "14px",
-                borderRadius: "9999px",
-                border: "1px solid rgba(128, 128, 255, 0.35)",
-                cursor: "pointer",
-                fontSize: "14px",
-                transition: "all 0.2s",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "8px",
-                marginBottom: "4px",
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.background = "rgba(128, 128, 255, 0.18)"}
-              onMouseLeave={(e) => e.currentTarget.style.background = "rgba(128, 128, 255, 0.12)"}
-            >
-              <i className="bi bi-person-badge-fill" />
-              Entrar como invitado
-            </button>
-
-            <div style={{ position: "relative", textAlign: "center", margin: "4px 0" }}>
-              <div style={{ position: "absolute", inset: "50% 0 0 0", height: "1px", background: "rgba(255,255,255,0.08)" }} />
-              <span style={{ position: "relative", background: "rgba(255,255,255,0.03)", padding: "0 12px", fontSize: "12px", color: "rgba(255,255,255,0.4)", fontWeight: 600 }}>o</span>
-            </div>
-
             <div>
               <label style={{ display: "block", fontSize: "11px", fontWeight: 600, color: "rgba(255,255,255,0.55)", textTransform: "uppercase", letterSpacing: "0.2em", marginBottom: "8px" }}>
                 Usuario

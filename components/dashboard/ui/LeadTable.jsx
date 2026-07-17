@@ -111,7 +111,7 @@ export default function LeadTable({ leads, onUpdateStatus, updating, T, isMobile
     setSentIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
   };
 
-  const desktopHeaders = ["Fecha", "Cliente", "Teléfono", "Email", "Ciudad/Comuna", "Dirección", "Plan Solicitado", "Asignado a", "Estado", "Acciones"];
+  const desktopHeaders = ["Fecha", "Cliente", "Teléfono", "Email", "Ciudad/Comuna", "Dirección", "Plan Solicitado", "Asignado a", "Estado"];
 
   return (
     <div style={{ overflowX: "auto" }}>
@@ -177,7 +177,10 @@ export default function LeadTable({ leads, onUpdateStatus, updating, T, isMobile
                   <div style={{ fontSize: "13px", fontWeight: 600, color: T.text }}>{formatDate(lead.createdAt)}</div>
                   <div style={{ fontSize: "11px", color: T.muted, marginTop: 2 }}>{formatTime(lead.createdAt)}</div>
                 </td>
-                <td style={{ padding: "18px 20px", fontSize: "14px", fontWeight: 600, color: T.text, fontFamily: "var(--font-heading), 'Outfit', sans-serif" }}>{lead.name}</td>
+                <td style={{ padding: "18px 20px" }}>
+                  <div style={{ fontSize: "14px", fontWeight: 600, color: T.text, fontFamily: "var(--font-heading), 'Outfit', sans-serif" }}>{lead.name}</div>
+                  <div style={{ marginTop: 8 }}>{actions}</div>
+                </td>
                 <td style={{ padding: "18px 20px", fontSize: "13px", fontWeight: 600, color: T.text }}>
                   <i className="bi bi-whatsapp" style={{ color: "#25D366", marginRight: 6 }} /> +56 {lead.phone}
                 </td>
@@ -193,7 +196,6 @@ export default function LeadTable({ leads, onUpdateStatus, updating, T, isMobile
                   <AssignedCell lead={lead} isAdmin={isAdmin} T={T} />
                 </td>
                 <td style={{ padding: "18px 20px" }}>{statusIcons}</td>
-                <td style={{ padding: "18px 20px" }}>{actions}</td>
               </tr>
             );
           })}

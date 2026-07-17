@@ -222,13 +222,13 @@ button, a, input, select, textarea {
 
 .header-top {
   background-color: var(--color-primary-dark);
-  padding: 0.5rem 0;
   font-size: var(--text-fluid-xs);
   color: var(--color-text-light);
   font-weight: 500;
 }
 
-.header-top .container {
+.header-top-inner {
+  padding: 0.5rem 1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -249,6 +249,54 @@ button, a, input, select, textarea {
 .header-top-info span i {
   color: var(--color-secondary);
   margin-right: 0.3rem;
+}
+
+/* Marquee de anuncios en header-top */
+.marquee-bar {
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.15);
+  padding: 0.5rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.marquee-list {
+  display: flex;
+  gap: 2.5rem;
+  width: max-content;
+  animation: marquee-scroll 28s linear infinite;
+  will-change: transform;
+}
+
+.marquee-bar:hover .marquee-list {
+  animation-play-state: paused;
+}
+
+.marquee-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.marquee-item i {
+  color: var(--color-secondary);
+  font-size: 0.95rem;
+}
+
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@media (max-width: 768px) {
+  .marquee-bar { padding: 0.45rem 0; }
+  .marquee-list { gap: 1.5rem; animation-duration: 22s; }
+  .marquee-item { gap: 0.4rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-list { animation: none; }
 }
 
 .main-nav {
@@ -1196,69 +1244,6 @@ button, a, input, select, textarea {
 
 @media (max-width: 480px) {
   .seller-stats { grid-template-columns: 1fr; gap: 1rem; }
-}
-
-/* -- FONDO DE VIDEO en HERO (primera seccion) -- */
-.hero-video-bg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  z-index: 0;
-  pointer-events: none;
-  background: linear-gradient(135deg, #001a24 0%, #003044 100%);
-}
-.hero-video-bg__el {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  min-width: 100%;
-  min-height: 100%;
-  filter: saturate(1.05);
-}
-.hero-video-bg__overlay {
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(180deg, rgba(0,26,36,0.45) 0%, rgba(0,58,72,0.55) 50%, rgba(0,90,111,0.7) 100%),
-    linear-gradient(120deg, rgba(0, 90, 111, 0.45) 0%, transparent 60%);
-  backdrop-filter: blur(1.5px);
-  -webkit-backdrop-filter: blur(1.5px);
-}
-.hero > .container {
-  position: relative;
-  z-index: 1;
-}
-
-/* Modo oscuro: overlay mas denso para contraste del texto */
-[data-landing-theme="dark"] .hero-video-bg__overlay {
-  background:
-    linear-gradient(180deg, rgba(10,14,26,0.75) 0%, rgba(0,58,72,0.78) 50%, rgba(10,14,26,0.85) 100%);
-}
-
-/* Mobile: overlay mas fuerte y ligero scale para evitar bordes vacios */
-@media (max-width: 768px) {
-  .hero-video-bg__el {
-    transform: translate(-50%, -50%) scale(1.1);
-  }
-  .hero-video-bg__overlay {
-    background:
-      linear-gradient(180deg, rgba(0,26,36,0.45) 0%, rgba(0,58,72,0.55) 50%, rgba(0,90,111,0.7) 100%);
-    backdrop-filter: blur(1px);
-    -webkit-backdrop-filter: blur(1px);
-  }
-}
-
-/* Accesibilidad: respetar reduccion de movimiento */
-@media (prefers-reduced-motion: reduce) {
-  .hero-video-bg__el {
-    animation: none !important;
-  }
 }
 
 /* -- LANDING THEME TOGGLE (modo oscuro, manteniendo branding original) -- */
