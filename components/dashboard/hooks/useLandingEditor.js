@@ -148,14 +148,6 @@ export function useLandingEditor({ seller, showToast }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           landingContent: content,
-          name: profile.name,
-          phone: profile.phone,
-          photo: profile.photo,
-          bio: profile.bio,
-          gender: profile.gender,
-          footerText: profile.footerText,
-          metaPixelId: profile.metaPixelId,
-          landingTheme: profile.landingTheme,
         }),
       });
 
@@ -195,7 +187,7 @@ export function useLandingEditor({ seller, showToast }) {
     } finally {
       setSaving(false);
     }
-  }, [content, plans, profile, showToast]);
+  }, [content, plans, showToast]);
 
   return {
     loading,

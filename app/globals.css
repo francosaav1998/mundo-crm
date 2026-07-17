@@ -254,9 +254,9 @@ button, a, input, select, textarea {
 /* Marquee de anuncios en header-top */
 .marquee-bar {
   overflow: hidden;
-  background: rgba(0, 0, 0, 0.15);
-  padding: 0.5rem 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--color-primary-dark);
+  padding: 0.55rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .marquee-list {
@@ -265,6 +265,7 @@ button, a, input, select, textarea {
   width: max-content;
   animation: marquee-scroll 28s linear infinite;
   will-change: transform;
+  color: var(--color-text-light);
 }
 
 .marquee-bar:hover .marquee-list {
@@ -277,6 +278,7 @@ button, a, input, select, textarea {
   gap: 0.5rem;
   font-weight: 600;
   white-space: nowrap;
+  color: var(--color-text-light);
 }
 
 .marquee-item i {

@@ -36,7 +36,7 @@ export default async function DashboardPage() {
       where: sellerWhere,
       orderBy: { createdAt: "desc" },
       take: INITIAL_LIMIT,
-      select: { id: true, name: true, phone: true, city: true, plan: true, status: true, createdAt: true },
+      select: { id: true, name: true, phone: true, email: true, city: true, address: true, plan: true, status: true, createdAt: true },
     }),
     prisma.lead.count({ where: sellerWhere }),
   ]);

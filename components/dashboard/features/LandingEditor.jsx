@@ -1,12 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import Image from "next/image";
+import { useState } from "react";
 import { useLandingEditor } from "../hooks/useLandingEditor";
-import { normalizeWhatsAppNumber, inferGender, updateSellerConfig } from "@/lib/seller";
-import { uploadFileBrowser } from "@/lib/upload/browser";
 const SECTIONS = [
-  { id: "perfil", label: "Perfil", icon: "bi-person-circle" },
   { id: "hero", label: "Hero", icon: "bi-house-door-fill" },
   { id: "seller", label: "Vendedor", icon: "bi-person-badge-fill" },
   { id: "plans", label: "Planes", icon: "bi-wifi-fill" },
@@ -173,9 +169,6 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
                 padding: isMobile ? "16px" : "22px",
               }}
             >
-              {activeSection === "perfil" && (
-                <ProfileControls profile={profile} updateProfile={updateProfile} T={T} showToast={showToast} />
-              )}
               {activeSection === "hero" && (
                 <HeroControls content={content.hero} updateContent={(u) => updateContent("hero", u)} T={T} isMobile={isMobile} />
               )}
@@ -918,167 +911,6 @@ function HeaderControls({ content, updateContent, updateArrayItem, addArrayItem,
       <SectionBlock title="Botón CTA" T={T}>
         <Field label="Texto del botón" T={T}>
           <Input type="text" T={T} value={content.cta || ""} onChange={(e) => updateContent({ cta: e.target.value })} />
-        </Field>
-      </SectionBlock>
-    </>
-  );
-}
-
-function ProfileControls({ profile, updateProfile, T, showToast }) {
-  const [uploadingPhoto, setUploadingPhoto] = useState(false);
-
-  const handlePhotoUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    setUploadingPhoto(true);
-    try {
-      const { url } = await uploadFileBrowser(file, "seller");
-      updateProfile({ photo: url });
-      showToast("Foto actualizada");
-    } catch (err) {
-      showToast(err.message || "Error al subir foto");
-    } finally {
-      setUploadingPhoto(false);
-    }
-  };
-
-  const uploadBtnStyle = {
-    display: "inline-flex",
-    alignItems: "center",
-    gap: 6,
-    padding: "10px 16px",
-    borderRadius: 10,
-    background: `${T.accent}15`,
-    border: `1px solid ${T.accent}40`,
-    color: T.accent,
-    fontWeight: 700,
-    fontSize: 13,
-    cursor: "pointer",
-    transition: "all 0.2s",
-  };
-
-  return (
-    <>
-      <SectionBlock title="Foto y Nombre" T={T}>
-        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 18 }}>
-          <div
-            style={{
-              width: 88,
-              height: 88,
-              borderRadius: 18,
-              overflow: "hidden",
-              background: T.inputBg,
-              border: `1px solid ${T.border}`,
-              flexShrink: 0,
-              position: "relative",
-            }}
-          >
-            {profile.photo ? (
-              <Image src={profile.photo} alt="Vendedor" fill style={{ objectFit: "cover" }} />
-            ) : (
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: T.muted, fontSize: 32 }}>
-                <i className="bi bi-person-fill" />
-              </div>
-            )}
-          </div>
-          <label style={{ ...uploadBtnStyle, opacity: uploadingPhoto ? 0.6 : 1, cursor: uploadingPhoto ? "not-allowed" : "pointer" }}>
-            <i className={`bi ${uploadingPhoto ? "bi-arrow-clockwise" : "bi-upload"}`}></i>
-            {uploadingPhoto ? "Subiendo..." : "Subir Foto"}
-            <input type="file" accept="image/*" disabled={uploadingPhoto} onChange={handlePhotoUpload} style={{ display: "none" }} />
-          </label>
-        </div>
-        <Field label="Nombre del Ejecutivo/a" T={T}>
-          <Input type="text" T={T} value={profile.name || ""} onChange={(e) => updateProfile({ name: e.target.value })} />
-        </Field>
-        <Field label="Género para adaptar la landing" T={T}>
-          <div style={{ display: "flex", gap: 10 }}>
-            {[
-              { value: "", label: "Auto-detectar" },
-              { value: "female", label: "Mujer" },
-              { value: "male", label: "Hombre" },
-            ].map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => updateProfile({ gender: option.value })}
-                style={{
-                  flex: 1,
-                  padding: "12px",
-                  borderRadius: 12,
-                  border: profile.gender === option.value ? `2px solid ${T.accent}` : `1px solid ${T.border}`,
-                  background: profile.gender === option.value ? `${T.accent}15` : "transparent",
-                  color: profile.gender === option.value ? T.accent : T.muted,
-                  cursor: "pointer",
-                  fontSize: 14,
-                  fontWeight: 700,
-                }}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-        </Field>
-      </SectionBlock>
-
-      <SectionBlock title="Contacto y Bio" T={T}>
-        <Field label="Teléfono WhatsApp (Formato Chile 569...)" T={T}>
-          <Input
-            type="text"
-            T={T}
-            value={profile.phone || ""}
-            onChange={(e) => updateProfile({ phone: normalizeWhatsAppNumber(e.target.value) })}
-            placeholder="Ej: 56912345678"
-          />
-        </Field>
-        <Field label="Texto de Presentación / Bio" T={T}>
-          <Textarea T={T} value={profile.bio || ""} onChange={(e) => updateProfile({ bio: e.target.value })} rows={4} />
-        </Field>
-        <Field label="Texto del Footer" T={T}>
-          <Textarea T={T} value={profile.footerText || ""} onChange={(e) => updateProfile({ footerText: e.target.value })} rows={3} />
-        </Field>
-      </SectionBlock>
-
-      <SectionBlock title="Apariencia" T={T}>
-        <Field label="Modo de vista" T={T}>
-          <div style={{ display: "flex", gap: 10 }}>
-            {["light", "dark"].map((theme) => (
-              <button
-                key={theme}
-                type="button"
-                onClick={() => updateProfile({ landingTheme: theme })}
-                style={{
-                  flex: 1,
-                  padding: "12px",
-                  borderRadius: 12,
-                  border: profile.landingTheme === theme ? `2px solid ${T.accent}` : `1px solid ${T.border}`,
-                  background: profile.landingTheme === theme ? `${T.accent}15` : "transparent",
-                  color: profile.landingTheme === theme ? T.accent : T.muted,
-                  cursor: "pointer",
-                  fontSize: 14,
-                  fontWeight: 700,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 8,
-                }}
-              >
-                <i className={`bi bi-${theme === "light" ? "sun-fill" : "moon-stars-fill"}`}></i>
-                {theme === "light" ? "Día" : "Noche"}
-              </button>
-            ))}
-          </div>
-        </Field>
-      </SectionBlock>
-
-      <SectionBlock title="Meta Pixel" T={T}>
-        <Field label="ID del Pixel (solo números)" T={T}>
-          <Input
-            type="text"
-            T={T}
-            value={profile.metaPixelId || ""}
-            onChange={(e) => updateProfile({ metaPixelId: e.target.value.replace(/\D/g, "") })}
-            placeholder="Ej: 123456789012345"
-          />
         </Field>
       </SectionBlock>
     </>

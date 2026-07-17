@@ -238,30 +238,29 @@ export default function DashboardLayout({
               Ver Landing de Ventas
             </a>
           )}
-          {sidebarOpen && (
-            <button
-              onClick={logout}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 10,
-                width: "100%",
-                padding: "12px 16px",
-                borderRadius: "9999px",
-                background: "rgba(239, 68, 68, 0.08)",
-                border: "1px solid rgba(239, 68, 68, 0.18)",
-                color: "#EF4444",
-                cursor: "pointer",
-                fontSize: 13,
-                fontWeight: 700,
-                transition: "all 0.2s",
-              }}
-            >
-              <i className="bi bi-box-arrow-left" />
-              Cerrar Sesión
-            </button>
-          )}
+          <button
+            onClick={logout}
+            title="Cerrar Sesión"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: sidebarOpen ? 10 : 0,
+              width: "100%",
+              padding: sidebarOpen ? "12px 16px" : "10px",
+              borderRadius: sidebarOpen ? "9999px" : "12px",
+              background: "rgba(239, 68, 68, 0.08)",
+              border: "1px solid rgba(239, 68, 68, 0.18)",
+              color: "#EF4444",
+              cursor: "pointer",
+              fontSize: 13,
+              fontWeight: 700,
+              transition: "all 0.2s",
+            }}
+          >
+            <i className="bi bi-box-arrow-left" />
+            {sidebarOpen && <span>Cerrar Sesión</span>}
+          </button>
         </div>
       </aside>
 
