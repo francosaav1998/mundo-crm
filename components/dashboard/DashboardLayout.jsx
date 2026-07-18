@@ -83,10 +83,7 @@ export default function DashboardLayout({
       )}
 
       {/* Sidebar */}
-      <motion.aside
-        initial={{ x: -20, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+      <aside
         className={`dashboard-sidebar ${sidebarOpen ? "dashboard-sidebar-open" : ""}`}
         style={{
           background: T.sidebarBg,
@@ -257,7 +254,7 @@ export default function DashboardLayout({
             {sidebarOpen && <span>Cerrar Sesión</span>}
           </RippleButton>
         </div>
-      </motion.aside>
+      </aside>
 
       {/* Main Content */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, zIndex: 1 }}>
@@ -280,7 +277,7 @@ export default function DashboardLayout({
             <Tooltip content="Abrir menú" position="bottom">
               <RippleButton
                 className="dashboard-menu-btn"
-                onClick={() => setSidebarOpen(true)}
+                onClick={() => setSidebarOpen(prev => !(prev ?? !isMobile))}
                 style={{
                   background: "rgba(255,255,255,0.05)",
                   border: `1px solid ${T.border}`,
