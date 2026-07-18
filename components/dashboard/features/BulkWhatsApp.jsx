@@ -1,5 +1,7 @@
 "use client";
 import { useMemo, useState, useEffect } from "react";
+import RippleButton from "@/components/ui/RippleButton";
+import SectionHeader from "@/components/dashboard/ui/SectionHeader";
 import { renderTemplate } from "@/lib/dashboard/utils";
 import { getWhatsAppUrl, openLink } from "@/lib/messaging";
 import { STATUSES, STATUS_CONFIG } from "@/lib/dashboard/constants";
@@ -180,12 +182,20 @@ export default function BulkWhatsApp({ leads, T, isMobile, showToast, defaultMes
   const card = { background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: "24px", padding: isMobile ? "20px" : "30px", boxShadow: "0 20px 50px rgba(0, 0, 0, 0.15)", maxWidth: "900px", margin: "0 auto" };
 
   return (
-    <div style={card}>
-      <p style={{ fontSize: "13px", color: T.muted, marginBottom: 24 }}>
-        Escribe una plantilla, selecciona clientes y abre chats personalizados uno a uno.
-      </p>
+    <div>
+      <SectionHeader
+        eyebrow="WhatsApp"
+        title="Mensajes masivos por WhatsApp"
+        description="Escribe plantillas con variables, selecciona clientes y abre sus chats de WhatsApp con el mensaje personalizado listo para enviar."
+        T={T}
+        isMobile={isMobile}
+      />
+      <div style={card}>
+        <p style={{ fontSize: "13px", color: T.muted, marginBottom: 24 }}>
+          Escribe una plantilla, selecciona clientes y abre chats personalizados uno a uno.
+        </p>
 
-      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: isMobile ? 16 : 24, marginBottom: 24 }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: isMobile ? 16 : 24, marginBottom: 24 }}>
         <div>
           <Label T={T}>Plantilla</Label>
           <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
@@ -194,13 +204,13 @@ export default function BulkWhatsApp({ leads, T, isMobile, showToast, defaultMes
                 <option key={t.id} value={t.id}>{t.name}</option>
               ))}
             </select>
-            <button onClick={updateSelectedTemplate} style={actionBtn} title="Guardar cambios en esta plantilla">
+            <RippleButton onClick={updateSelectedTemplate} style={actionBtn} title="Guardar cambios en esta plantilla">
               <i className="bi bi-save" style={{ marginRight: 4 }}></i> Guardar
-            </button>
+            </RippleButton>
             {templates.length > 1 && (
-              <button onClick={() => deleteTemplate(selectedTemplateId)} style={ghostBtn} title="Eliminar plantilla">
+              <RippleButton onClick={() => deleteTemplate(selectedTemplateId)} style={ghostBtn} title="Eliminar plantilla">
                 <i className="bi bi-trash"></i>
-              </button>
+              </RippleButton>
             )}
           </div>
 
@@ -213,13 +223,13 @@ export default function BulkWhatsApp({ leads, T, isMobile, showToast, defaultMes
                 onChange={(e) => setNewTemplateName(e.target.value)}
                 style={{ ...inputStyle, flex: 1 }}
               />
-              <button onClick={saveCurrentAsTemplate} style={actionBtn}>Crear</button>
-              <button onClick={() => setShowAddTemplate(false)} style={ghostBtn}>Cancelar</button>
+              <RippleButton onClick={saveCurrentAsTemplate} style={actionBtn}>Crear</RippleButton>
+              <RippleButton onClick={() => setShowAddTemplate(false)} style={ghostBtn}>Cancelar</RippleButton>
             </div>
           ) : (
-            <button onClick={() => setShowAddTemplate(true)} style={{ ...ghostBtn, marginBottom: 12 }}>
+            <RippleButton onClick={() => setShowAddTemplate(true)} style={{ ...ghostBtn, marginBottom: 12 }}>
               <i className="bi bi-plus-lg" style={{ marginRight: 4 }}></i> Agregar nueva plantilla
-            </button>
+            </RippleButton>
           )}
 
           <Label T={T}>Mensaje</Label>
@@ -227,10 +237,10 @@ export default function BulkWhatsApp({ leads, T, isMobile, showToast, defaultMes
           <span style={{ fontSize: "11px", color: T.muted, marginTop: 8, display: "block" }}>Las variables se reemplazan automáticamente por los datos de cada cliente.</span>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 12 }}>
             {VARS.map((v) => (
-              <button key={v.tag} type="button" onClick={() => setBulkTemplate((prev) => `${prev} ${v.tag}`)} style={tagBtn}>
+              <RippleButton key={v.tag} type="button" onClick={() => setBulkTemplate((prev) => `${prev} ${v.tag}`)} style={tagBtn}>
                 <i className="bi bi-plus-lg" style={{ marginRight: 4 }}></i>
                 {v.label}
-              </button>
+              </RippleButton>
             ))}
           </div>
         </div>
@@ -271,14 +281,14 @@ export default function BulkWhatsApp({ leads, T, isMobile, showToast, defaultMes
       </div>
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12, alignItems: "center" }}>
-        <button onClick={selectAllBulkFiltered} style={actionBtn}>
+        <RippleButton onClick={selectAllBulkFiltered} style={actionBtn}>
           <i className="bi bi-check2-all" style={{ marginRight: 6 }}></i>
           Seleccionar filtrados ({bulkFilteredLeads.length})
-        </button>
-        <button onClick={clearBulkSelection} style={ghostBtn}>
+        </RippleButton>
+        <RippleButton onClick={clearBulkSelection} style={ghostBtn}>
           <i className="bi bi-x-lg" style={{ marginRight: 6 }}></i>
           Limpiar selección
-        </button>
+        </RippleButton>
         <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10 }}>
           <span style={{ fontSize: "13px", fontWeight: 800, color: selectedBulkLeads.length > 0 ? T.accent : T.muted }}>
             <i className="bi bi-people-fill" style={{ marginRight: 4 }}></i>
@@ -315,7 +325,7 @@ export default function BulkWhatsApp({ leads, T, isMobile, showToast, defaultMes
                 </div>
                 <StatusBadge status={lead.status} T={T} />
                 {checked && (
-                  <button
+                  <RippleButton
                     onClick={(e) => { e.stopPropagation(); sendToLead(lead); }}
                     style={{
                       display: "inline-flex",
@@ -328,13 +338,12 @@ export default function BulkWhatsApp({ leads, T, isMobile, showToast, defaultMes
                       color: "#fff",
                       fontSize: "12px",
                       fontWeight: 700,
-                      cursor: "pointer",
                       flexShrink: 0,
                     }}
                   >
                     <i className={`bi ${sent ? "bi-check-lg" : "bi-whatsapp"}`}></i>
                     {sent ? "Abierto" : "Enviar"}
-                  </button>
+                  </RippleButton>
                 )}
               </div>
             );
@@ -343,14 +352,14 @@ export default function BulkWhatsApp({ leads, T, isMobile, showToast, defaultMes
       </div>
 
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-        <button
+        <RippleButton
           onClick={copyBulkLinks}
           disabled={selectedBulkLeads.length === 0}
-          style={{ flex: "1 1 240px", background: "transparent", color: T.accent, fontWeight: 700, padding: "16px", borderRadius: "12px", border: `1px solid ${T.accent}40`, cursor: selectedBulkLeads.length === 0 ? "not-allowed" : "pointer", fontSize: "14px", opacity: selectedBulkLeads.length === 0 ? 0.5 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, transition: "all 0.2s" }}
+          style={{ flex: "1 1 240px", background: "transparent", color: T.accent, fontWeight: 700, padding: "16px", borderRadius: "12px", border: `1px solid ${T.accent}40`, fontSize: "14px", opacity: selectedBulkLeads.length === 0 ? 0.5 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
         >
           <i className="bi bi-clipboard-check-fill"></i>
           Copiar {selectedBulkLeads.length} enlaces
-        </button>
+        </RippleButton>
       </div>
 
       <div style={{ marginTop: 16, padding: "12px 16px", borderRadius: "12px", background: "rgba(253, 220, 2, 0.08)", border: `1px solid ${T.secondary}30`, display: "flex", alignItems: "flex-start", gap: 10 }}>
@@ -358,6 +367,7 @@ export default function BulkWhatsApp({ leads, T, isMobile, showToast, defaultMes
         <span style={{ fontSize: "12px", color: T.muted, lineHeight: 1.5 }}>
           <strong style={{ color: T.text }}>Modo manual:</strong> seleccioná los clientes y pinchá &quot;Enviar&quot; en cada fila. Se abre el chat de WhatsApp con el mensaje ya cargado. WhatsApp no envía el mensaje automáticamente — vos lo confirmás en cada chat.
         </span>
+        </div>
       </div>
     </div>
   );

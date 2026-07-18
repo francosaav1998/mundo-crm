@@ -5,13 +5,19 @@ export async function proxy(request) {
   const { response, user } = await updateSession(request);
   const { pathname } = request.nextUrl;
 
+  // Acceso local rápido para desarrollo (alineado con getSession() de lib/supabase/server.js)
+  const isLocalDevAdmin =
+    process.env.NODE_ENV === "development" &&
+    request.cookies.get("mundo-local-auth")?.value === "admin";
+  const effectiveUser = user || (isLocalDevAdmin ? { email: "local-admin" } : null);
+
   // Redirect authenticated users away from login page
-  if (pathname === "/dashboard/login" && user) {
+  if (pathname === "/dashboard/login" && effectiveUser) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   // Protect dashboard routes (except login)
-  if (pathname.startsWith("/dashboard") && pathname !== "/dashboard/login" && !user) {
+  if (pathname.startsWith("/dashboard") && pathname !== "/dashboard/login" && !effectiveUser) {
     return NextResponse.redirect(new URL("/dashboard/login", request.url));
   }
 

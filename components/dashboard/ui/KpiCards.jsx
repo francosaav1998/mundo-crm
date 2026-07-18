@@ -1,5 +1,15 @@
 "use client";
 
+import { motion } from "framer-motion";
+import CountUp from "@/components/ui/CountUp";
+import { staggerContainer, staggerItem } from "@/lib/animations";
+
+/**
+ * KpiCards — Tarjetas KPI con:
+ * - Entrada escalonada (fade + slide up) vía stagger de framer-motion.
+ * - Contadores animados (CountUp) al entrar en viewport.
+ * - Hover elegante con lift + sombra (clase `hoverable`).
+ */
 export default function KpiCards({ kpis, T }) {
   const cards = [
     { label: "Total Leads", value: kpis.total, icon: "bi-people-fill", color: T.accent },
@@ -9,24 +19,31 @@ export default function KpiCards({ kpis, T }) {
   ];
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 180px), 1fr))", gap: "clamp(12px, 1vw + 6px, 20px)", marginBottom: "clamp(24px, 2vw + 14px, 40px)" }}>
+    <motion.div
+      variants={staggerContainer}
+      initial="hidden"
+      animate="visible"
+      style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 180px), 1fr))", gap: "clamp(12px, 1vw + 6px, 20px)", marginBottom: "clamp(24px, 2vw + 14px, 40px)" }}
+    >
       {cards.map((kpi) => (
-        <div
+        <motion.div
           key={kpi.label}
-          className="glass-card"
+          variants={staggerItem}
+          className="glass-card hoverable"
           style={{
             padding: "clamp(16px, 1vw + 10px, 24px)",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            transition: "all 0.3s",
           }}
         >
           <div style={{ minWidth: 0 }}>
             <span style={{ fontSize: "clamp(10px, 0.5vw + 8px, 11px)", color: T.muted, textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.15em" }}>
               {kpi.label}
             </span>
-            <div style={{ fontSize: "clamp(26px, 1.5vw + 20px, 34px)", fontWeight: 700, color: T.text, marginTop: 8, fontFamily: "var(--font-heading), 'Outfit', sans-serif", letterSpacing: "-0.02em" }}>{kpi.value}</div>
+            <div style={{ fontSize: "clamp(26px, 1.5vw + 20px, 34px)", fontWeight: 700, color: T.text, marginTop: 8, fontFamily: "var(--font-heading), 'Outfit', sans-serif", letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>
+              <CountUp value={kpi.value} />
+            </div>
           </div>
           <div
             style={{
@@ -44,8 +61,8 @@ export default function KpiCards({ kpis, T }) {
           >
             <i className={`bi ${kpi.icon}`} style={{ color: kpi.color, fontSize: "clamp(16px, 1vw + 12px, 20px)" }} />
           </div>
-        </div>
+        </motion.div>
       ))}
-    </div>
+    </motion.div>
   );
 }

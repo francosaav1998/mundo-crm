@@ -57,7 +57,6 @@ export default function Header({ menuOpen, setMenuOpen, onScrollTo, sellerLabels
             <span>{sellerLabels.executiveCapitalized || "Ejecutivo/a"} de Ventas Oficial {companyName}</span>
           </div>
         </div>
-        <MarqueeBar items={marqueeItems} />
       </div>
 
       <header className="site-header">
@@ -103,6 +102,7 @@ export default function Header({ menuOpen, setMenuOpen, onScrollTo, sellerLabels
               <i className={menuOpen ? "bi bi-x-lg" : "bi bi-list"}></i>
             </button>
           </nav>
+          <MarqueeBar items={marqueeItems} />
         </div>
       </header>
     </>

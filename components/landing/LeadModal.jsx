@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import RippleButton from "@/components/ui/RippleButton";
+import { modalOverlay, modalContent } from "@/lib/animations";
 
 const DEFAULT_OPTIONS = ["Necesito Asesoría / Otro"];
 
@@ -36,7 +39,19 @@ export default function LeadModal({ isOpen, onClose, sellerId, sellerName, initi
     };
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  // Sincroniza el plan cada vez que se abre el modal (o cambia el plan
+  // con el modal abierto) usando el patrón oficial de React "adjust
+  // state during render". Antes se remontaba el componente vía `key`,
+  // lo que destruía AnimatePresence y eliminaba la animación de salida.
+  const [prevSyncKey, setPrevSyncKey] = useState("");
+  const syncKey = isOpen ? `open:${defaultPlan}` : "closed";
+  if (syncKey !== prevSyncKey) {
+    setPrevSyncKey(syncKey);
+    if (isOpen) {
+      setFormData((prev) => ({ ...prev, plan: defaultPlan }));
+      setStatus({ type: "", message: "" });
+    }
+  }
 
   const update = (key, value) => setFormData((prev) => ({ ...prev, [key]: value }));
 
@@ -81,35 +96,45 @@ export default function LeadModal({ isOpen, onClose, sellerId, sellerName, initi
   };
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 1000,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "16px",
-        background: "rgba(0, 0, 0, 0.6)",
-        backdropFilter: "blur(4px)",
-      }}
-      onClick={onClose}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "520px",
-          maxHeight: "90vh",
-          overflowY: "auto",
-          background: "#FFFFFF",
-          borderRadius: "24px",
-          padding: "clamp(20px, 4vw, 28px)",
-          boxShadow: "0 25px 60px rgba(0,0,0,0.35)",
-          position: "relative",
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          variants={modalOverlay}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 1000,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "16px",
+            background: "rgba(0, 0, 0, 0.6)",
+            backdropFilter: "blur(4px)",
+          }}
+          onClick={onClose}
+        >
+          <motion.div
+            variants={modalContent}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            style={{
+              width: "100%",
+              maxWidth: "520px",
+              maxHeight: "90vh",
+              overflowY: "auto",
+              background: "#FFFFFF",
+              borderRadius: "24px",
+              padding: "clamp(20px, 4vw, 28px)",
+              boxShadow: "0 25px 60px rgba(0,0,0,0.35)",
+              position: "relative",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+        <RippleButton
           onClick={onClose}
           style={{
             position: "absolute",
@@ -118,13 +143,19 @@ export default function LeadModal({ isOpen, onClose, sellerId, sellerName, initi
             background: "transparent",
             border: "none",
             fontSize: "22px",
-            cursor: "pointer",
             color: "#64748B",
+            width: 36,
+            height: 36,
+            borderRadius: "50%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 0,
           }}
           aria-label="Cerrar"
         >
           <i className="bi bi-x-lg"></i>
-        </button>
+        </RippleButton>
 
         <h2 style={{ fontSize: "22px", fontWeight: 800, color: "#00748E", marginBottom: "6px" }}>
           Consultar Factibilidad
@@ -286,9 +317,11 @@ export default function LeadModal({ isOpen, onClose, sellerId, sellerName, initi
             </select>
           </div>
 
-          <button
+          <RippleButton
             type="submit"
             disabled={submitting}
+            loading={submitting}
+            loadingText="Enviando..."
             style={{
               width: "100%",
               marginTop: "8px",
@@ -299,8 +332,6 @@ export default function LeadModal({ isOpen, onClose, sellerId, sellerName, initi
               color: "#FFFFFF",
               fontWeight: 800,
               fontSize: "15px",
-              cursor: submitting ? "not-allowed" : "pointer",
-              opacity: submitting ? 0.7 : 1,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -308,8 +339,8 @@ export default function LeadModal({ isOpen, onClose, sellerId, sellerName, initi
             }}
           >
             <i className="bi bi-send-fill"></i>
-            {submitting ? "Enviando..." : "Enviar solicitud"}
-          </button>
+            Enviar solicitud
+          </RippleButton>
 
           <p style={{ fontSize: "11px", color: "#94A3B8", textAlign: "center" }}>
             Al enviar, aceptas nuestra{" "}
@@ -319,7 +350,9 @@ export default function LeadModal({ isOpen, onClose, sellerId, sellerName, initi
             .
           </p>
         </form>
-      </div>
-    </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

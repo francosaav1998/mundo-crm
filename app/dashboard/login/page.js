@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { motion } from "framer-motion";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -47,10 +48,14 @@ export default function LoginPage() {
         justifyContent: "center",
         padding: "24px",
         position: "relative",
+        overflow: "hidden",
       }}
     >
       {/* EducMark Aurora Background */}
-      <div
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1, ease: "easeOut" }}
         style={{
           position: "fixed",
           inset: 0,
@@ -66,8 +71,16 @@ export default function LoginPage() {
 
       <div style={{ width: "100%", maxWidth: "420px", zIndex: 1 }}>
         {/* Logo and title */}
-        <div style={{ textAlign: "center", marginBottom: "32px" }}>
-          <div
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          style={{ textAlign: "center", marginBottom: "32px" }}
+        >
+          <motion.div
+            initial={{ scale: 0.7, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             style={{
               width: "64px",
               height: "64px",
@@ -81,13 +94,16 @@ export default function LoginPage() {
             }}
           >
             <i className="bi bi-globe-americas" style={{ color: "#fff", fontSize: "28px" }} />
-          </div>
+          </motion.div>
           <h1 style={{ fontSize: "28px", fontWeight: 700, color: "#FFFFFF", letterSpacing: "-0.02em", fontFamily: "var(--font-heading), 'Outfit', sans-serif" }}>CRM Mundo</h1>
           <p style={{ color: "rgba(240, 240, 245, 0.65)", fontSize: "14px", marginTop: "6px", fontWeight: 500 }}>Acceso ejecutivos de ventas</p>
-        </div>
+        </motion.div>
 
         {/* Card Login */}
-        <div
+        <motion.div
+          initial={{ opacity: 0, y: 30, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.55, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
           style={{
             background: "rgba(255, 255, 255, 0.03)",
             border: "1px solid rgba(255, 255, 255, 0.06)",
@@ -218,7 +234,12 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <div style={{ marginTop: "24px", paddingTop: "20px", borderTop: "1px solid rgba(255, 255, 255, 0.08)", textAlign: "center" }}>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.45, duration: 0.4 }}
+            style={{ marginTop: "24px", paddingTop: "20px", borderTop: "1px solid rgba(255, 255, 255, 0.08)", textAlign: "center" }}
+          >
             <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.5)", marginBottom: "12px" }}>
               ¿Eres ejecutiva y no tienes cuenta?
             </p>
@@ -228,8 +249,8 @@ export default function LoginPage() {
             <Link href="/" style={{ fontSize: "13px", fontWeight: 600, color: "rgba(255,255,255,0.5)", textDecoration: "none" }}>
               ← Volver a la landing
             </Link>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
     </div>
   );

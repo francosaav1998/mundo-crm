@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
 import StatusIcons from "./StatusIcons";
 import MessageActionButtons from "./MessageActionButtons";
 import { formatDate, formatTime } from "@/lib/dashboard/utils";
@@ -81,8 +81,46 @@ function AssignedCell({ lead, isAdmin, T }) {
   );
 }
 
-export default function LeadTable({ leads, onUpdateStatus, updating, T, isMobile, isAdmin = false, defaultMessage = "", sellerName = "", showToast }) {
+const LeadTable = memo(function LeadTable({ leads, onUpdateStatus, updating, loading = false, T, isMobile, isAdmin = false, showToast }) {
   const [sentIds, setSentIds] = useState([]);
+
+  // ── Skeleton rows mientras se cargan/refrescan los leads ──
+  if (loading) {
+    const cols = isMobile ? 2 : 10;
+    return (
+      <div style={{ overflowX: "auto" }} aria-busy="true" aria-label="Cargando leads">
+        <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
+          <thead>
+            <tr style={{ borderBottom: `1px solid ${T.border}` }}>
+              {Array.from({ length: cols }).map((_, i) => (
+                <th key={i} style={{ padding: isMobile ? "12px 14px" : "16px 20px" }}>
+                  <div className="skeleton" style={{ width: "55%", height: 9 }} />
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {Array.from({ length: 8 }).map((_, r) => (
+              <tr key={r} style={{ borderBottom: `1px solid ${T.border}` }}>
+                {Array.from({ length: cols }).map((_, c) => (
+                  <td key={c} style={{ padding: isMobile ? "14px" : "18px 20px" }}>
+                    <div
+                      className="skeleton"
+                      style={{
+                        width: c === 1 ? "70%" : "55%",
+                        height: c === 1 ? 14 : 11,
+                        opacity: Math.max(1 - r * 0.09, 0.3),
+                      }}
+                    />
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
 
   if (leads.length === 0) {
     return (
@@ -132,7 +170,7 @@ export default function LeadTable({ leads, onUpdateStatus, updating, T, isMobile
           </tr>
         </thead>
         <tbody>
-          {leads.map((lead) => {
+          {leads.map((lead, rowIndex) => {
             const statusIcons = (
               <StatusIcons lead={lead} onUpdate={onUpdateStatus} updating={updating} T={T} isMobile={isMobile} />
             );
@@ -140,7 +178,6 @@ export default function LeadTable({ leads, onUpdateStatus, updating, T, isMobile
               <MessageActionButtons
                 lead={lead}
                 T={T}
-                whatsappText={defaultMessage}
                 showToast={showToast}
                 sent={sentIds.includes(lead.id)}
                 onSent={() => markSent(lead.id)}
@@ -154,8 +191,13 @@ export default function LeadTable({ leads, onUpdateStatus, updating, T, isMobile
               </span>
             );
 
+            const rowAnim = {
+              animation: "fade-in-up 0.35s cubic-bezier(0.22, 1, 0.36, 1) both",
+              animationDelay: `${Math.min(rowIndex * 0.03, 0.4)}s`,
+            };
+
             return isMobile ? (
-              <tr key={lead.id} style={{ borderBottom: `1px solid ${T.border}`, transition: "background 0.2s" }}>
+              <tr key={lead.id} className="table-row-hover" style={{ borderBottom: `1px solid ${T.border}`, transition: "background 0.2s", ...rowAnim }}>
                 <td style={{ padding: "14px" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 4 }}>
                     <div style={{ fontSize: "14px", fontWeight: 600, color: T.text, fontFamily: "var(--font-heading), 'Outfit', sans-serif" }}>{lead.name}</div>
@@ -172,7 +214,7 @@ export default function LeadTable({ leads, onUpdateStatus, updating, T, isMobile
                 <td style={{ padding: "14px", verticalAlign: "top" }}>{statusIcons}</td>
               </tr>
             ) : (
-              <tr key={lead.id} style={{ borderBottom: `1px solid ${T.border}`, transition: "background 0.2s" }}>
+              <tr key={lead.id} className="table-row-hover" style={{ borderBottom: `1px solid ${T.border}`, transition: "background 0.2s", ...rowAnim }}>
                 <td style={{ padding: "18px 20px" }}>
                   <div style={{ fontSize: "13px", fontWeight: 600, color: T.text }}>{formatDate(lead.createdAt)}</div>
                   <div style={{ fontSize: "11px", color: T.muted, marginTop: 2 }}>{formatTime(lead.createdAt)}</div>
@@ -204,4 +246,6 @@ export default function LeadTable({ leads, onUpdateStatus, updating, T, isMobile
       </table>
     </div>
   );
-}
+});
+
+export default LeadTable;

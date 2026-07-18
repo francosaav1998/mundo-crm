@@ -1,5 +1,7 @@
 "use client";
 
+import RippleButton from "@/components/ui/RippleButton";
+
 export default function Pagination({ page, totalPages, onPageChange, T }) {
   if (totalPages <= 1) return null;
 
@@ -11,60 +13,60 @@ export default function Pagination({ page, totalPages, onPageChange, T }) {
     pages.push(i);
   }
 
+  const btnBase = {
+    padding: "8px 14px",
+    borderRadius: "12px",
+    borderWidth: "1px",
+    borderStyle: "solid",
+    fontWeight: 600,
+  };
+
   return (
     <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 24, flexWrap: "wrap" }}>
-      <button
+      <RippleButton
         onClick={() => onPageChange(page - 1)}
         disabled={page <= 1}
         style={{
-          padding: "8px 14px",
-          borderRadius: "12px",
-          border: `1px solid ${T.border}`,
+          ...btnBase,
+          borderColor: T.border,
           background: "rgba(255,255,255,0.03)",
           color: page <= 1 ? T.muted : T.text,
-          fontWeight: 600,
-          cursor: page <= 1 ? "not-allowed" : "pointer",
-          transition: "all 0.2s",
         }}
+        aria-label="Página anterior"
       >
         <i className="bi bi-chevron-left"></i>
-      </button>
+      </RippleButton>
 
       {pages.map((p) => (
-        <button
+        <RippleButton
           key={p}
           onClick={() => onPageChange(p)}
           style={{
-            padding: "8px 14px",
-            borderRadius: "12px",
-            border: `1px solid ${p === page ? `${T.accent}50` : T.border}`,
+            ...btnBase,
+            borderColor: p === page ? `${T.accent}50` : T.border,
             background: p === page ? `${T.accent}15` : "rgba(255,255,255,0.03)",
             color: p === page ? T.accent : T.text,
-            fontWeight: 600,
-            cursor: "pointer",
-            transition: "all 0.2s",
           }}
+          aria-label={`Ir a página ${p}`}
+          aria-current={p === page ? "page" : undefined}
         >
           {p}
-        </button>
+        </RippleButton>
       ))}
 
-      <button
+      <RippleButton
         onClick={() => onPageChange(page + 1)}
         disabled={page >= totalPages}
         style={{
-          padding: "8px 14px",
-          borderRadius: "12px",
-          border: `1px solid ${T.border}`,
+          ...btnBase,
+          borderColor: T.border,
           background: "rgba(255,255,255,0.03)",
           color: page >= totalPages ? T.muted : T.text,
-          fontWeight: 600,
-          cursor: page >= totalPages ? "not-allowed" : "pointer",
-          transition: "all 0.2s",
         }}
+        aria-label="Página siguiente"
       >
         <i className="bi bi-chevron-right"></i>
-      </button>
+      </RippleButton>
     </div>
   );
 }

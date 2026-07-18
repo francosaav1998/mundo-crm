@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
+import RippleButton from "@/components/ui/RippleButton";
+import SectionHeader from "@/components/dashboard/ui/SectionHeader";
 
 export default function UserManager({ T, isMobile, showToast }) {
   const [users, setUsers] = useState([]);
@@ -119,6 +121,13 @@ export default function UserManager({ T, isMobile, showToast }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+      <SectionHeader
+        eyebrow="Usuarios"
+        title="Gestión de usuarios"
+        description="Crea nuevos ejecutivos de ventas, define sus roles y asigna compañías para que cada uno vea los planes y branding correctos en su landing."
+        T={T}
+        isMobile={isMobile}
+      />
       <div style={cardStyle}>
         <h2 style={titleStyle}>
           <i className="bi bi-person-plus-fill" style={{ marginRight: 8 }}></i>
@@ -206,7 +215,7 @@ export default function UserManager({ T, isMobile, showToast }) {
             </span>
           </div>
 
-          <button
+          <RippleButton
             type="submit"
             style={{
               padding: "12px 20px",
@@ -216,12 +225,11 @@ export default function UserManager({ T, isMobile, showToast }) {
               color: "#FFFFFF",
               fontWeight: 800,
               fontSize: "14px",
-              cursor: "pointer",
             }}
           >
             <i className="bi bi-person-plus-fill" style={{ marginRight: 6 }}></i>
             Crear Usuario
-          </button>
+          </RippleButton>
         </form>
       </div>
 
@@ -232,9 +240,11 @@ export default function UserManager({ T, isMobile, showToast }) {
         </h2>
 
         {!hasLoaded ? (
-          <button
+          <RippleButton
             onClick={loadUsers}
             disabled={usersLoading}
+            loading={usersLoading}
+            loadingText="Cargando..."
             style={{
               padding: "12px 20px",
               borderRadius: "12px",
@@ -243,15 +253,14 @@ export default function UserManager({ T, isMobile, showToast }) {
               color: "#FFFFFF",
               fontWeight: 800,
               fontSize: "14px",
-              cursor: "pointer",
               display: "inline-flex",
               alignItems: "center",
               gap: 8,
             }}
           >
-            <i className={`bi ${usersLoading ? "bi-arrow-clockwise" : "bi-people-fill"}`}></i>
-            {usersLoading ? "Cargando..." : "Cargar usuarios"}
-          </button>
+            <i className="bi bi-people-fill"></i>
+            Cargar usuarios
+          </RippleButton>
         ) : usersLoading ? (
           <div style={{ color: T.muted, fontSize: "14px" }}>Cargando usuarios...</div>
         ) : users.length === 0 ? (

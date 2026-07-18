@@ -1,6 +1,7 @@
 "use client";
 
 import { STATUSES } from "@/lib/dashboard/constants";
+import RippleButton from "@/components/ui/RippleButton";
 
 export default function LeadFilters({ filter, setFilter, search, setSearch, T, isMobile }) {
   return (
@@ -9,7 +10,7 @@ export default function LeadFilters({ filter, setFilter, search, setSearch, T, i
         {["Todos", ...STATUSES].map((status) => {
           const active = filter === status;
           return (
-            <button
+            <RippleButton
               key={status}
               onClick={() => setFilter(status)}
               style={{
@@ -17,15 +18,13 @@ export default function LeadFilters({ filter, setFilter, search, setSearch, T, i
                 borderRadius: "9999px",
                 fontSize: isMobile ? "11px" : "12px",
                 fontWeight: 600,
-                cursor: "pointer",
                 border: `1px solid ${active ? `${T.accent}45` : T.border}`,
                 background: active ? `${T.accent}15` : "rgba(255,255,255,0.03)",
                 color: active ? T.accent : T.muted,
-                transition: "all 0.2s",
               }}
             >
               {status}
-            </button>
+            </RippleButton>
           );
         })}
       </div>

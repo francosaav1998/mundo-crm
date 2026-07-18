@@ -8,6 +8,7 @@ import { getCompanyVars } from "@/lib/company";
 import { getLandingContent, getMergedPlans } from "@/lib/landing";
 import MetaPixel from "@/components/landing/MetaPixel";
 import CompanyFonts from "@/components/landing/CompanyFonts";
+import LandingSplash from "@/components/ui/LandingSplash";
 import Header from "@/components/landing/Header";
 import Hero from "@/components/landing/Hero";
 import SellerSection from "@/components/landing/SellerSection";
@@ -42,6 +43,7 @@ export default function SellerLanding() {
 
   useEffect(() => {
     async function loadSeller() {
+      let willRedirect = false;
       try {
         const res = await fetch(`/api/sellers?slug=${encodeURIComponent(slug)}`);
         if (!res.ok) {
@@ -53,12 +55,16 @@ export default function SellerLanding() {
         setSeller(data);
         setCompany(data.company);
 
-        // Si la compañía no es Mundo, usar la landing HTML estática personalizada
+        // Si la compañía no es Mundo, mostrar splash con su branding y luego redirigir
         const companySlug = data.company?.slug;
         if (companySlug && companySlug !== "mundo" && typeof window !== "undefined") {
-          const params = new URLSearchParams(window.location.search);
-          params.set("slug", slug);
-          window.location.replace(`/landings/${companySlug}.html?${params.toString()}`);
+          willRedirect = true;
+          // company ya se seteó arriba; loading permanece true para mostrar el splash branded
+          setTimeout(() => {
+            const params = new URLSearchParams(window.location.search);
+            params.set("slug", slug);
+            window.location.replace(`/landings/${companySlug}.html?${params.toString()}`);
+          }, 1600);
           return;
         }
 
@@ -86,7 +92,7 @@ export default function SellerLanding() {
       } catch {
         setError("Error de conexión");
       } finally {
-        setLoading(false);
+        if (!willRedirect) setLoading(false);
       }
     }
     loadSeller();
@@ -174,9 +180,32 @@ export default function SellerLanding() {
   };
 
   if (loading) {
+    if (company) {
+      return <LandingSplash show={loading} appName={company.name} company={company} />;
+    }
     return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg, #005A6F 0%, #00748E 100%)", color: "#fff" }}>
-        <p>Cargando landing...</p>
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 9999,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "#0B0F14",
+        }}
+        role="status"
+        aria-label="Cargando"
+      >
+        <span
+          className="btn-spinner"
+          style={{
+            width: 36,
+            height: 36,
+            borderColor: "rgba(255,255,255,0.2)",
+            borderTopColor: "rgba(255,255,255,0.9)",
+          }}
+        />
       </div>
     );
   }
@@ -253,7 +282,6 @@ export default function SellerLanding() {
       />
       <WhatsAppFloat />
       <LeadModal
-        key={modalOpen ? modalPlan : "closed"}
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         initialPlan={modalPlan}

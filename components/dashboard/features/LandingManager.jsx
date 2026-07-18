@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import SectionHeader from "@/components/dashboard/ui/SectionHeader";
 
 export default function LandingManager({ T, isMobile, showToast }) {
   const [loading, setLoading] = useState(true);
@@ -111,6 +112,13 @@ export default function LandingManager({ T, isMobile, showToast }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+      <SectionHeader
+        eyebrow="Landings por Compañía"
+        title="Gestión de landings"
+        description="Revisa, abre y comparte la landing de cada vendedor agrupada por compañía. También puedes copiar el link de cada landing para compartir."
+        T={T}
+        isMobile={isMobile}
+      />
       <div style={cardStyle}>
         <h2 style={titleStyle}>
           <i className="bi bi-globe-americas" style={{ marginRight: 8 }}></i>

@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import RippleButton from "@/components/ui/RippleButton";
+import SectionHeader from "@/components/dashboard/ui/SectionHeader";
 import { STATUSES, STATUS_CONFIG } from "@/lib/dashboard/constants";
 
 export default function ImportData({ leads, T, isMobile, showToast, onImportSuccess }) {
@@ -83,6 +85,13 @@ export default function ImportData({ leads, T, isMobile, showToast, onImportSucc
 
   return (
     <div>
+      <SectionHeader
+        eyebrow="Importar Datos"
+        title="Importar base de clientes"
+        description="Sube un archivo Excel (.xlsx o .csv) para cargar clientes masivamente en el CRM. Solo Nombre y Teléfono son obligatorios; las filas incompletas se omiten."
+        T={T}
+        isMobile={isMobile}
+      />
       <div
         style={{
           background: T.bgCard,
@@ -182,9 +191,11 @@ export default function ImportData({ leads, T, isMobile, showToast, onImportSucc
         </div>
 
         <div style={{ display: "flex", gap: 12, marginTop: 24 }}>
-          <button
+          <RippleButton
             onClick={handleImportUpload}
             disabled={!importFile || importing}
+            loading={importing}
+            loadingText="Importando..."
             style={{
               flex: 1,
               background: `linear-gradient(135deg, ${T.accent} 0%, ${T.accent2} 100%)`,
@@ -193,7 +204,6 @@ export default function ImportData({ leads, T, isMobile, showToast, onImportSucc
               padding: "14px",
               borderRadius: "12px",
               border: "none",
-              cursor: !importFile || importing ? "not-allowed" : "pointer",
               fontSize: "14px",
               opacity: !importFile || importing ? 0.5 : 1,
               display: "flex",
@@ -201,21 +211,11 @@ export default function ImportData({ leads, T, isMobile, showToast, onImportSucc
               justifyContent: "center",
               gap: 8,
               boxShadow: T.glowGold,
-              transition: "all 0.2s",
             }}
           >
-            {importing ? (
-              <>
-                <i className="bi bi-arrow-clockwise" style={{ animation: "spin 1s linear infinite" }}></i>
-                Importando...
-              </>
-            ) : (
-              <>
-                <i className="bi bi-cloud-arrow-up-fill"></i>
-                Importar Clientes
-              </>
-            )}
-          </button>
+            <i className="bi bi-cloud-arrow-up-fill"></i>
+            Importar Clientes
+          </RippleButton>
         </div>
 
         {importResult && (

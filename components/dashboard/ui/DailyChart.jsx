@@ -103,6 +103,7 @@ export default function DailyChart({ leads, data, T }) {
             {layout.items.map((bar, i) => {
               const maxCount = Math.max(...layout.items.map((b) => b.count));
               const isMax = bar.count === maxCount && maxCount > 0;
+              const growDelay = `${i * 0.05}s`;
               return (
                 <g key={i}>
                   <rect
@@ -115,6 +116,8 @@ export default function DailyChart({ leads, data, T }) {
                     fill={isMax ? T.secondary : T.accent}
                     opacity="0.3"
                     filter={`url(#${baseId}-${isMax ? "neonGlowLilac" : "neonGlow"})`}
+                    className="chart-bar-grow"
+                    style={{ animationDelay: growDelay }}
                   />
                   <rect
                     x={bar.x}
@@ -124,7 +127,8 @@ export default function DailyChart({ leads, data, T }) {
                     rx="6"
                     ry="6"
                     fill={`url(#${baseId}-${isMax ? "barGradLilac" : "barGrad"})`}
-                    style={{ transition: "all 0.3s", cursor: "pointer" }}
+                    className="chart-bar-grow"
+                    style={{ transition: "all 0.3s", cursor: "pointer", animationDelay: growDelay }}
                   />
                   <text
                     x={bar.centerX}
@@ -134,6 +138,8 @@ export default function DailyChart({ leads, data, T }) {
                     fontWeight="700"
                     textAnchor="middle"
                     filter={isMax ? `url(#${baseId}-neonGlowLilac)` : "none"}
+                    className="animate-fade-in-up"
+                    style={{ animationDelay: `${0.25 + i * 0.05}s` }}
                   >
                     {bar.count}
                   </text>
@@ -144,6 +150,8 @@ export default function DailyChart({ leads, data, T }) {
                     height={Math.min(bar.barHeight * 0.4, 20)}
                     rx="2"
                     fill="rgba(255,255,255,0.2)"
+                    className="chart-bar-grow"
+                    style={{ animationDelay: growDelay }}
                   />
                 </g>
               );

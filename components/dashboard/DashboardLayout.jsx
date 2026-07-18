@@ -2,6 +2,10 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { useMemo, memo } from "react";
+import RippleButton from "@/components/ui/RippleButton";
+import Tooltip from "@/components/ui/Tooltip";
 
 const ALL_MENU_ITEMS = [
   { id: "dashboard", icon: "bi-grid-1x2-fill", label: "Dashboard General" },
@@ -79,7 +83,10 @@ export default function DashboardLayout({
       )}
 
       {/* Sidebar */}
-      <aside
+      <motion.aside
+        initial={{ x: -20, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
         className={`dashboard-sidebar ${sidebarOpen ? "dashboard-sidebar-open" : ""}`}
         style={{
           background: T.sidebarBg,
@@ -121,7 +128,10 @@ export default function DashboardLayout({
               whiteSpace: "nowrap",
             }}
           >
-            <span
+            <motion.span
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.1, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
               style={{
                 width: 32,
                 height: 32,
@@ -136,14 +146,17 @@ export default function DashboardLayout({
               }}
             >
               <i className="bi bi-globe-americas" />
-            </span>
-            {sidebarOpen && <span>Mundo</span>}
+            </motion.span>
+            {sidebarOpen && <motion.span initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15, duration: 0.3 }}>Mundo</motion.span>}
           </div>
         </div>
 
         {/* User Info */}
         {sidebarOpen && (
-          <div
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.3 }}
             style={{
               padding: "16px 20px",
               background: T.inputBg,
@@ -159,62 +172,49 @@ export default function DashboardLayout({
                 {company.name}
               </div>
             )}
-          </div>
+          </motion.div>
         )}
 
         {/* Nav Links */}
         <nav style={{ flex: 1, padding: "16px 12px", display: "flex", flexDirection: "column", gap: 4 }}>
-          {MENU_ITEMS.map((item) => {
-            const active = activeMenu === item.id;
-            return (
-              <div
-                key={item.id}
-                onClick={() => onMenuChange(item.id)}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  padding: "12px 16px",
-                  borderRadius: "14px",
-                  cursor: "pointer",
-                  background: active ? `${T.accent}15` : "transparent",
-                  color: active ? T.accent : T.sidebarMuted,
-                  border: active ? `1px solid ${T.accent}35` : "1px solid transparent",
-                  transition: "all 0.2s",
-                  whiteSpace: "nowrap",
-                  fontWeight: 600,
-                  fontSize: 13,
-                }}
-              >
-                <i className={`bi ${item.icon}`} style={{ fontSize: 16, color: active ? T.accent : "inherit" }} />
-                {sidebarOpen && <span>{item.label}</span>}
-              </div>
-            );
-          })}
+          {MENU_ITEMS.map((item, index) => (
+            <MenuItem
+              key={item.id}
+              item={item}
+              index={index}
+              active={activeMenu === item.id}
+              sidebarOpen={sidebarOpen}
+              onClick={() => onMenuChange(item.id)}
+              T={T}
+            />
+          ))}
         </nav>
 
         {/* Footer Actions */}
         <div style={{ padding: "16px", borderTop: `1px solid ${T.border}`, display: "flex", flexDirection: "column", gap: 8 }}>
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            style={{
-              padding: "8px",
-              borderRadius: "10px",
-              background: "rgba(255,255,255,0.04)",
-              border: `1px solid ${T.border}`,
-              color: T.sidebarMuted,
-              cursor: "pointer",
-              fontSize: "12px",
-              transition: "all 0.2s",
-            }}
-          >
-            <i className={`bi ${sidebarOpen ? "bi-arrow-bar-left" : "bi-arrow-bar-right"}`} />
-          </button>
+          <Tooltip content={sidebarOpen ? "Contraer menú" : "Expandir menú"} position="right">
+            <RippleButton
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              style={{
+                padding: "8px",
+                borderRadius: "10px",
+                background: "rgba(255,255,255,0.04)",
+                border: `1px solid ${T.border}`,
+                color: T.sidebarMuted,
+                fontSize: "12px",
+                width: "100%",
+              }}
+              aria-label={sidebarOpen ? "Contraer menú" : "Expandir menú"}
+            >
+              <i className={`bi ${sidebarOpen ? "bi-arrow-bar-left" : "bi-arrow-bar-right"}`} />
+            </RippleButton>
+          </Tooltip>
           {sidebarOpen && (
             <a
               href="/"
               target="_blank"
               rel="noopener noreferrer"
+              className="micro-btn"
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -226,10 +226,8 @@ export default function DashboardLayout({
                 background: `${T.accent}15`,
                 border: `1px solid ${T.accent}45`,
                 color: T.accent,
-                cursor: "pointer",
                 fontSize: 13,
                 fontWeight: 700,
-                transition: "all 0.2s",
                 textDecoration: "none",
                 backdropFilter: "blur(10px)",
               }}
@@ -238,9 +236,8 @@ export default function DashboardLayout({
               Ver Landing de Ventas
             </a>
           )}
-          <button
+          <RippleButton
             onClick={logout}
-            title="Cerrar Sesión"
             style={{
               display: "flex",
               alignItems: "center",
@@ -252,22 +249,23 @@ export default function DashboardLayout({
               background: "rgba(239, 68, 68, 0.08)",
               border: "1px solid rgba(239, 68, 68, 0.18)",
               color: "#EF4444",
-              cursor: "pointer",
               fontSize: 13,
               fontWeight: 700,
-              transition: "all 0.2s",
             }}
           >
             <i className="bi bi-box-arrow-left" />
             {sidebarOpen && <span>Cerrar Sesión</span>}
-          </button>
+          </RippleButton>
         </div>
-      </aside>
+      </motion.aside>
 
       {/* Main Content */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, zIndex: 1 }}>
         {/* Top Header */}
-        <header
+        <motion.header
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
           className="glass-header"
           style={{
             padding: isMobile ? "12px 16px" : "20px 40px",
@@ -279,27 +277,28 @@ export default function DashboardLayout({
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <button
-              className="dashboard-menu-btn"
-              onClick={() => setSidebarOpen(true)}
-              style={{
-                background: "rgba(255,255,255,0.05)",
-                border: `1px solid ${T.border}`,
-                color: T.headerText,
-                width: 40,
-                height: 40,
-                borderRadius: "12px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-                fontSize: 20,
-                flexShrink: 0,
-                transition: "all 0.2s",
-              }}
-            >
-              <i className="bi bi-list" />
-            </button>
+            <Tooltip content="Abrir menú" position="bottom">
+              <RippleButton
+                className="dashboard-menu-btn"
+                onClick={() => setSidebarOpen(true)}
+                style={{
+                  background: "rgba(255,255,255,0.05)",
+                  border: `1px solid ${T.border}`,
+                  color: T.headerText,
+                  width: 40,
+                  height: 40,
+                  borderRadius: "12px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 20,
+                  flexShrink: 0,
+                }}
+                aria-label="Abrir menú"
+              >
+                <i className="bi bi-list" />
+              </RippleButton>
+            </Tooltip>
             <div>
               <h1 style={{ fontSize: isMobile ? "18px" : "26px", fontWeight: 700, color: T.headerText, fontFamily: "var(--font-heading), 'Outfit', sans-serif", letterSpacing: "-0.02em" }}>{pageTitle}</h1>
               {!isMobile && (
@@ -312,31 +311,31 @@ export default function DashboardLayout({
 
           {/* Date filter + Theme Toggle */}
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-            <button
-              onClick={toggleTheme}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "8px 14px",
-                borderRadius: "9999px",
-                border: `1px solid ${T.border}`,
-                background: "rgba(255,255,255,0.04)",
-                color: T.headerText,
-                fontSize: "13px",
-                fontWeight: 600,
-                cursor: "pointer",
-                transition: "all 0.2s",
-              }}
-            >
-              <i className={`bi ${theme === "dark" ? "bi-sun-fill" : "bi-moon-fill"}`}></i>
-              <span>{theme === "dark" ? "Día" : "Noche"}</span>
-            </button>
+            <Tooltip content={theme === "dark" ? "Cambiar a modo claro" : "Cambiar a modo oscuro"} position="bottom">
+              <RippleButton
+                onClick={toggleTheme}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "8px 14px",
+                  borderRadius: "9999px",
+                  border: `1px solid ${T.border}`,
+                  background: "rgba(255,255,255,0.04)",
+                  color: T.headerText,
+                  fontSize: "13px",
+                  fontWeight: 600,
+                }}
+              >
+                <i className={`bi ${theme === "dark" ? "bi-sun-fill" : "bi-moon-fill"}`}></i>
+                <span>{theme === "dark" ? "Día" : "Noche"}</span>
+              </RippleButton>
+            </Tooltip>
 
             {!isMobile && <span style={{ fontSize: "12px", color: T.headerMuted, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>Filtrar Fecha:</span>}
             <div style={{ display: "flex", background: "rgba(255,255,255,0.04)", padding: "4px", borderRadius: "12px", border: `1px solid ${T.border}`, overflowX: "auto", maxWidth: "100%" }}>
               {DATE_FILTERS.map((opt) => (
-                <button
+                <RippleButton
                   key={opt.id}
                   onClick={() => setDateFilter(opt.id)}
                   style={{
@@ -347,12 +346,10 @@ export default function DashboardLayout({
                     color: dateFilter === opt.id ? T.accent : T.headerMuted,
                     fontSize: "12px",
                     fontWeight: 600,
-                    cursor: "pointer",
-                    transition: "all 0.2s",
                   }}
                 >
                   {opt.label}
-                </button>
+                </RippleButton>
               ))}
             </div>
 
@@ -373,7 +370,7 @@ export default function DashboardLayout({
               />
             )}
           </div>
-        </header>
+        </motion.header>
 
         {/* Onboarding Banner */}
         {onboardingNeeded && !isAdmin && (
@@ -419,8 +416,8 @@ export default function DashboardLayout({
             </div>
             <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
               {sellerSlug && (
-                <button
-                  onClick={() => router.push(`/p/${sellerSlug}`)}
+                <RippleButton
+                  onClick={() => window.open(`/p/${sellerSlug}`, "_blank", "noopener,noreferrer")}
                   style={{
                     padding: "10px 18px",
                     borderRadius: "9999px",
@@ -429,14 +426,12 @@ export default function DashboardLayout({
                     color: T.text,
                     fontSize: "13px",
                     fontWeight: 600,
-                    cursor: "pointer",
-                    transition: "all 0.2s",
                   }}
                 >
                   <i className="bi bi-eye-fill"></i> Ver mi landing
-                </button>
+                </RippleButton>
               )}
-              <button
+              <RippleButton
                 onClick={() => onMenuChange("settings")}
                 style={{
                   padding: "10px 20px",
@@ -446,20 +441,54 @@ export default function DashboardLayout({
                   color: T.accent,
                   fontSize: "13px",
                   fontWeight: 700,
-                  cursor: "pointer",
-                  transition: "all 0.2s",
                   backdropFilter: "blur(10px)",
                 }}
               >
                 <i className="bi bi-gear-fill"></i> Configurar ahora
-              </button>
+              </RippleButton>
             </div>
           </div>
         )}
 
         {/* Page Content */}
-        <main style={{ padding: isMobile ? "16px" : "40px" }}>{children}</main>
+        <motion.main
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
+          style={{ padding: isMobile ? "16px" : "40px" }}
+        >
+          {children}
+        </motion.main>
       </div>
     </div>
   );
 }
+
+const MenuItem = memo(function MenuItem({ item, index, active, sidebarOpen, onClick, T }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -12 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: 0.15 + index * 0.04, duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+      onClick={onClick}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        padding: "12px 16px",
+        borderRadius: "14px",
+        cursor: "pointer",
+        background: active ? `${T.accent}15` : "transparent",
+        color: active ? T.accent : T.sidebarMuted,
+        border: active ? `1px solid ${T.accent}35` : "1px solid transparent",
+        transition: "all 0.2s",
+        whiteSpace: "nowrap",
+        fontWeight: 600,
+        fontSize: 13,
+      }}
+    >
+      <i className={`bi ${item.icon}`} style={{ fontSize: 16, color: active ? T.accent : "inherit" }} />
+      {sidebarOpen && <span>{item.label}</span>}
+    </motion.div>
+  );
+});

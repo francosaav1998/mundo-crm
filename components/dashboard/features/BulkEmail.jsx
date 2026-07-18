@@ -1,5 +1,7 @@
 "use client";
 import { useMemo, useState, useEffect } from "react";
+import RippleButton from "@/components/ui/RippleButton";
+import SectionHeader from "@/components/dashboard/ui/SectionHeader";
 import { renderTemplate } from "@/lib/dashboard/utils";
 import { STATUSES } from "@/lib/dashboard/constants";
 import {
@@ -261,11 +263,19 @@ export default function BulkEmail({ leads, T, isMobile, sellerName, showToast })
   });
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 420px", gap: isMobile ? 16 : 24 }}>
-      <div style={cardStyle}>
-        <p style={{ fontSize: "13px", color: T.muted, marginBottom: 24 }}>
-          Selecciona leads con email y abre un correo personalizado uno a uno en Gmail, Outlook o tu cliente de correo.
-        </p>
+    <div>
+      <SectionHeader
+        eyebrow="Correos"
+        title="Envío de emails masivos"
+        description="Crea plantillas de correo con variables, selecciona los leads con email y abre Gmail, Outlook o tu cliente de correo con el mensaje ya personalizado."
+        T={T}
+        isMobile={isMobile}
+      />
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 420px", gap: isMobile ? 16 : 24 }}>
+        <div style={cardStyle}>
+          <p style={{ fontSize: "13px", color: T.muted, marginBottom: 24 }}>
+            Selecciona leads con email y abre un correo personalizado uno a uno en Gmail, Outlook o tu cliente de correo.
+          </p>
 
         <div style={{ marginBottom: 20 }}>
           <label style={labelStyle}>Plantilla</label>
@@ -275,13 +285,13 @@ export default function BulkEmail({ leads, T, isMobile, sellerName, showToast })
                 <option key={t.id} value={t.id}>{t.name}</option>
               ))}
             </select>
-            <button onClick={updateSelectedTemplate} style={btnActive(false, T.accent)} title="Guardar cambios en esta plantilla">
+            <RippleButton onClick={updateSelectedTemplate} style={btnActive(false, T.accent)} title="Guardar cambios en esta plantilla">
               <i className="bi bi-save" style={{ marginRight: 4 }}></i> Guardar
-            </button>
+            </RippleButton>
             {templates.length > 1 && (
-              <button onClick={() => deleteTemplate(selectedTemplateId)} style={btnActive(false)} title="Eliminar plantilla">
+              <RippleButton onClick={() => deleteTemplate(selectedTemplateId)} style={btnActive(false)} title="Eliminar plantilla">
                 <i className="bi bi-trash"></i>
-              </button>
+              </RippleButton>
             )}
           </div>
 
@@ -294,13 +304,13 @@ export default function BulkEmail({ leads, T, isMobile, sellerName, showToast })
                 onChange={(e) => setNewTemplateName(e.target.value)}
                 style={{ ...inputStyle, flex: 1, marginTop: 0 }}
               />
-              <button onClick={saveCurrentAsTemplate} style={btnActive(false, T.accent)}>Crear</button>
-              <button onClick={() => setShowAddTemplate(false)} style={btnActive(false)}>Cancelar</button>
+              <RippleButton onClick={saveCurrentAsTemplate} style={btnActive(false, T.accent)}>Crear</RippleButton>
+              <RippleButton onClick={() => setShowAddTemplate(false)} style={btnActive(false)}>Cancelar</RippleButton>
             </div>
           ) : (
-            <button onClick={() => setShowAddTemplate(true)} style={{ ...btnActive(false), marginBottom: 12 }}>
+            <RippleButton onClick={() => setShowAddTemplate(true)} style={{ ...btnActive(false), marginBottom: 12 }}>
               <i className="bi bi-plus-lg" style={{ marginRight: 4 }}></i> Agregar nueva plantilla
-            </button>
+            </RippleButton>
           )}
         </div>
 
@@ -332,7 +342,7 @@ export default function BulkEmail({ leads, T, isMobile, sellerName, showToast })
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
             {VARS.map((v) => (
-              <button
+              <RippleButton
                 key={v.tag}
                 type="button"
                 onClick={() => setBody((prev) => `${prev} ${v.tag}`)}
@@ -340,7 +350,7 @@ export default function BulkEmail({ leads, T, isMobile, sellerName, showToast })
               >
                 <i className="bi bi-plus-lg" style={{ marginRight: 4 }}></i>
                 {v.label}
-              </button>
+              </RippleButton>
             ))}
           </div>
         </div>
@@ -404,12 +414,12 @@ export default function BulkEmail({ leads, T, isMobile, sellerName, showToast })
             </select>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={selectAllFiltered} style={{ flex: 1, ...btnActive(false, T.accent) }}>
+            <RippleButton onClick={selectAllFiltered} style={{ flex: 1, ...btnActive(false, T.accent) }}>
               Todos
-            </button>
-            <button onClick={clearSelection} style={{ flex: 1, ...btnActive(false, T.accent) }}>
+            </RippleButton>
+            <RippleButton onClick={clearSelection} style={{ flex: 1, ...btnActive(false, T.accent) }}>
               Limpiar
-            </button>
+            </RippleButton>
           </div>
         </div>
 
@@ -466,18 +476,19 @@ export default function BulkEmail({ leads, T, isMobile, sellerName, showToast })
                           <i className="bi bi-check-circle-fill"></i>
                         </span>
                       )}
-                      <button onClick={() => openGmail(lead)} style={emailClientBtn("#EA4335")} title="Abrir en Gmail">
+                      <RippleButton onClick={() => openGmail(lead)} style={emailClientBtn("#EA4335")} title="Abrir en Gmail">
                         <i className="bi bi-google"></i> Gmail
-                      </button>
-                      <button onClick={() => openOutlook(lead)} style={emailClientBtn("#0078D4")} title="Abrir en Outlook">
+                      </RippleButton>
+                      <RippleButton onClick={() => openOutlook(lead)} style={emailClientBtn("#0078D4")} title="Abrir en Outlook">
                         <i className="bi bi-microsoft"></i> Outlook
-                      </button>
+                      </RippleButton>
                     </div>
                   )}
                 </div>
               );
             })
           )}
+          </div>
         </div>
       </div>
     </div>

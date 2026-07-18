@@ -1,8 +1,14 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { STATUS_CONFIG } from "@/lib/dashboard/constants";
 import { formatDate } from "@/lib/dashboard/utils";
+import { tableRow } from "@/lib/animations";
 
+/**
+ * RecentLeads — Tabla con filas que entran en cascada sutil
+ * y hover suave por fila.
+ */
 export default function RecentLeads({ leads, T, onViewAll }) {
   return (
     <div
@@ -18,6 +24,7 @@ export default function RecentLeads({ leads, T, onViewAll }) {
         </div>
         <button
           onClick={onViewAll}
+          className="micro-btn"
           style={{ background: "transparent", border: "none", color: T.accent, fontWeight: 600, fontSize: "13px", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4 }}
         >
           Ver todos <i className="bi bi-arrow-right" style={{ fontSize: 12 }} />
@@ -35,8 +42,16 @@ export default function RecentLeads({ leads, T, onViewAll }) {
             </tr>
           </thead>
           <tbody>
-            {leads.slice(0, 5).map((l) => (
-              <tr key={l.id} style={{ borderBottom: `1px solid ${T.border}` }}>
+            {leads.slice(0, 5).map((l, i) => (
+              <motion.tr
+                key={l.id}
+                variants={tableRow}
+                initial="hidden"
+                animate="visible"
+                custom={i}
+                className="table-row-hover"
+                style={{ borderBottom: `1px solid ${T.border}` }}
+              >
                 <td style={{ padding: "14px 16px", fontSize: "13px", color: T.text, fontWeight: 500 }}>{formatDate(l.createdAt)}</td>
                 <td style={{ padding: "14px 16px", fontSize: "14px", fontWeight: 600, color: T.text, fontFamily: "var(--font-heading), 'Outfit', sans-serif" }}>{l.name}</td>
                 <td style={{ padding: "14px 16px", fontSize: "13px", color: T.text, fontWeight: 500 }}>{l.phone}</td>
@@ -61,7 +76,7 @@ export default function RecentLeads({ leads, T, onViewAll }) {
                     {l.status}
                   </span>
                 </td>
-              </tr>
+              </motion.tr>
             ))}
           </tbody>
         </table>

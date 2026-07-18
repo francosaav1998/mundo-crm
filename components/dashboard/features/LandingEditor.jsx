@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import RippleButton from "@/components/ui/RippleButton";
+import SectionHeader from "@/components/dashboard/ui/SectionHeader";
 import { useLandingEditor } from "../hooks/useLandingEditor";
 const SECTIONS = [
   { id: "hero", label: "Hero", icon: "bi-house-door-fill" },
@@ -49,16 +51,24 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
   }
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: isMobile ? "column" : "row",
-        gap: isMobile ? 12 : 20,
-        height: isMobile ? "auto" : "calc(100vh - 120px)",
-        minHeight: isMobile ? "auto" : 700,
-      }}
-    >
-      {/* Panel de edición */}
+    <div>
+      <SectionHeader
+        eyebrow="Editor de Landing"
+        title="Personaliza tu landing de ventas"
+        description="Edita textos, botones, planes, beneficios y datos de contacto de la página que verán tus clientes."
+        T={T}
+        isMobile={isMobile}
+      />
+      <div
+        style={{
+          display: "flex",
+          flexDirection: isMobile ? "column" : "row",
+          gap: isMobile ? 12 : 20,
+          height: isMobile ? "auto" : "calc(100vh - 120px)",
+          minHeight: isMobile ? "auto" : 700,
+        }}
+      >
+        {/* Panel de edición */}
       <div
         style={{
           width: "100%",
@@ -126,7 +136,7 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
               }}
             >
               {SECTIONS.map((section) => (
-                <button
+                <RippleButton
                   key={section.id}
                   onClick={() => setActiveSection(section.id)}
                   style={{
@@ -138,17 +148,15 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
                     border: "none",
                     background: activeSection === section.id ? T.accent : "transparent",
                     color: activeSection === section.id ? "#fff" : T.muted,
-                    cursor: "pointer",
                     fontSize: 12,
                     fontWeight: 700,
                     whiteSpace: "nowrap",
-                    transition: "all 0.2s",
                     boxShadow: activeSection === section.id ? `0 4px 14px ${T.accent}50` : "none",
                   }}
                 >
                   <i className={`bi ${section.icon}`}></i>
                   {section.label}
-                </button>
+                </RippleButton>
               ))}
             </div>
           </div>
@@ -237,9 +245,11 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
 
           {/* Botón guardar */}
           <div style={{ padding: isMobile ? "14px 16px" : "18px 22px", borderTop: `1px solid ${T.border}`, background: T.bgCard }}>
-            <button
+            <RippleButton
               onClick={handleSave}
               disabled={saving}
+              loading={saving}
+              loadingText="Guardando cambios..."
               style={{
                 width: "100%",
                 padding: "16px",
@@ -249,8 +259,6 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
                 color: "#fff",
                 fontWeight: 800,
                 fontSize: 15,
-                cursor: saving ? "not-allowed" : "pointer",
-                opacity: saving ? 0.7 : 1,
                 boxShadow: `0 8px 24px ${T.accent}40`,
                 display: "flex",
                 alignItems: "center",
@@ -258,12 +266,13 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
                 gap: 8,
               }}
             >
-              <i className={`bi ${saving ? "bi-arrow-clockwise" : "bi-check-lg"}`}></i>
-              {saving ? "Guardando cambios..." : "Guardar Cambios"}
-            </button>
+              <i className="bi bi-check-lg"></i>
+              Guardar Cambios
+            </RippleButton>
           </div>
         </div>
       </div>
+    </div>
   );
 }
 

@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import RippleButton from "@/components/ui/RippleButton";
+import SectionHeader from "@/components/dashboard/ui/SectionHeader";
 import { normalizeWhatsAppNumber } from "@/lib/seller";
 import { uploadFileBrowser } from "@/lib/upload/browser";
 
@@ -15,10 +17,16 @@ export default function SettingsForm({
   isAdmin = false,
 }) {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const handleSave = async (e) => {
     e.preventDefault();
-    await onSaveSettings(settings);
+    setSaving(true);
+    try {
+      await onSaveSettings(settings);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handlePhotoUpload = async (e) => {
@@ -86,28 +94,36 @@ export default function SettingsForm({
   };
 
   return (
-    <div
-      style={{
-        background: T.bgCard,
-        border: `1px solid ${T.border}`,
-        borderRadius: "24px",
-        padding: isMobile ? "20px" : "40px",
-        boxShadow: "0 20px 50px rgba(0, 0, 0, 0.3)",
-        maxWidth: "650px",
-        margin: "0 auto",
-      }}
-    >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, marginBottom: 6 }}>
-        <h2 style={{ fontSize: "20px", fontWeight: 800, color: T.accent, margin: 0 }}>
-          <i className="bi bi-gear-fill" style={{ marginRight: 8 }}></i>
-          Configuración del Sistema
-        </h2>
-      </div>
-      <p style={{ fontSize: "13px", color: T.muted, marginBottom: 30 }}>
-        Edita tu perfil, mensaje de WhatsApp y la apariencia de tu landing desde un solo lugar.
-      </p>
+    <div>
+      <SectionHeader
+        eyebrow="Configuración"
+        title="Configuración del sistema"
+        description="Edita tu perfil de ejecutivo, el mensaje por defecto de WhatsApp, la apariencia de tu landing y el pixel de Meta desde un solo lugar."
+        T={T}
+        isMobile={isMobile}
+      />
+      <div
+        style={{
+          background: T.bgCard,
+          border: `1px solid ${T.border}`,
+          borderRadius: "24px",
+          padding: isMobile ? "20px" : "40px",
+          boxShadow: "0 20px 50px rgba(0, 0, 0, 0.3)",
+          maxWidth: "650px",
+          margin: "0 auto",
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, marginBottom: 6 }}>
+          <h2 style={{ fontSize: "20px", fontWeight: 800, color: T.accent, margin: 0 }}>
+            <i className="bi bi-gear-fill" style={{ marginRight: 8 }}></i>
+            Configuración del Sistema
+          </h2>
+        </div>
+        <p style={{ fontSize: "13px", color: T.muted, marginBottom: 30 }}>
+          Edita tu perfil, mensaje de WhatsApp y la apariencia de tu landing desde un solo lugar.
+        </p>
 
-      <form onSubmit={handleSave} style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+        <form onSubmit={handleSave} style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
         {/* Perfil */}
         <div style={{ borderTop: `1px solid ${T.border}`, paddingTop: 20 }}>
           <h3 style={sectionTitleStyle}>
@@ -324,8 +340,10 @@ export default function SettingsForm({
           </div>
         )}
 
-        <button
+        <RippleButton
           type="submit"
+          loading={saving}
+          loadingText="Guardando..."
           style={{
             background: `linear-gradient(135deg, ${T.accent} 0%, #0077A8 100%)`,
             color: "#FFFFFF",
@@ -333,17 +351,17 @@ export default function SettingsForm({
             padding: "14px",
             borderRadius: "12px",
             border: "none",
-            cursor: "pointer",
             fontSize: "14px",
             boxShadow: T.glowGold,
-            transition: "all 0.2s",
             marginTop: "10px",
+            width: "100%",
           }}
         >
           <i className="bi bi-check-lg" style={{ marginRight: 6 }}></i>
           Guardar Configuración
-        </button>
-      </form>
+        </RippleButton>
+        </form>
+      </div>
     </div>
   );
 }
