@@ -316,6 +316,7 @@ button, a, input, select, textarea {
   justify-content: space-between;
   align-items: center;
   padding: 1rem 0;
+  position: relative;
 }
 
 .logo img {
@@ -1222,6 +1223,7 @@ button, a, input, select, textarea {
     padding: 2rem;
     box-shadow: var(--shadow-lg);
     gap: 1.5rem;
+    z-index: 101;
   }
   .nav-links.mobile-active { display: flex; }
   .menu-toggle { display: block; }
