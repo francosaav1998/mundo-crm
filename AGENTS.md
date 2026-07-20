@@ -45,9 +45,12 @@ Compact context for working in this repo. If a fact is obvious from filenames, i
 
 ## App Architecture
 
-- Landing page: `app/p/[slug]/page.js` (client component). Fetches `/api/sellers?slug=...` and `/api/plans?companySlug=...`, merges overrides with `getMergedPlans()` from `lib/landing.js`.
-- Dashboard entry: `app/dashboard/page.js` (server component). Calls `requireAuth()`, auto-creates a `Seller` for non-admins via `findOrCreateSellerForUser()`, and passes initial data to `DashboardClient.jsx`.
-- `DashboardClient.jsx` reads `?tab=` query param and maps it to `activeMenu`. Navigation item `"landing"` renders `components/dashboard/features/LandingEditor.jsx`.
+- Home `/` is the **B2B landing** for the CRM service (`components/B2BLandingPage.jsx`). It drives new sellers to `/registro` and existing sellers to `/dashboard/login`.
+- Seller landing pages: `app/p/[slug]/page.js` (client component). Fetches `/api/sellers?slug=...` and `/api/plans?companySlug=...`, merges overrides with `getMergedPlans()` from `lib/landing.js`. If the seller is inactive (`active === false`), it renders a "Landing no disponible" screen instead of the site.
+- Dashboard entry: `app/dashboard/page.js` (server component). Calls `requireAuth()`, auto-creates a `Seller` for non-admins via `findOrCreateSellerForUser()`, and passes initial data to `DashboardClient.jsx`. Admins see only their own B2B pipeline (`lead.sellerId === null`); sellers see only their leads.
+- `DashboardClient.jsx` reads `?tab=` query param and maps it to `activeMenu`. Navigation item `"landing"` renders `components/dashboard/features/LandingEditor.jsx`. Admin menu labels are adapted to "Prospectos" (leads) and "Clientes" (registered sellers).
+- The admin dashboard is B2B-oriented: the **Clientes** view (`components/dashboard/features/UserManager.jsx`) lists registered sellers, shows their 7-day trial status, provides a direct WhatsApp link, and lets the admin activate/deactivate the seller's landing via `PUT /api/sellers`.
+- Lead status sets differ by role: sellers use fiber statuses (`Nuevo`, `No Contesta`, `Contactado`, `En Proceso`, `Con Factibilidad`, `Sin Factibilidad`); the admin pipeline uses B2B statuses (`Nuevo`, `Contactado`, `Interesado`, `Cliente Activo`, `No Interesado`).
 - Shared landing defaults & merge helpers live in `lib/landing.js`.
 
 ## Landing Editor Preview

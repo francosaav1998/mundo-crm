@@ -10,7 +10,64 @@ import { SkeletonKpis, SkeletonChart, SkeletonTable } from "@/components/ui/Skel
 import RippleButton from "@/components/ui/RippleButton";
 import { fadeInUp } from "@/lib/animations";
 
-export default function DashboardOverview({ filters, initialStats, T, isMobile, onViewAllLeads }) {
+function SellersStrip({ stats, T, onViewClients }) {
+  if (!stats || stats.totalSellers === undefined) return null;
+  return (
+    <motion.div
+      variants={fadeInUp}
+      initial="hidden"
+      animate="visible"
+      style={{
+        display: "flex",
+        gap: 12,
+        flexWrap: "wrap",
+        marginBottom: 24,
+      }}
+    >
+      {[
+        { label: "Vendedores registrados", value: stats.totalSellers, color: T.accent, icon: "bi-people-fill" },
+        { label: "Nuevos (7 días)", value: stats.sellersLast7Days, color: "#8080FF", icon: "bi-rocket-takeoff-fill" },
+        { label: "Trial vencido", value: stats.trialExpiredSellers, color: "#EF4444", icon: "bi-exclamation-triangle-fill" },
+      ].map((k) => (
+        <button
+          key={k.label}
+          onClick={onViewClients}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            padding: "12px 16px",
+            borderRadius: "16px",
+            background: T.inputBg,
+            border: `1px solid ${T.border}`,
+            cursor: "pointer",
+            textAlign: "left",
+          }}
+        >
+          <div style={{
+            width: 34,
+            height: 34,
+            borderRadius: "10px",
+            background: `${k.color}15`,
+            color: k.color,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 16,
+          }}>
+            <i className={`bi ${k.icon}`} />
+          </div>
+          <div>
+            <div style={{ fontSize: "18px", fontWeight: 800, color: T.text, lineHeight: 1 }}>{k.value}</div>
+            <div style={{ fontSize: "11px", color: T.muted, fontWeight: 600 }}>{k.label}</div>
+          </div>
+        </button>
+      ))}
+    </motion.div>
+  );
+}
+
+export default function DashboardOverview({ filters, initialStats, T, isMobile, onViewAllLeads, isAdmin = false, onViewClients }) {
   const { stats, loading, refresh } = useStats({ ...filters, initialStats });
 
   // ── Skeletons mientras llegan los datos (sin spinners vacíos) ──
@@ -40,12 +97,19 @@ export default function DashboardOverview({ filters, initialStats, T, isMobile, 
     );
   }
 
-  const kpis = {
-    total: stats.total,
-    nuevos: stats.nuevos,
-    factibles: stats.factibles,
-    contactados: stats.contactados,
-  };
+  const kpis = isAdmin
+    ? {
+        total: stats.total,
+        nuevos: stats.nuevos,
+        interesados: stats.interesados || 0,
+        activos: stats.clientesActivos || 0,
+      }
+    : {
+        total: stats.total,
+        nuevos: stats.nuevos,
+        factibles: stats.factibles,
+        contactados: stats.contactados,
+      };
 
   return (
     <div>
@@ -58,7 +122,7 @@ export default function DashboardOverview({ filters, initialStats, T, isMobile, 
         <div>
           <div className="eyebrow" style={{ marginBottom: 6 }}>Dashboard General</div>
           <h2 style={{ fontSize: "clamp(22px, 1.5vw + 18px, 28px)", fontWeight: 700, color: T.text, fontFamily: "var(--font-heading), 'Outfit', sans-serif", letterSpacing: "-0.02em" }}>
-            Resumen de leads
+            {isAdmin ? "Pipeline de vendedores" : "Resumen de leads"}
           </h2>
         </div>
         <RippleButton
@@ -85,7 +149,8 @@ export default function DashboardOverview({ filters, initialStats, T, isMobile, 
       </motion.div>
 
       {/* KPIs con contadores animados y entrada escalonada */}
-      <KpiCards kpis={kpis} T={T} />
+      {isAdmin && <SellersStrip stats={stats} T={T} onViewClients={onViewClients} />}
+      <KpiCards kpis={kpis} T={T} isAdmin={isAdmin} />
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 420px), 1fr))", gap: "clamp(16px, 1vw + 10px, 30px)", marginBottom: 40 }}>
         <motion.div variants={fadeInUp} custom={1} initial="hidden" animate="visible">

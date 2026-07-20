@@ -3,13 +3,21 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth, isAdmin } from "@/lib/auth";
 import { rateLimit, getClientKey } from "@/lib/rate-limit";
 
-const VALID_STATUSES = [
+const SELLER_STATUSES = [
   "Nuevo",
   "No Contesta",
   "Contactado",
   "En Proceso",
   "Con Factibilidad",
   "Sin Factibilidad",
+];
+
+const ADMIN_STATUSES = [
+  "Nuevo",
+  "Contactado",
+  "Interesado",
+  "Cliente Activo",
+  "No Interesado",
 ];
 
 const MAX_LENGTHS = {
@@ -70,7 +78,9 @@ export async function PATCH(request, { params }) {
 
     const data = {};
     if (status !== undefined) {
-      if (!VALID_STATUSES.includes(status)) {
+      const isAdminPipeline = userIsAdmin && existing.sellerId === null;
+      const validStatuses = isAdminPipeline ? ADMIN_STATUSES : SELLER_STATUSES;
+      if (!validStatuses.includes(status)) {
         return NextResponse.json({ error: "Estado no válido" }, { status: 400 });
       }
       data.status = status;

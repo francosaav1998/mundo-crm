@@ -10,9 +10,11 @@ export default function LeadsView({ leads, total, page, totalPages, search, setS
   return (
     <div>
       <SectionHeader
-        eyebrow="Clientes y Leads"
-        title="Gestión de clientes"
-        description="Revisa tus clientes potenciales, filtra por estado, actualiza su situación y contáctalos rápidamente por WhatsApp o email."
+        eyebrow={isAdmin ? "Prospectos" : "Clientes y Leads"}
+        title={isAdmin ? "Pipeline de vendedores" : "Gestión de clientes"}
+        description={isAdmin
+          ? "Gestiona a los vendedores que muestran interés en la plataforma. Marca su estado y avanza con su activación."
+          : "Revisa tus clientes potenciales, filtra por estado, actualiza su situación y contáctalos rápidamente por WhatsApp o email."}
         T={T}
         isMobile={isMobile}
       />
@@ -29,6 +31,7 @@ export default function LeadsView({ leads, total, page, totalPages, search, setS
         setSearch={setSearch}
         T={T}
         isMobile={isMobile}
+        isAdmin={isAdmin}
       />
 
       <LeadTable

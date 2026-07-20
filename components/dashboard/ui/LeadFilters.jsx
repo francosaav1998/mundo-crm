@@ -1,13 +1,15 @@
 "use client";
 
-import { STATUSES } from "@/lib/dashboard/constants";
+import { STATUSES, ADMIN_STATUSES } from "@/lib/dashboard/constants";
 import RippleButton from "@/components/ui/RippleButton";
 
-export default function LeadFilters({ filter, setFilter, search, setSearch, T, isMobile }) {
+export default function LeadFilters({ filter, setFilter, search, setSearch, T, isMobile, isAdmin }) {
+  const statuses = isAdmin ? ADMIN_STATUSES : STATUSES;
+
   return (
     <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: isMobile ? 16 : 28, alignItems: "center", justifyContent: "space-between" }}>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-        {["Todos", ...STATUSES].map((status) => {
+        {["Todos", ...statuses].map((status) => {
           const active = filter === status;
           return (
             <RippleButton

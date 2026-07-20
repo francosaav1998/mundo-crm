@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth, isAdmin } from "@/lib/auth";
 
+const SELLER_STATUSES = ["Nuevo", "No Contesta", "Contactado", "En Proceso", "Con Factibilidad", "Sin Factibilidad"];
+const ADMIN_STATUSES = ["Nuevo", "Contactado", "Interesado", "Cliente Activo", "No Interesado"];
+
 function getDateRange(filter, customDate) {
   const now = new Date();
   const startOfDay = (date) => {
@@ -55,8 +58,11 @@ export async function GET(request) {
     const customDate = String(searchParams.get("customDate") || "").trim();
 
     const where = {};
+    const userIsAdmin = isAdmin(session.user);
 
-    if (!isAdmin(session.user)) {
+    if (userIsAdmin) {
+      where.sellerId = null;
+    } else {
       const userId = session.user?.id;
       const userEmail = session.user?.email || "";
       const seller = await prisma.seller.findUnique({ where: { userId } }) || await prisma.seller.findFirst({ where: { email: userEmail } });
@@ -92,15 +98,20 @@ export async function GET(request) {
     });
 
     // KPIs
+    const statusSet = userIsAdmin ? ADMIN_STATUSES : SELLER_STATUSES;
     const total = leads.length;
     const nuevos = leads.filter((l) => l.status === "Nuevo").length;
+    const contactados = userIsAdmin
+      ? leads.filter((l) => l.status === "Contactado").length
+      : leads.filter((l) => l.status === "Contactado" || l.status === "En Proceso").length;
     const factibles = leads.filter((l) => l.status === "Con Factibilidad").length;
     const sinFactibilidad = leads.filter((l) => l.status === "Sin Factibilidad").length;
-    const contactados = leads.filter((l) => l.status === "Contactado" || l.status === "En Proceso").length;
+    const interesados = leads.filter((l) => l.status === "Interesado").length;
+    const clientesActivos = leads.filter((l) => l.status === "Cliente Activo").length;
 
     // Status distribution
     const byStatus = {};
-    ["Nuevo", "No Contesta", "Contactado", "En Proceso", "Con Factibilidad", "Sin Factibilidad"].forEach((s) => {
+    statusSet.forEach((s) => {
       byStatus[s] = leads.filter((l) => l.status === s).length;
     });
 
@@ -143,18 +154,36 @@ export async function GET(request) {
     // Recent leads
     const recent = leads.slice(0, 5);
 
-    return NextResponse.json({
+    const response = {
       total,
       nuevos,
       factibles,
       sinFactibilidad,
       contactados,
+      interesados,
+      clientesActivos,
       byStatus,
       topPlans,
       dailyIntake: Object.entries(dailyIntake).map(([date, count]) => ({ date, count })),
       topCities,
       recent,
-    });
+    };
+
+    if (userIsAdmin) {
+      const now = new Date();
+      const sevenDaysAgo = new Date(now);
+      sevenDaysAgo.setDate(now.getDate() - 7);
+      const sellers = await prisma.seller.findMany({
+        where: { active: true },
+        select: { createdAt: true },
+      });
+      response.totalSellers = await prisma.seller.count();
+      response.activeSellers = sellers.length;
+      response.sellersLast7Days = sellers.filter((s) => new Date(s.createdAt) >= sevenDaysAgo).length;
+      response.trialExpiredSellers = sellers.filter((s) => new Date(s.createdAt) < sevenDaysAgo).length;
+    }
+
+    return NextResponse.json(response);
   } catch (error) {
     const status = error.message === "Unauthorized" ? 401 : 500;
     return NextResponse.json({ error: error.message }, { status });

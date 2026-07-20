@@ -24,6 +24,7 @@ export default function SellerLanding() {
   const slug = params.slug;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [inactive, setInactive] = useState(false);
   const [seller, setSeller] = useState(null);
   const [company, setCompany] = useState(null);
   const [plans, setPlans] = useState([]);
@@ -52,6 +53,11 @@ export default function SellerLanding() {
           return;
         }
         const data = await res.json();
+        if (data.active === false) {
+          setInactive(true);
+          setLoading(false);
+          return;
+        }
         setSeller(data);
         setCompany(data.company);
 
@@ -206,6 +212,32 @@ export default function SellerLanding() {
             borderTopColor: "rgba(255,255,255,0.9)",
           }}
         />
+      </div>
+    );
+  }
+
+  if (inactive) {
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", color: "#fff", gap: "16px", padding: "24px", textAlign: "center" }}>
+        <div style={{
+          width: 80,
+          height: 80,
+          borderRadius: "22px",
+          background: "rgba(255,255,255,0.1)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 36,
+        }}>
+          <i className="bi bi-pause-circle-fill" />
+        </div>
+        <div>
+          <h1 style={{ fontSize: "24px", fontWeight: 800, marginBottom: 8 }}>Landing no disponible</h1>
+          <p style={{ maxWidth: 380, opacity: 0.85, lineHeight: 1.5 }}>
+            Esta página está pausada. Si eres el titular, contacta a soporte para reactivarla.
+          </p>
+        </div>
+        <Link href="/" style={{ color: "#FDDC02", fontWeight: 700, marginTop: 8 }}>← Volver al inicio</Link>
       </div>
     );
   }

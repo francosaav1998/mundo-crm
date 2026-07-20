@@ -4,7 +4,7 @@ import { useState, memo } from "react";
 import StatusIcons from "./StatusIcons";
 import MessageActionButtons from "./MessageActionButtons";
 import { formatDate, formatTime } from "@/lib/dashboard/utils";
-import { STATUS_CONFIG } from "@/lib/dashboard/constants";
+import { STATUS_CONFIG, ADMIN_STATUS_CONFIG } from "@/lib/dashboard/constants";
 
 function AssignedCell({ lead, isAdmin, T }) {
   const [value, setValue] = useState(lead.assignedTo || "");
@@ -171,8 +171,10 @@ const LeadTable = memo(function LeadTable({ leads, onUpdateStatus, updating, loa
         </thead>
         <tbody>
           {leads.map((lead, rowIndex) => {
+            const statusConfig = isAdmin ? ADMIN_STATUS_CONFIG : STATUS_CONFIG;
+            const fallbackBadge = { bg: T.inputBg, text: T.muted, icon: "bi-question-circle" };
             const statusIcons = (
-              <StatusIcons lead={lead} onUpdate={onUpdateStatus} updating={updating} T={T} isMobile={isMobile} />
+              <StatusIcons lead={lead} onUpdate={onUpdateStatus} updating={updating} T={T} isMobile={isMobile} isAdmin={isAdmin} />
             );
             const actions = (
               <MessageActionButtons
@@ -185,8 +187,8 @@ const LeadTable = memo(function LeadTable({ leads, onUpdateStatus, updating, loa
             );
 
             const currentStatusBadge = (
-              <span style={{ fontSize: "10px", fontWeight: 800, padding: "3px 8px", borderRadius: "10px", background: STATUS_CONFIG[lead.status]?.bg, color: STATUS_CONFIG[lead.status]?.text, whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: 4 }}>
-                <i className={`bi ${STATUS_CONFIG[lead.status]?.icon}`}></i>
+              <span style={{ fontSize: "10px", fontWeight: 800, padding: "3px 8px", borderRadius: "10px", background: (statusConfig[lead.status] || fallbackBadge).bg, color: (statusConfig[lead.status] || fallbackBadge).text, whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: 4 }}>
+                <i className={`bi ${(statusConfig[lead.status] || fallbackBadge).icon}`}></i>
                 {lead.status}
               </span>
             );

@@ -7,7 +7,7 @@ import { useMemo, memo } from "react";
 import RippleButton from "@/components/ui/RippleButton";
 import Tooltip from "@/components/ui/Tooltip";
 
-const ALL_MENU_ITEMS = [
+const BASE_MENU_ITEMS = [
   { id: "dashboard", icon: "bi-grid-1x2-fill", label: "Dashboard General" },
   { id: "leads", icon: "bi-people-fill", label: "Clientes y Leads" },
   { id: "emails", icon: "bi-envelope-fill", label: "Correos" },
@@ -18,6 +18,15 @@ const ALL_MENU_ITEMS = [
   { id: "users", icon: "bi-shield-lock-fill", label: "Usuarios", adminOnly: true },
   { id: "settings", icon: "bi-gear-fill", label: "Configuraciones" },
 ];
+
+function getMenuItems(isAdmin) {
+  if (!isAdmin) return BASE_MENU_ITEMS;
+  return BASE_MENU_ITEMS.map((item) => {
+    if (item.id === "leads") return { ...item, label: "Prospectos" };
+    if (item.id === "users") return { ...item, label: "Clientes", icon: "bi-people-fill" };
+    return item;
+  });
+}
 
 const DATE_FILTERS = [
   { id: "todos", label: "Todo" },
@@ -51,7 +60,7 @@ export default function DashboardLayout({
   onboardingNeeded = false,
 }) {
   const router = useRouter();
-  const MENU_ITEMS = ALL_MENU_ITEMS.filter((item) => !item.adminOnly || isAdmin);
+  const MENU_ITEMS = getMenuItems(isAdmin).filter((item) => !item.adminOnly || isAdmin);
 
   const logout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -162,7 +171,7 @@ export default function DashboardLayout({
               margin: "12px 14px 0",
             }}
           >
-            <div style={{ fontSize: "10px", color: T.sidebarMuted, textTransform: "uppercase", letterSpacing: "0.2em", fontWeight: 600 }}>Asesor Comercial</div>
+            <div style={{ fontSize: "10px", color: T.sidebarMuted, textTransform: "uppercase", letterSpacing: "0.2em", fontWeight: 600 }}>{isAdmin ? "Administrador" : "Asesor Comercial"}</div>
             <div style={{ fontSize: "15px", fontWeight: 700, color: T.sidebarText, marginTop: 6, fontFamily: "var(--font-heading), 'Outfit', sans-serif" }}>{sellerName}</div>
             {company && (
               <div style={{ fontSize: "12px", color: T.accent, fontWeight: 600, marginTop: 4 }}>
@@ -298,9 +307,9 @@ export default function DashboardLayout({
             </Tooltip>
             <div>
               <h1 style={{ fontSize: isMobile ? "18px" : "26px", fontWeight: 700, color: T.headerText, fontFamily: "var(--font-heading), 'Outfit', sans-serif", letterSpacing: "-0.02em" }}>{pageTitle}</h1>
-              {!isMobile && (
+                {!isMobile && (
                 <p style={{ fontSize: "13px", color: T.headerMuted, marginTop: 4, fontWeight: 500 }}>
-                  Administración y control de cobertura digital en tiempo real.
+                  {isAdmin ? "Gestión de vendedores y pipeline de la plataforma." : "Administración y control de cobertura digital en tiempo real."}
                 </p>
               )}
             </div>

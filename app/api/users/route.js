@@ -1,26 +1,10 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 import { rateLimit, getClientKey } from "@/lib/rate-limit";
 
-const VALID_ROLES = new Set(["admin", "user"]);
-
-function sanitizeEmail(input) {
-  return String(input).toLowerCase().trim().slice(0, 254);
-}
-
-function sanitizeUsername(input) {
-  return String(input).trim().slice(0, 100);
-}
-
-function sanitizeRole(input) {
-  const role = String(input).trim().toLowerCase();
-  return VALID_ROLES.has(role) ? role : "user";
-}
-
-function sanitizeCompanySlug(input) {
-  return String(input || "").trim().toLowerCase().slice(0, 60);
-}
+const TRIAL_DAYS = 7;
 
 async function checkUsersRateLimit(request) {
   const limit = await rateLimit({
@@ -36,6 +20,20 @@ async function checkUsersRateLimit(request) {
     );
   }
   return null;
+}
+
+function getTrialInfo(createdAt) {
+  if (!createdAt) return { daysActive: 0, trialDaysLeft: 0, trialExpired: false };
+  const start = new Date(createdAt);
+  const now = new Date();
+  const ms = Math.max(0, now.getTime() - start.getTime());
+  const daysActive = Math.floor(ms / (1000 * 60 * 60 * 24));
+  const trialDaysLeft = Math.max(0, TRIAL_DAYS - daysActive);
+  return {
+    daysActive,
+    trialDaysLeft,
+    trialExpired: daysActive >= TRIAL_DAYS,
+  };
 }
 
 export async function GET(request) {
@@ -55,106 +53,65 @@ export async function GET(request) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    const simplified = users.map((u) => ({
-      id: u.id,
-      email: u.email,
-      role: u.user_metadata?.role || "user",
-      company: u.user_metadata?.company || null,
-      createdAt: u.created_at,
-      lastSignInAt: u.last_sign_in_at,
-    }));
+    const adminEmail = process.env.ADMIN_EMAIL || "admin@mundo-crm.local";
 
-    return NextResponse.json(simplified);
-  } catch (error) {
-    const status =
-      error.message === "Unauthorized" ? 401 : error.message === "Forbidden" ? 403 : 500;
-    return NextResponse.json({ error: error.message }, { status });
-  }
-}
-
-export async function POST(request) {
-  try {
-    const rateLimitResponse = await checkUsersRateLimit(request);
-    if (rateLimitResponse) return rateLimitResponse;
-
-    await requireAdmin();
-
-    const body = await request.json();
-    const { email, username, password, role = "user", companySlug } = body;
-
-    // Support both email and username for backwards compatibility
-    const userEmail =
-      sanitizeEmail(email) ||
-      (username
-        ? sanitizeUsername(username).includes("@")
-          ? sanitizeUsername(username)
-          : `${sanitizeUsername(username)}@mundo-crm.local`
-        : null);
-
-    if (!userEmail || !userEmail.includes("@")) {
-      return NextResponse.json(
-        { error: "El correo es obligatorio" },
-        { status: 400 }
-      );
-    }
-
-    const sanitizedRole = sanitizeRole(role);
-    const sanitizedCompanySlug = sanitizeCompanySlug(companySlug);
-    const supabase = createServiceClient();
-
-    const userMetadata = { role: sanitizedRole };
-    if (sanitizedCompanySlug) {
-      userMetadata.company = sanitizedCompanySlug;
-    }
-
-    if (password) {
-      // Create user with password directly
-      if (password.length < 6) {
-        return NextResponse.json(
-          { error: "La contraseña debe tener al menos 6 caracteres" },
-          { status: 400 }
-        );
-      }
-
-      const { data, error } = await supabase.auth.admin.createUser({
-        email: userEmail,
-        password,
-        email_confirm: true,
-        user_metadata: userMetadata,
-      });
-
-      if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
-      }
-
-      return NextResponse.json({
-        id: data.user.id,
-        email: data.user.email,
-        role: sanitizedRole,
-        company: sanitizedCompanySlug || null,
-        invited: false,
-      });
-    }
-
-    // No password: send email invitation
-    const { data, error } = await supabase.auth.admin.inviteUserByEmail(
-      userEmail,
-      {
-        data: userMetadata,
-      }
+    // Excluir al admin y a otros usuarios con rol admin: la vista es solo de vendedores-clientes.
+    const sellerUsers = users.filter(
+      (u) => u.user_metadata?.role !== "admin" && u.email !== adminEmail
     );
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    const userIds = sellerUsers.map((u) => u.id);
+    const emails = sellerUsers.map((u) => u.email).filter(Boolean);
+
+    const sellers = await prisma.seller.findMany({
+      where: {
+        OR: [
+          { userId: { in: userIds } },
+          ...(emails.length ? [{ email: { in: emails } }] : []),
+        ],
+      },
+      include: {
+        company: true,
+        _count: { select: { leads: true } },
+      },
+    });
+
+    const byUserId = new Map();
+    const byEmail = new Map();
+    for (const s of sellers) {
+      if (s.userId) byUserId.set(s.userId, s);
+      if (s.email) byEmail.set(s.email.toLowerCase(), s);
     }
 
-    return NextResponse.json({
-      id: data.user.id,
-      email: data.user.email,
-      role: sanitizedRole,
-      company: sanitizedCompanySlug || null,
-      invited: true,
+    const simplified = sellerUsers.map((u) => {
+      const seller =
+        byUserId.get(u.id) || byEmail.get(String(u.email || "").toLowerCase()) || null;
+      const trial = seller ? getTrialInfo(seller.createdAt) : getTrialInfo(u.created_at);
+      return {
+        id: u.id,
+        email: u.email,
+        role: u.user_metadata?.role || "user",
+        createdAt: u.created_at,
+        lastSignInAt: u.last_sign_in_at,
+        seller: seller
+          ? {
+              id: seller.id,
+              name: seller.name,
+              slug: seller.slug,
+              phone: seller.phone,
+              company: seller.company?.name || null,
+              companySlug: seller.company?.slug || null,
+              active: seller.active,
+              createdAt: seller.createdAt,
+              leadsCount: seller._count?.leads || 0,
+              landingUrl: `${process.env.NEXT_PUBLIC_APP_URL || ""}/p/${seller.slug}`,
+              ...trial,
+            }
+          : { ...trial, active: true, leadsCount: 0, landingUrl: null },
+      };
     });
+
+    return NextResponse.json(simplified);
   } catch (error) {
     const status =
       error.message === "Unauthorized" ? 401 : error.message === "Forbidden" ? 403 : 500;

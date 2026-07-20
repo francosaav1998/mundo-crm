@@ -1,14 +1,17 @@
 "use client";
 
-import { STATUSES, STATUS_CONFIG } from "@/lib/dashboard/constants";
+import { STATUSES, STATUS_CONFIG, ADMIN_STATUSES, ADMIN_STATUS_CONFIG } from "@/lib/dashboard/constants";
 import RippleButton from "@/components/ui/RippleButton";
 import Tooltip from "@/components/ui/Tooltip";
 
-export default function StatusIcons({ lead, onUpdate, updating, T, isMobile }) {
+export default function StatusIcons({ lead, onUpdate, updating, T, isMobile, isAdmin }) {
+  const statuses = isAdmin ? ADMIN_STATUSES : STATUSES;
+  const config = isAdmin ? ADMIN_STATUS_CONFIG : STATUS_CONFIG;
+
   return (
     <div style={{ display: "flex", gap: isMobile ? 4 : 6, flexWrap: "wrap" }}>
-      {STATUSES.map((s) => {
-        const sc = STATUS_CONFIG[s];
+      {statuses.map((s) => {
+        const sc = config[s];
         const isActive = lead.status === s;
         return (
           <Tooltip key={s} content={`Cambiar a: ${s}`} position="top">

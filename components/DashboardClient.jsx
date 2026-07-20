@@ -40,17 +40,20 @@ const LandingManager = dynamic(() => import("./dashboard/features/LandingManager
   loading: () => <SkeletonCard lines={6} />,
 });
 
-const PAGE_TITLES = {
-  dashboard: "Dashboard",
-  leads: "Clientes",
-  emails: "Correos",
-  whatsapp: "WhatsApp",
-  import: "Importar Datos",
-  users: "Usuarios",
-  settings: "Configuración",
-  landing: "Editor de Landing",
-  landings: "Landings por Compañía",
-};
+function getPageTitle(activeMenu, isAdmin) {
+  const map = {
+    dashboard: "Dashboard",
+    leads: isAdmin ? "Mis Prospectos" : "Clientes",
+    emails: "Correos",
+    whatsapp: "WhatsApp",
+    import: "Importar Datos",
+    users: isAdmin ? "Clientes" : "Usuarios",
+    settings: "Configuración",
+    landing: "Editor de Landing",
+    landings: "Landings por Compañía",
+  };
+  return map[activeMenu] || activeMenu;
+}
 
 const SPLASH_DURATION = 1700; // ms — sincronizado con la barra de progreso del splash
 
@@ -166,7 +169,7 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
         customDate={customDate}
         setCustomDate={setCustomDate}
         isMobile={isMobile}
-        pageTitle={PAGE_TITLES[activeMenu]}
+        pageTitle={getPageTitle(activeMenu, isAdmin)}
         isAdmin={isAdmin}
         sellerSlug={sellerSlug}
         onboardingNeeded={onboardingNeeded}
@@ -187,7 +190,9 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
                   initialStats={initialStats}
                   T={T}
                   isMobile={isMobile}
+                  isAdmin={isAdmin}
                   onViewAllLeads={() => setActiveMenu("leads")}
+                  onViewClients={() => setActiveMenu("users")}
                 />
               )}
 

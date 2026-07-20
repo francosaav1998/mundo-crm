@@ -29,6 +29,9 @@ export default async function DashboardPage() {
       include: { company: true },
     });
     sellerWhere = { sellerId: seller.id };
+  } else {
+    // El admin solo ve su pipeline B2B (vendedores interesados en la plataforma).
+    sellerWhere = { sellerId: null };
   }
 
   const [initialLeads, initialTotal] = await prisma.$transaction([

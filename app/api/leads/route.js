@@ -80,7 +80,10 @@ export async function GET(request) {
 
     const where = {};
 
-    if (!isAdmin(session.user)) {
+    if (isAdmin(session.user)) {
+      // El admin gestiona su propio pipeline B2B (leads de vendedores interesados en la plataforma).
+      where.sellerId = null;
+    } else {
       const userId = session.user?.id;
       const userEmail = session.user?.email || "";
       const seller = await prisma.seller.findUnique({ where: { userId } }) || await prisma.seller.findFirst({ where: { email: userEmail } });

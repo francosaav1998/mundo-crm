@@ -10,13 +10,20 @@ import { staggerContainer, staggerItem } from "@/lib/animations";
  * - Contadores animados (CountUp) al entrar en viewport.
  * - Hover elegante con lift + sombra (clase `hoverable`).
  */
-export default function KpiCards({ kpis, T }) {
-  const cards = [
-    { label: "Total Leads", value: kpis.total, icon: "bi-people-fill", color: T.accent },
-    { label: "Pendientes", value: kpis.nuevos, icon: "bi-star-fill", color: T.secondary },
-    { label: "En Gestión", value: kpis.contactados, icon: "bi-chat-right-text-fill", color: "#25D366" },
-    { label: "Factibles", value: kpis.factibles, icon: "bi-check-circle-fill", color: T.accent4 },
-  ];
+export default function KpiCards({ kpis, T, isAdmin = false }) {
+  const cards = isAdmin
+    ? [
+        { label: "Total Prospectos", value: kpis.total, icon: "bi-people-fill", color: T.accent },
+        { label: "Nuevos", value: kpis.nuevos, icon: "bi-star-fill", color: T.secondary },
+        { label: "Interesados", value: kpis.interesados, icon: "bi-fire", color: "#F59E0B" },
+        { label: "Clientes Activos", value: kpis.activos, icon: "bi-check-circle-fill", color: T.accent4 },
+      ]
+    : [
+        { label: "Total Leads", value: kpis.total, icon: "bi-people-fill", color: T.accent },
+        { label: "Pendientes", value: kpis.nuevos, icon: "bi-star-fill", color: T.secondary },
+        { label: "En Gestión", value: kpis.contactados, icon: "bi-chat-right-text-fill", color: "#25D366" },
+        { label: "Factibles", value: kpis.factibles, icon: "bi-check-circle-fill", color: T.accent4 },
+      ];
 
   return (
     <motion.div
