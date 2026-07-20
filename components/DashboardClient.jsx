@@ -55,6 +55,8 @@ function getPageTitle(activeMenu, isAdmin) {
   return map[activeMenu] || activeMenu;
 }
 
+const VALID_MENU_IDS = ["dashboard", "leads", "emails", "whatsapp", "import", "users", "settings", "landing", "landings"];
+
 const SPLASH_DURATION = 1700; // ms — sincronizado con la barra de progreso del splash
 
 export default function DashboardClient({ initialLeads = [], initialTotal = 0, initialStats = null, username, isAdmin = false, sellerSlug = null, sellerInfo = null }) {
@@ -74,7 +76,7 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
 
   const [activeMenu, setActiveMenu] = useState(() => {
     const tab = searchParams.get("tab");
-    return PAGE_TITLES[tab] ? tab : "dashboard";
+    return VALID_MENU_IDS.includes(tab) ? tab : "dashboard";
   });
   // Sidebar: null = usar valor por defecto según viewport; true/false = preferencia del usuario
   const [sidebarOpen, setSidebarOpen] = useState(null);
