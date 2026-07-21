@@ -226,6 +226,7 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
                   isMobile={isMobile}
                   sellerName={sellerInfo?.name || settings.sellerName || username}
                   showToast={showToast}
+                  isAdmin={isAdmin}
                 />
               )}
 
@@ -236,6 +237,7 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
                   isMobile={isMobile}
                   showToast={showToast}
                   defaultMessage={settings.sellerMsg}
+                  isAdmin={isAdmin}
                 />
               )}
 

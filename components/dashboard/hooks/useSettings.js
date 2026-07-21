@@ -18,18 +18,22 @@ const STORAGE_KEYS = [
   "crm_email_use_smtp",
 ];
 
-const DEFAULT_SETTINGS = {
-  sellerName: "Ejecutiva Mundo",
-  sellerPhone: "",
-  sellerMsg: "Hola, vi tu página web y me gustaría recibir asesoría sobre los planes de Internet y TV Hogar de Mundo.",
-  sellerPhoto: "",
-  sellerBio: "Como tu ejecutiva comercial especializada de Mundo, te ayudo a gestionar tu contrato de forma rápida y transparente.",
-  sellerGender: "",
-  landingTheme: "light",
-  footerText: "Tu ejecutiva comercial autorizada de Mundo. Gestión ágil, directa y transparente de tus planes de internet fibra, televisión digital y telefonía móvil.",
-  whatsappNumber: "",
-  metaPixelId: "",
-};
+function getDefaultSettings(isAdmin = false) {
+  return {
+    sellerName: "Ejecutiva Mundo",
+    sellerPhone: "",
+    sellerMsg: isAdmin
+      ? "Hola, vi el CRM Vendedor Mundo y quiero activar mi prueba gratis de 7 días."
+      : "Hola, vi tu página web y me gustaría recibir asesoría sobre los planes de Internet y TV Hogar de Mundo.",
+    sellerPhoto: "",
+    sellerBio: "Como tu ejecutiva comercial especializada de Mundo, te ayudo a gestionar tu contrato de forma rápida y transparente.",
+    sellerGender: "",
+    landingTheme: "light",
+    footerText: "Tu ejecutiva comercial autorizada de Mundo. Gestión ágil, directa y transparente de tus planes de internet fibra, televisión digital y telefonía móvil.",
+    whatsappNumber: "",
+    metaPixelId: "",
+  };
+}
 
 function sellerToSettings(seller) {
   if (!seller) return {};
@@ -68,7 +72,7 @@ function settingsToGlobalPayload(settings) {
 }
 
 export function useSettings({ isAdmin = false } = {}) {
-  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+  const [settings, setSettings] = useState(() => getDefaultSettings(isAdmin));
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
 
@@ -78,32 +82,33 @@ export function useSettings({ isAdmin = false } = {}) {
   }, []);
 
   const loadFromLocalStorage = useCallback(() => {
-    if (typeof window === "undefined") return DEFAULT_SETTINGS;
+    const defaults = getDefaultSettings(isAdmin);
+    if (typeof window === "undefined") return defaults;
     return {
-      sellerName: localStorage.getItem("seller_name") || DEFAULT_SETTINGS.sellerName,
-      sellerPhone: localStorage.getItem("seller_phone") || DEFAULT_SETTINGS.sellerPhone,
-      sellerMsg: localStorage.getItem("seller_msg") || DEFAULT_SETTINGS.sellerMsg,
-      sellerPhoto: localStorage.getItem("seller_photo") || DEFAULT_SETTINGS.sellerPhoto,
-      sellerBio: localStorage.getItem("seller_bio") || DEFAULT_SETTINGS.sellerBio,
-      landingTheme: localStorage.getItem("landing_theme") || DEFAULT_SETTINGS.landingTheme,
-      footerText: localStorage.getItem("footer_text") !== null ? localStorage.getItem("footer_text") : DEFAULT_SETTINGS.footerText,
-      whatsappNumber: normalizeWhatsAppNumber(localStorage.getItem("whatsapp_number") || DEFAULT_SETTINGS.whatsappNumber),
-      metaPixelId: localStorage.getItem("meta_pixel_id") || DEFAULT_SETTINGS.metaPixelId,
-      defaultMessage: localStorage.getItem("seller_msg") || DEFAULT_SETTINGS.sellerMsg,
+      sellerName: localStorage.getItem("seller_name") || defaults.sellerName,
+      sellerPhone: localStorage.getItem("seller_phone") || defaults.sellerPhone,
+      sellerMsg: localStorage.getItem("seller_msg") || defaults.sellerMsg,
+      sellerPhoto: localStorage.getItem("seller_photo") || defaults.sellerPhoto,
+      sellerBio: localStorage.getItem("seller_bio") || defaults.sellerBio,
+      landingTheme: localStorage.getItem("landing_theme") || defaults.landingTheme,
+      footerText: localStorage.getItem("footer_text") !== null ? localStorage.getItem("footer_text") : defaults.footerText,
+      whatsappNumber: normalizeWhatsAppNumber(localStorage.getItem("whatsapp_number") || defaults.whatsappNumber),
+      metaPixelId: localStorage.getItem("meta_pixel_id") || defaults.metaPixelId,
+      defaultMessage: localStorage.getItem("seller_msg") || defaults.sellerMsg,
     };
-  }, []);
+  }, [isAdmin]);
 
   useEffect(() => {
     async function load() {
       try {
         const [sellerRes, settingsRes] = await Promise.all([
-          fetch("/api/me/seller"),
+          isAdmin ? Promise.resolve(null) : fetch("/api/me/seller"),
           isAdmin ? fetch("/api/settings") : Promise.resolve(null),
         ]);
 
-        let next = { ...DEFAULT_SETTINGS };
+        let next = { ...getDefaultSettings(isAdmin) };
 
-        if (sellerRes.ok) {
+        if (sellerRes && sellerRes.ok) {
           const seller = await sellerRes.json();
           next = { ...next, ...sellerToSettings(seller) };
         }
@@ -113,6 +118,7 @@ export function useSettings({ isAdmin = false } = {}) {
           next = {
             ...next,
             whatsappNumber: normalizeWhatsAppNumber(data.whatsapp_number || next.whatsappNumber),
+            sellerMsg: data.seller_msg || next.sellerMsg,
           };
         }
 
@@ -151,20 +157,23 @@ export function useSettings({ isAdmin = false } = {}) {
     persistLocally(settingsToSave);
 
     try {
-      const sellerRes = await fetch("/api/me/seller", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(settingsToSellerPayload(settingsToSave)),
-      });
-      if (!sellerRes.ok) throw new Error("Error al guardar perfil");
-
       if (isAdmin) {
         const res = await fetch("/api/settings", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(settingsToGlobalPayload(settingsToSave)),
+          body: JSON.stringify({
+            whatsapp_number: normalizeWhatsAppNumber(settingsToSave.whatsappNumber),
+            seller_msg: settingsToSave.sellerMsg,
+          }),
         });
         if (!res.ok) throw new Error("Error al guardar en el servidor");
+      } else {
+        const sellerRes = await fetch("/api/me/seller", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(settingsToSellerPayload(settingsToSave)),
+        });
+        if (!sellerRes.ok) throw new Error("Error al guardar perfil");
       }
 
       showToast("Configuración guardada exitosamente");

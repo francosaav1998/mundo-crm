@@ -51,6 +51,10 @@ Compact context for working in this repo. If a fact is obvious from filenames, i
 - `DashboardClient.jsx` reads `?tab=` query param and maps it to `activeMenu`. Navigation item `"landing"` renders `components/dashboard/features/LandingEditor.jsx`. Admin menu labels are adapted to "Prospectos" (leads) and "Clientes" (registered sellers).
 - The admin dashboard is B2B-oriented: the **Clientes** view (`components/dashboard/features/UserManager.jsx`) lists registered sellers, shows their 7-day trial status, provides a direct WhatsApp link, and lets the admin activate/deactivate the seller's landing via `PUT /api/sellers`.
 - Lead status sets differ by role: sellers use fiber statuses (`Nuevo`, `No Contesta`, `Contactado`, `En Proceso`, `Con Factibilidad`, `Sin Factibilidad`); the admin pipeline uses B2B statuses (`Nuevo`, `Contactado`, `Interesado`, `Cliente Activo`, `No Interesado`).
+- Admin prospect table (`LeadTable.jsx`) hides seller-specific columns: `Dirección` and `Plan Solicitado` are removed for admins; sellers still see them.
+- WhatsApp/email templates are role-based: sellers keep fiber/Mundo templates; admins use 5 B2B CRM-sale templates focused on closing (value hook, demo, direct close, urgency, value summary). Admin templates use `{{link}}` which renders to `window.location.origin + "/registro"`. Each role stores its templates under separate `localStorage` keys.
+- Admin settings (`SettingsForm.jsx`) only shows the default WhatsApp message and the public WhatsApp number + QR. Sellers keep the full profile/landing/pixel settings.
+- Importing leads (`lib/parse-leads-excel.mjs`) only requires `phone`; rows without a phone are skipped. Empty names are saved as `"Sin nombre"`.
 - Shared landing defaults & merge helpers live in `lib/landing.js`.
 
 ## Landing Editor Preview

@@ -106,7 +106,6 @@ export default function DashboardLayout({
           overflow: "hidden",
           top: 0,
           left: 0,
-          height: "100vh",
           zIndex: 10,
         }}
       >
@@ -217,7 +216,7 @@ export default function DashboardLayout({
           </Tooltip>
           {sidebarOpen && (
             <a
-              href="/"
+              href={isAdmin ? "/" : sellerSlug ? `/p/${sellerSlug}` : "/"}
               target="_blank"
               rel="noopener noreferrer"
               className="micro-btn"
@@ -239,7 +238,7 @@ export default function DashboardLayout({
               }}
             >
               <i className="bi bi-globe-americas" />
-              Ver Landing de Ventas
+              {isAdmin ? "Ver Landing de Ventas" : "Ver mi landing"}
             </a>
           )}
           <RippleButton
@@ -305,6 +304,29 @@ export default function DashboardLayout({
                 <i className="bi bi-list" />
               </RippleButton>
             </Tooltip>
+            {sellerSlug && !isAdmin && (
+              <Tooltip content="Ver mi landing" position="bottom">
+                <RippleButton
+                  onClick={() => window.open(`/p/${sellerSlug}`, "_blank", "noopener,noreferrer")}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: isMobile ? "8px 12px" : "10px 18px",
+                    borderRadius: "9999px",
+                    border: "none",
+                    background: `linear-gradient(135deg, ${T.accent} 0%, ${T.accent2} 100%)`,
+                    color: "#fff",
+                    fontSize: isMobile ? "12px" : "13px",
+                    fontWeight: 700,
+                    flexShrink: 0,
+                  }}
+                >
+                  <i className="bi bi-eye-fill" />
+                  {!isMobile && <span>Ver landing</span>}
+                </RippleButton>
+              </Tooltip>
+            )}
             <div>
               <h1 style={{ fontSize: isMobile ? "18px" : "26px", fontWeight: 700, color: T.headerText, fontFamily: "var(--font-heading), 'Outfit', sans-serif", letterSpacing: "-0.02em" }}>{pageTitle}</h1>
                 {!isMobile && (

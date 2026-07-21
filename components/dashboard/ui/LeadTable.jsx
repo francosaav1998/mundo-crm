@@ -149,7 +149,9 @@ const LeadTable = memo(function LeadTable({ leads, onUpdateStatus, updating, loa
     setSentIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
   };
 
-  const desktopHeaders = ["Fecha", "Cliente", "Teléfono", "Email", "Ciudad/Comuna", "Dirección", "Plan Solicitado", "Asignado a", "Estado", "Acciones"];
+  const desktopHeaders = isAdmin
+    ? ["Fecha", "Cliente", "Teléfono", "Email", "Ciudad/Comuna", "Asignado a", "Estado", "Acciones"]
+    : ["Fecha", "Cliente", "Teléfono", "Email", "Ciudad/Comuna", "Dirección", "Plan Solicitado", "Asignado a", "Estado", "Acciones"];
 
   return (
     <div style={{ overflowX: "auto" }}>
@@ -209,7 +211,7 @@ const LeadTable = memo(function LeadTable({ leads, onUpdateStatus, updating, loa
                     <i className="bi bi-whatsapp" style={{ marginRight: 4 }} /> +56 {lead.phone}
                   </div>
                   <div style={{ fontSize: "11px", color: T.muted, marginBottom: 10 }}>
-                    {lead.plan} · {lead.city}
+                    {isAdmin ? lead.city : `${lead.plan} · ${lead.city}`}
                   </div>
                   {actions}
                 </td>
@@ -230,12 +232,16 @@ const LeadTable = memo(function LeadTable({ leads, onUpdateStatus, updating, loa
                 </td>
                 <td style={{ padding: "18px 20px", fontSize: "13px", color: T.text }}>{lead.email || <span style={{ color: T.muted, fontStyle: "italic" }}>—</span>}</td>
                 <td style={{ padding: "18px 20px", fontSize: "13px", color: T.muted }}>{lead.city}</td>
-                <td style={{ padding: "18px 20px", fontSize: "13px", color: T.muted, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.address}</td>
-                <td style={{ padding: "18px 20px" }}>
-                  <span style={{ fontSize: "11px", fontWeight: 600, padding: "4px 10px", borderRadius: "9999px", background: `${T.accent}15`, color: T.accent, border: `1px solid ${T.accent}30` }}>
-                    {lead.plan}
-                  </span>
-                </td>
+                {!isAdmin && (
+                  <td style={{ padding: "18px 20px", fontSize: "13px", color: T.muted, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.address}</td>
+                )}
+                {!isAdmin && (
+                  <td style={{ padding: "18px 20px" }}>
+                    <span style={{ fontSize: "11px", fontWeight: 600, padding: "4px 10px", borderRadius: "9999px", background: `${T.accent}15`, color: T.accent, border: `1px solid ${T.accent}30` }}>
+                      {lead.plan}
+                    </span>
+                  </td>
+                )}
                 <td style={{ padding: "18px 20px" }}>
                   <AssignedCell lead={lead} isAdmin={isAdmin} T={T} />
                 </td>

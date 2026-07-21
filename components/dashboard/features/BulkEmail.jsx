@@ -18,9 +18,10 @@ const VARS = [
   { tag: "{{direccion}}", label: "Dirección" },
   { tag: "{{plan}}", label: "Plan" },
   { tag: "{{estado}}", label: "Estado" },
+  { tag: "{{link}}", label: "Link registro" },
 ];
 
-const DEFAULT_TEMPLATES = [
+const SELLER_DEFAULT_TEMPLATES = [
   {
     id: "primera-respuesta",
     name: "Primera respuesta",
@@ -41,19 +42,57 @@ const DEFAULT_TEMPLATES = [
   },
 ];
 
-const STORAGE_KEY = "mundo-email-templates";
+const ADMIN_DEFAULT_TEMPLATES = [
+  {
+    id: "b2b-primera-respuesta",
+    name: "Primera respuesta",
+    subject: "Tu CRM + web de ventas: 7 días gratis",
+    body: "Hola {{nombre}},\n\nTe contacto de CRM Vendedor Mundo. Por $29.990 al mes tienes una plataforma completa: landing page propia, gestión de clientes, recordatorios automáticos, mensajes masivos por WhatsApp e integración con Meta Ads.\n\nPuedes probarla 7 días gratis aquí: {{link}}\n\n¿Activamos tu cuenta?\n\nSaludos,",
+  },
+  {
+    id: "b2b-demo-lista",
+    name: "Demo lista por dentro",
+    subject: "Acceso listo: mira cómo funciona por dentro",
+    body: "Hola {{nombre}},\n\nTu acceso al CRM está listo. Al entrar verás:\n· Tu landing profesional lista para recibir clientes\n· Tu lista de leads organizada por estado\n· Mensajes masivos por WhatsApp\n· Recordatorios para no perder ventas\n· Integración con Meta Ads\n\nIngresa gratis por 7 días: {{link}}\n\nSaludos,",
+  },
+  {
+    id: "b2b-cierre-directo",
+    name: "Cierre directo",
+    subject: "Activa tu CRM en 2 minutos",
+    body: "Hola {{nombre}},\n\nActivar CRM Vendedor Mundo es muy simple:\n1. Creas tu cuenta en {{link}}\n2. Personalizas tu web con tus datos\n3. Empiezas a recibir y gestionar clientes\n\nSon 7 días gratis. Después $29.990/mes, sin permanencia.\n\n¿Lo activamos hoy?\n\nSaludos,",
+  },
+  {
+    id: "b2b-urgencia",
+    name: "Urgencia + valor",
+    subject: "Últimos cupos: prueba gratuita de 7 días",
+    body: "Hola {{nombre}},\n\nQuedan pocos cupos para la prueba gratuita de 7 días de CRM Vendedor Mundo.\n\nIncluye todo: web propia, CRM, WhatsApp masivo y Meta Ads por $29.990/mes.\n\nReserva tu acceso aquí: {{link}}\n\nSaludos,",
+  },
+  {
+    id: "b2b-resumen-valor",
+    name: "Resumen de valor",
+    subject: "Todo incluido por $29.990/mes",
+    body: "Hola {{nombre}},\n\nEsto es lo que incluye tu cuenta de CRM Vendedor Mundo:\n· Landing page personalizada\n· Gestión ilimitada de clientes\n· Recordatorios y seguimiento automático\n· Mensajes masivos por WhatsApp\n· Integración con Meta Ads\n· Soporte para activarte\n\nPrecio: $29.990/mes. Prueba 7 días gratis: {{link}}\n\n¿Confirmamos tu acceso?\n\nSaludos,",
+  },
+];
 
-function getInitialEmailState() {
+const getStorageKey = (isAdmin) => (isAdmin ? "mundo-email-templates-admin" : "mundo-email-templates");
+
+function getDefaultTemplates(isAdmin) {
+  return isAdmin ? ADMIN_DEFAULT_TEMPLATES : SELLER_DEFAULT_TEMPLATES;
+}
+
+function getInitialEmailState(isAdmin = false) {
+  const defaults = getDefaultTemplates(isAdmin);
   if (typeof window === "undefined") {
     return {
-      templates: DEFAULT_TEMPLATES,
-      selectedTemplateId: DEFAULT_TEMPLATES[0].id,
-      subject: DEFAULT_TEMPLATES[0].subject,
-      body: DEFAULT_TEMPLATES[0].body,
+      templates: defaults,
+      selectedTemplateId: defaults[0].id,
+      subject: defaults[0].subject,
+      body: defaults[0].body,
     };
   }
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved = localStorage.getItem(getStorageKey(isAdmin));
     if (saved) {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed) && parsed.length > 0) {
@@ -69,15 +108,15 @@ function getInitialEmailState() {
     // ignore
   }
   return {
-    templates: DEFAULT_TEMPLATES,
-    selectedTemplateId: DEFAULT_TEMPLATES[0].id,
-    subject: DEFAULT_TEMPLATES[0].subject,
-    body: DEFAULT_TEMPLATES[0].body,
+    templates: defaults,
+    selectedTemplateId: defaults[0].id,
+    subject: defaults[0].subject,
+    body: defaults[0].body,
   };
 }
 
-export default function BulkEmail({ leads, T, isMobile, sellerName, showToast }) {
-  const initial = getInitialEmailState();
+export default function BulkEmail({ leads, T, isMobile, sellerName, showToast, isAdmin = false }) {
+  const initial = useMemo(() => getInitialEmailState(isAdmin), [isAdmin]);
   const [templates, setTemplates] = useState(initial.templates);
   const [selectedTemplateId, setSelectedTemplateId] = useState(initial.selectedTemplateId);
   const [subject, setSubject] = useState(initial.subject);
@@ -90,9 +129,12 @@ export default function BulkEmail({ leads, T, isMobile, sellerName, showToast })
   const [newTemplateName, setNewTemplateName] = useState("");
   const [showAddTemplate, setShowAddTemplate] = useState(false);
 
+  const signupUrl = typeof window !== "undefined" ? `${window.location.origin}/registro` : "";
+  const enrichLead = (lead) => (lead ? { ...lead, link: signupUrl } : lead);
+
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(templates));
-  }, [templates]);
+    localStorage.setItem(getStorageKey(isAdmin), JSON.stringify(templates));
+  }, [templates, isAdmin]);
 
   const cities = useMemo(
     () => Array.from(new Set(leads.map((l) => l.city).filter(Boolean))).sort(),
@@ -177,10 +219,13 @@ export default function BulkEmail({ leads, T, isMobile, sellerName, showToast })
     setSentIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
   };
 
-  const getRendered = (lead) => ({
-    subject: renderTemplate(subject, lead),
-    body: renderTemplate(body, lead) + `\n\n— ${sellerName || "Tu ejecutivo/a Mundo"}`,
-  });
+  const getRendered = (lead) => {
+    const enriched = enrichLead(lead);
+    return {
+      subject: renderTemplate(subject, enriched),
+      body: renderTemplate(body, enriched) + `\n\n— ${sellerName || (isAdmin ? "Equipo CRM Vendedor Mundo" : "Tu ejecutivo/a Mundo")}`,
+    };
+  };
 
   const openGmail = (lead) => {
     const { subject: subj, body: txt } = getRendered(lead);

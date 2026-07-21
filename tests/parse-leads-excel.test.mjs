@@ -45,7 +45,7 @@ describe("parseLeadsFromExcel", () => {
     assert.equal(leads[0].status, "En Proceso");
   });
 
-  it("skips rows with missing name or phone and clears invalid emails", async () => {
+  it("skips rows with missing phone, defaults empty names and clears invalid emails", async () => {
     const buffer = await buildBuffer([
       ["Nombre", "Telefono", "Email", "Ciudad", "Direccion", "Plan", "Estado"],
       ["", "912345678", "missing@test.cl", "Santiago", "Av. 1", "Plan A", "Nuevo"],
@@ -57,11 +57,13 @@ describe("parseLeadsFromExcel", () => {
     const { leads, skipped, total } = await parseLeadsFromExcel(buffer);
 
     assert.equal(total, 4);
-    assert.equal(skipped, 2);
-    assert.equal(leads.length, 2);
-    assert.equal(leads[0].name, "María Díaz");
-    assert.equal(leads[0].email, "");
-    assert.equal(leads[1].name, "Luis Torres");
+    assert.equal(skipped, 1);
+    assert.equal(leads.length, 3);
+    assert.equal(leads[0].name, "Sin nombre");
+    assert.equal(leads[0].email, "missing@test.cl");
+    assert.equal(leads[1].name, "María Díaz");
+    assert.equal(leads[1].email, "");
+    assert.equal(leads[2].name, "Luis Torres");
   });
 
   it("defaults missing optional fields and invalid statuses", async () => {

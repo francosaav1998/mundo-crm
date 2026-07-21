@@ -98,7 +98,7 @@ export default function SettingsForm({
       <SectionHeader
         eyebrow="Configuración"
         title="Configuración del sistema"
-        description="Edita tu perfil de ejecutivo, el mensaje por defecto de WhatsApp, la apariencia de tu landing y el pixel de Meta desde un solo lugar."
+        description={isAdmin ? "Configura el mensaje por defecto y el WhatsApp público de la web." : "Edita tu perfil de ejecutivo, el mensaje por defecto de WhatsApp, la apariencia de tu landing y el pixel de Meta desde un solo lugar."}
         T={T}
         isMobile={isMobile}
       />
@@ -120,11 +120,11 @@ export default function SettingsForm({
           </h2>
         </div>
         <p style={{ fontSize: "13px", color: T.muted, marginBottom: 30 }}>
-          Edita tu perfil, mensaje de WhatsApp y la apariencia de tu landing desde un solo lugar.
+          {isAdmin ? "Configura el mensaje de WhatsApp y el número público de la web." : "Edita tu perfil, mensaje de WhatsApp y la apariencia de tu landing desde un solo lugar."}
         </p>
 
         <form onSubmit={handleSave} style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-        {/* Perfil */}
+        {!isAdmin && (
         <div style={{ borderTop: `1px solid ${T.border}`, paddingTop: 20 }}>
           <h3 style={sectionTitleStyle}>
             <i className="bi bi-person-circle" style={{ marginRight: 6 }}></i>
@@ -226,6 +226,7 @@ export default function SettingsForm({
             </div>
           </div>
         </div>
+        )}
 
         {/* Mensaje WhatsApp */}
         <div style={{ borderTop: `1px solid ${T.border}`, paddingTop: 20 }}>
@@ -242,7 +243,7 @@ export default function SettingsForm({
           />
         </div>
 
-        {/* Apariencia y Footer */}
+        {!isAdmin && (
         <div style={{ borderTop: `1px solid ${T.border}`, paddingTop: 20 }}>
           <h3 style={sectionTitleStyle}>
             <i className="bi bi-palette-fill" style={{ marginRight: 6 }}></i>
@@ -290,8 +291,9 @@ export default function SettingsForm({
             />
           </div>
         </div>
+        )}
 
-        {/* Meta Pixel */}
+        {!isAdmin && (
         <div style={{ borderTop: `1px solid ${T.border}`, paddingTop: 20 }}>
           <h3 style={sectionTitleStyle}>
             <i className="bi bi-megaphone-fill" style={{ marginRight: 6 }}></i>
@@ -305,6 +307,7 @@ export default function SettingsForm({
             placeholder="Ej: 123456789012345"
           />
         </div>
+        )}
 
         {isAdmin && (
           <div style={{ borderTop: `1px solid ${T.border}`, paddingTop: 20 }}>

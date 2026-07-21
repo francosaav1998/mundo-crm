@@ -14,9 +14,10 @@ const VARS = [
   { tag: "{{direccion}}", label: "Dirección" },
   { tag: "{{plan}}", label: "Plan" },
   { tag: "{{estado}}", label: "Estado" },
+  { tag: "{{link}}", label: "Link registro" },
 ];
 
-const DEFAULT_TEMPLATES = [
+const SELLER_DEFAULT_TEMPLATES = [
   {
     id: "factibilidad-confirmada",
     name: "Factibilidad confirmada",
@@ -34,7 +35,39 @@ const DEFAULT_TEMPLATES = [
   },
 ];
 
-const STORAGE_KEY = "mundo-wa-templates";
+const ADMIN_DEFAULT_TEMPLATES = [
+  {
+    id: "b2b-gancho-valor",
+    name: "Gancho de valor",
+    body: "Hola {{nombre}}, con CRM Vendedor Mundo puedes tener tu propia web para captar clientes + un panel para gestionarlos, todo por $29.990/mes. Empiezas 7 días gratis: {{link}}\n\n¿Te muestro el acceso?",
+  },
+  {
+    id: "b2b-demo-lista",
+    name: "Demo lista por dentro",
+    body: "Hola {{nombre}}, aquí tienes el acceso a tu CRM de prueba: {{link}}\n\nDentro encontrarás tu landing lista, lista de clientes, mensajes masivos y recordatorios. 7 días gratis, sin tarjeta. ¿Entramos?",
+  },
+  {
+    id: "b2b-cierre-directo",
+    name: "Cierre directo",
+    body: "Hola {{nombre}}, activar tu CRM toma 2 minutos: creas tu cuenta en {{link}}, personalizas tu web y ya puedes recibir clientes. Son 7 días gratis y luego $29.990/mes. ¿Lo activamos hoy?",
+  },
+  {
+    id: "b2b-urgencia",
+    name: "Urgencia + valor",
+    body: "Hola {{nombre}}, quedan pocos cupos de la prueba gratuita de 7 días. Con el CRM tendrás web propia, clientes organizados, WhatsApp masivo y Meta Ads. Actívalo aquí: {{link}}",
+  },
+  {
+    id: "b2b-resumen-valor",
+    name: "Resumen de valor",
+    body: "Hola {{nombre}}, esto es lo que incluye CRM Vendedor Mundo por $29.990/mes: tu propia landing, CRM de clientes, mensajes masivos, Meta Ads y soporte. Prueba 7 días gratis aquí: {{link}}\n\n¿Confirmamos tu acceso?",
+  },
+];
+
+const getStorageKey = (isAdmin) => (isAdmin ? "mundo-wa-templates-admin" : "mundo-wa-templates");
+
+function getDefaultTemplates(isAdmin) {
+  return isAdmin ? ADMIN_DEFAULT_TEMPLATES : SELLER_DEFAULT_TEMPLATES;
+}
 
 const Label = ({ children, T }) => (
   <label style={{ display: "block", fontSize: "11px", fontWeight: 700, color: T.muted, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "8px" }}>
@@ -54,16 +87,17 @@ const Avatar = ({ name, T, size = 36 }) => (
   </div>
 );
 
-function getInitialWhatsAppState() {
+function getInitialWhatsAppState(isAdmin = false) {
+  const defaults = getDefaultTemplates(isAdmin);
   if (typeof window === "undefined") {
     return {
-      templates: DEFAULT_TEMPLATES,
-      selectedTemplateId: DEFAULT_TEMPLATES[0].id,
-      bulkTemplate: DEFAULT_TEMPLATES[0].body,
+      templates: defaults,
+      selectedTemplateId: defaults[0].id,
+      bulkTemplate: defaults[0].body,
     };
   }
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved = localStorage.getItem(getStorageKey(isAdmin));
     if (saved) {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed) && parsed.length > 0) {
@@ -78,14 +112,14 @@ function getInitialWhatsAppState() {
     // ignore
   }
   return {
-    templates: DEFAULT_TEMPLATES,
-    selectedTemplateId: DEFAULT_TEMPLATES[0].id,
-    bulkTemplate: DEFAULT_TEMPLATES[0].body,
+    templates: defaults,
+    selectedTemplateId: defaults[0].id,
+    bulkTemplate: defaults[0].body,
   };
 }
 
-export default function BulkWhatsApp({ leads, T, isMobile, showToast, defaultMessage = "" }) {
-  const initial = getInitialWhatsAppState();
+export default function BulkWhatsApp({ leads, T, isMobile, showToast, defaultMessage = "", isAdmin = false }) {
+  const initial = useMemo(() => getInitialWhatsAppState(isAdmin), [isAdmin]);
   const [templates, setTemplates] = useState(initial.templates);
   const [selectedTemplateId, setSelectedTemplateId] = useState(initial.selectedTemplateId);
   const [bulkTemplate, setBulkTemplate] = useState(initial.bulkTemplate);
@@ -98,9 +132,12 @@ export default function BulkWhatsApp({ leads, T, isMobile, showToast, defaultMes
   const [newTemplateName, setNewTemplateName] = useState("");
   const [showAddTemplate, setShowAddTemplate] = useState(false);
 
+  const signupUrl = typeof window !== "undefined" ? `${window.location.origin}/registro` : "";
+  const enrichLead = (lead) => (lead ? { ...lead, link: signupUrl } : lead);
+
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(templates));
-  }, [templates]);
+    localStorage.setItem(getStorageKey(isAdmin), JSON.stringify(templates));
+  }, [templates, isAdmin]);
 
   const uniqueCities = useMemo(() => ["Todas", ...Array.from(new Set(leads.map((l) => l.city).filter(Boolean))).sort()], [leads]);
   const bulkFilteredLeads = useMemo(() => {
@@ -163,13 +200,13 @@ export default function BulkWhatsApp({ leads, T, isMobile, showToast, defaultMes
   };
 
   const sendToLead = (lead) => {
-    openLink(getWhatsAppUrl(lead.phone, renderTemplate(bulkTemplate, lead)));
+    openLink(getWhatsAppUrl(lead.phone, renderTemplate(bulkTemplate, enrichLead(lead))));
     setSentIds((prev) => (prev.includes(lead.id) ? prev : [...prev, lead.id]));
     showToast(`WhatsApp abierto para ${lead.name}`);
   };
 
   const copyBulkLinks = async () => {
-    const lines = selectedBulkLeads.map((lead) => `${lead.name} (+56 ${lead.phone}): ${getWhatsAppUrl(lead.phone, renderTemplate(bulkTemplate, lead))}`);
+    const lines = selectedBulkLeads.map((lead) => `${lead.name} (+56 ${lead.phone}): ${getWhatsAppUrl(lead.phone, renderTemplate(bulkTemplate, enrichLead(lead)))}`);
     await navigator.clipboard.writeText(lines.join("\n"));
     showToast(`${lines.length} enlaces personalizados copiados al portapapeles`);
   };
@@ -253,7 +290,7 @@ export default function BulkWhatsApp({ leads, T, isMobile, showToast, defaultMes
                 <div style={{ fontSize: "11px", color: "#8696A0", marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>
                   <i className="bi bi-person-fill"></i> {bulkPreviewLead.name} · +56 {bulkPreviewLead.phone} · {bulkPreviewLead.city}
                 </div>
-                {renderTemplate(bulkTemplate, bulkPreviewLead) || <span style={{ opacity: 0.5 }}>Escribe la plantilla para ver el resultado...</span>}
+                {renderTemplate(bulkTemplate, enrichLead(bulkPreviewLead)) || <span style={{ opacity: 0.5 }}>Escribe la plantilla para ver el resultado...</span>}
               </>
             ) : (
               <span style={{ opacity: 0.5, fontStyle: "italic" }}>Selecciona clientes para previsualizar el mensaje.</span>

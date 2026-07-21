@@ -88,7 +88,7 @@ export default function ImportData({ leads, T, isMobile, showToast, onImportSucc
       <SectionHeader
         eyebrow="Importar Datos"
         title="Importar base de clientes"
-        description="Sube un archivo Excel (.xlsx o .csv) para cargar clientes masivamente en el CRM. Solo Nombre y Teléfono son obligatorios; las filas incompletas se omiten."
+        description="Sube un archivo Excel (.xlsx o .csv) para cargar clientes masivamente en el CRM. Solo el Teléfono es obligatorio; las filas sin número se omiten."
         T={T}
         isMobile={isMobile}
       />
@@ -107,7 +107,7 @@ export default function ImportData({ leads, T, isMobile, showToast, onImportSucc
           Importar Base de Datos Excel
         </h2>
         <p style={{ fontSize: "13px", color: T.muted, marginBottom: 30 }}>
-          Sube un archivo Excel (.xlsx o .csv) con tus clientes. Solo Nombre y Teléfono son obligatorios. Las demás columnas son opcionales y las filas incompletas se omiten.
+          Sube un archivo Excel (.xlsx o .csv) con tus clientes. Solo el Teléfono es obligatorio. Las demás columnas son opcionales y las filas sin número se omiten.
         </p>
 
         <label
@@ -165,12 +165,12 @@ export default function ImportData({ leads, T, isMobile, showToast, onImportSucc
         >
           <i className="bi bi-info-circle-fill" style={{ color: T.accent, fontSize: 16 }}></i>
           <span style={{ fontSize: "12px", color: T.muted, flex: 1 }}>
-            Recomendamos estos encabezados en la primera fila (solo Nombre y Teléfono son obligatorios):
+            Recomendamos estos encabezados en la primera fila (solo Teléfono es obligatorio):
           </span>
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 10 }}>
           {["Nombre", "Telefono", "Ciudad", "Direccion", "Plan", "Estado"].map((col) => {
-            const required = col === "Nombre" || col === "Telefono";
+            const required = col === "Telefono";
             return (
               <span
                 key={col}

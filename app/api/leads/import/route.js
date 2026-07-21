@@ -76,7 +76,7 @@ export async function POST(request) {
 
     if (leadsToCreate.length === 0) {
       return NextResponse.json({
-        error: "No se encontraron filas válidas. Solo se requieren Nombre y Teléfono. Las demás columnas son opcionales.",
+        error: "No se encontraron filas válidas. Solo se requiere Teléfono. Las demás columnas son opcionales.",
       }, { status: 400 });
     }
 
