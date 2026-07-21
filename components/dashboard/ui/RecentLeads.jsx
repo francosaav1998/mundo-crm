@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { STATUS_CONFIG } from "@/lib/dashboard/constants";
+import { STATUS_CONFIG, ADMIN_STATUS_CONFIG } from "@/lib/dashboard/constants";
 import { formatDate } from "@/lib/dashboard/utils";
 import { tableRow } from "@/lib/animations";
 
@@ -9,7 +9,7 @@ import { tableRow } from "@/lib/animations";
  * RecentLeads — Tabla con filas que entran en cascada sutil
  * y hover suave por fila.
  */
-export default function RecentLeads({ leads, T, onViewAll }) {
+export default function RecentLeads({ leads, T, onViewAll, isAdmin = false }) {
   return (
     <div
       className="glass-card"
@@ -34,7 +34,7 @@ export default function RecentLeads({ leads, T, onViewAll }) {
         <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
           <thead>
             <tr style={{ borderBottom: `1px solid ${T.border}` }}>
-              {["Fecha", "Cliente", "Teléfono", "Comuna", "Plan", "Estado"].map((h) => (
+              {(isAdmin ? ["Fecha", "Cliente", "Teléfono", "Comuna", "Estado"] : ["Fecha", "Cliente", "Teléfono", "Comuna", "Plan", "Estado"]).map((h) => (
                 <th key={h} style={{ padding: "12px 16px", fontSize: "10px", fontWeight: 600, color: T.muted, textTransform: "uppercase", letterSpacing: "0.2em" }}>
                   {h}
                 </th>
@@ -56,11 +56,13 @@ export default function RecentLeads({ leads, T, onViewAll }) {
                 <td style={{ padding: "14px 16px", fontSize: "14px", fontWeight: 600, color: T.text, fontFamily: "var(--font-heading), 'Outfit', sans-serif" }}>{l.name}</td>
                 <td style={{ padding: "14px 16px", fontSize: "13px", color: T.text, fontWeight: 500 }}>{l.phone}</td>
                 <td style={{ padding: "14px 16px", fontSize: "13px", color: T.muted, fontWeight: 500 }}>{l.city}</td>
-                <td style={{ padding: "14px 16px", fontSize: "12px" }}>
-                  <span style={{ padding: "4px 10px", borderRadius: "9999px", background: `${T.accent}12`, color: T.accent, fontWeight: 600, border: `1px solid ${T.accent}25` }}>
-                    {l.plan}
-                  </span>
-                </td>
+                {!isAdmin && (
+                  <td style={{ padding: "14px 16px", fontSize: "12px" }}>
+                    <span style={{ padding: "4px 10px", borderRadius: "9999px", background: `${T.accent}12`, color: T.accent, fontWeight: 600, border: `1px solid ${T.accent}25` }}>
+                      {l.plan}
+                    </span>
+                  </td>
+                )}
                 <td style={{ padding: "14px 16px" }}>
                   <span
                     style={{
@@ -68,9 +70,9 @@ export default function RecentLeads({ leads, T, onViewAll }) {
                       fontWeight: 600,
                       padding: "4px 10px",
                       borderRadius: "9999px",
-                      background: STATUS_CONFIG[l.status]?.bg,
-                      color: STATUS_CONFIG[l.status]?.text,
-                      border: `1px solid ${STATUS_CONFIG[l.status]?.text}25`,
+                      background: (isAdmin ? ADMIN_STATUS_CONFIG[l.status] : STATUS_CONFIG[l.status])?.bg,
+                      color: (isAdmin ? ADMIN_STATUS_CONFIG[l.status] : STATUS_CONFIG[l.status])?.text,
+                      border: `1px solid ${(isAdmin ? ADMIN_STATUS_CONFIG[l.status] : STATUS_CONFIG[l.status])?.text}25`,
                     }}
                   >
                     {l.status}

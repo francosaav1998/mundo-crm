@@ -156,13 +156,15 @@ export default function DashboardOverview({ filters, initialStats, T, isMobile, 
         <motion.div variants={fadeInUp} custom={1} initial="hidden" animate="visible">
           <DailyChart data={stats.dailyIntake} T={T} />
         </motion.div>
-        <motion.div variants={fadeInUp} custom={2} initial="hidden" animate="visible">
-          <PlanDistribution data={stats.topPlans} T={T} />
-        </motion.div>
+        {!isAdmin && (
+          <motion.div variants={fadeInUp} custom={2} initial="hidden" animate="visible">
+            <PlanDistribution data={stats.topPlans} T={T} />
+          </motion.div>
+        )}
       </div>
 
       <motion.div variants={fadeInUp} custom={3} initial="hidden" animate="visible">
-        <RecentLeads leads={stats.recent} T={T} onViewAll={onViewAllLeads} />
+        <RecentLeads leads={stats.recent} T={T} onViewAll={onViewAllLeads} isAdmin={isAdmin} />
       </motion.div>
     </div>
   );

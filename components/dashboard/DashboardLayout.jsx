@@ -304,10 +304,10 @@ export default function DashboardLayout({
                 <i className="bi bi-list" />
               </RippleButton>
             </Tooltip>
-            {sellerSlug && !isAdmin && (
-              <Tooltip content="Ver mi landing" position="bottom">
+            {(isAdmin || sellerSlug) && (
+              <Tooltip content={isAdmin ? "Ver landing de ventas" : "Ver mi landing"} position="bottom">
                 <RippleButton
-                  onClick={() => window.open(`/p/${sellerSlug}`, "_blank", "noopener,noreferrer")}
+                  onClick={() => window.open(isAdmin ? "/" : `/p/${sellerSlug}`, "_blank", "noopener,noreferrer")}
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
@@ -323,7 +323,7 @@ export default function DashboardLayout({
                   }}
                 >
                   <i className="bi bi-eye-fill" />
-                  {!isMobile && <span>Ver landing</span>}
+                  {!isMobile && <span>{isAdmin ? "Ver landing" : "Ver mi landing"}</span>}
                 </RippleButton>
               </Tooltip>
             )}
