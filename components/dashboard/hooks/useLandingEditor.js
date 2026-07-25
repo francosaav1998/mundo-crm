@@ -135,6 +135,47 @@ export function useLandingEditor({ showToast }) {
     });
   }, []);
 
+  const addPlan = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/me/plans", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: "Nuevo plan",
+          category: "internet",
+          speed: "200",
+          speedLabel: "Megas",
+          price: "$0",
+          features: [{ icon: "bi-check-circle-fill", text: "Característica del plan" }],
+        }),
+      });
+      if (!res.ok) throw new Error("Error al crear plan");
+      const newPlan = await res.json();
+      setPlans((prev) => [...prev, newPlan]);
+      return newPlan;
+    } catch (err) {
+      showToast(err.message || "Error al agregar plan");
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [showToast]);
+
+  const removePlan = useCallback(async (index) => {
+    const plan = plans[index];
+    if (!plan?.id) return;
+    try {
+      const res = await fetch(`/api/me/plans?id=${encodeURIComponent(plan.id)}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Error al eliminar plan");
+      setPlans((prev) => prev.filter((_, i) => i !== index));
+    } catch (err) {
+      showToast(err.message || "Error al eliminar plan");
+    }
+  }, [plans, showToast]);
+
   const addPlanFeature = useCallback((planIndex) => {
     setDirty(true);
     setPlans((prev) => {
@@ -231,6 +272,8 @@ export function useLandingEditor({ showToast }) {
     removeArrayItem,
     updateProfile,
     updatePlan,
+    addPlan,
+    removePlan,
     updatePlanFeature,
     addPlanFeature,
     removePlanFeature,

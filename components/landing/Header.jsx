@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { getLogoUrl, shouldInvertLogo } from "@/lib/company";
+import EditableText from "./EditableText";
 
 const NAV_LINKS = [
   { id: "inicio", label: "Inicio" },
@@ -47,10 +48,12 @@ export default function Header({ menuOpen, setMenuOpen, onScrollTo, sellerLabels
         <div className="container header-top-inner">
           <div className="header-top-info">
             <span>
-              <i className="bi bi-clock-fill"></i> {c.topHours || "Atención Express: Lun a Dom 9:00 a 21:00"}
+              <i className="bi bi-clock-fill"></i>{" "}
+              <EditableText path="header.topHours">{c.topHours || "Atención Express: Lun a Dom 9:00 a 21:00"}</EditableText>
             </span>
             <span>
-              <i className="bi bi-geo-alt-fill"></i> {c.topCoverage || "Cobertura en todo Chile"}
+              <i className="bi bi-geo-alt-fill"></i>{" "}
+              <EditableText path="header.topCoverage">{c.topCoverage || "Cobertura en todo Chile"}</EditableText>
             </span>
           </div>
           <div>
@@ -75,13 +78,13 @@ export default function Header({ menuOpen, setMenuOpen, onScrollTo, sellerLabels
               />
             </a>
             <ul className={`nav-links ${menuOpen ? "mobile-active" : ""}`}>
-              {navLinks.map((link) => (
+              {navLinks.map((link, idx) => (
                 <li key={link.id}>
                   <a
                     href={`#${link.id}`}
                     onClick={(e) => { e.preventDefault(); onScrollTo(link.id); }}
                   >
-                    {link.label}
+                    <EditableText path={`header.navLinks.${idx}.label`}>{link.label}</EditableText>
                   </a>
                 </li>
               ))}
@@ -91,7 +94,8 @@ export default function Header({ menuOpen, setMenuOpen, onScrollTo, sellerLabels
             </ul>
             <div className="nav-cta">
               <button onClick={() => onScrollTo("cobertura")} className="btn btn-secondary">
-                <i className="bi bi-geo-fill"></i> {c.cta || "Evaluar Factibilidad"}
+                <i className="bi bi-geo-fill"></i>{" "}
+                <EditableText path="header.cta">{c.cta || "Evaluar Factibilidad"}</EditableText>
               </button>
             </div>
             <button

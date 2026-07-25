@@ -1,5 +1,7 @@
 "use client";
 
+import EditableText from "./EditableText";
+
 const BENEFITS = [
   {
     icon: "bi-speedometer",
@@ -36,9 +38,15 @@ export default function BenefitsSection({ companyName = "Mundo", content = {} })
       <div className="container">
         <div className="section-header">
           <h2>
-            {c.title || "¿Por qué contratar"} <span>{companyName}</span>{c.titleSuffix || "?"}
+            <EditableText path="benefits.header.title">{c.title || "¿Por qué contratar"}</EditableText>{" "}
+            <span>{companyName}</span>
+            <EditableText path="benefits.header.titleSuffix">{c.titleSuffix || "?"}</EditableText>
           </h2>
-          <p>{c.description || "Únete a la red que está revolucionando la conectividad en el país."}</p>
+          <p>
+            <EditableText path="benefits.header.description" multiline>
+              {c.description || "Únete a la red que está revolucionando la conectividad en el país."}
+            </EditableText>
+          </p>
         </div>
         <div className="benefits-grid">
           {benefits.map((benefit, index) => (
@@ -49,8 +57,14 @@ export default function BenefitsSection({ companyName = "Mundo", content = {} })
               <div className="benefit-icon">
                 <i className={`bi ${benefit.icon}`}></i>
               </div>
-              <h3>{benefit.title}</h3>
-              <p>{benefit.description}</p>
+              <h3>
+                <EditableText path={`benefits.items.${index}.title`}>{benefit.title}</EditableText>
+              </h3>
+              <p>
+                <EditableText path={`benefits.items.${index}.description`} multiline>
+                  {benefit.description}
+                </EditableText>
+              </p>
             </div>
           ))}
         </div>

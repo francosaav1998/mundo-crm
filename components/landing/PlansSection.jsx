@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import PlanCard from "./PlanCard";
+import EditableText from "./EditableText";
 
 const ALL_TABS = [
   { key: "all", label: "Todos los Planes" },
@@ -121,9 +122,13 @@ export default function PlansSection({ onSelectPlan, plans, company = null, cont
       <div className="container">
         <div className="section-header">
           <h2>
-            {c.title || "Elige el"} <span>{c.titleHighlight || "Plan Perfecto"}</span> {c.titleSuffix || "para Ti"}
+            <EditableText path="plans.header.title">{c.title || "Elige el"}</EditableText>{" "}
+            <EditableText path="plans.header.titleHighlight" tag="span">{c.titleHighlight || "Plan Perfecto"}</EditableText>{" "}
+            <EditableText path="plans.header.titleSuffix">{c.titleSuffix || "para Ti"}</EditableText>
           </h2>
-          <p>{description}</p>
+          <p>
+            <EditableText path="plans.header.description" multiline>{description}</EditableText>
+          </p>
         </div>
 
         <div className="planes-tabs">
@@ -139,8 +144,8 @@ export default function PlansSection({ onSelectPlan, plans, company = null, cont
         </div>
 
         <div className="planes-grid">
-          {filteredPlans.map((plan, index) => (
-            <PlanCard key={plan.value} plan={plan} index={index} onSelect={onSelectPlan} />
+          {filteredPlans.map((plan) => (
+            <PlanCard key={plan.id || plan.value} plan={plan} planIndex={displayPlans.findIndex((p) => p.id === plan.id || p.value === plan.value)} onSelect={onSelectPlan} />
           ))}
         </div>
       </div>

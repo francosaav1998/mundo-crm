@@ -1,11 +1,14 @@
 "use client";
 
+import EditableText from "./EditableText";
+
 export default function Hero({
   onScrollTo,
   onSelectPlan,
   onOpenModal,
   company = null,
   featuredPlan = null,
+  plans = [],
   content = {},
 }) {
   const companyName = company?.name || "Mundo";
@@ -16,50 +19,85 @@ export default function Hero({
       <div className="container">
         <div className="hero-content">
           <span className="badge-promo">
-            <i className="bi bi-lightning-charge-fill"></i> {c.badge || "Promociones de Invierno"}
+            <i className="bi bi-lightning-charge-fill"></i>{" "}
+            <EditableText path="hero.badge">{c.badge || "Promociones de Invierno"}</EditableText>
           </span>
           <h1>
-            {c.title || "Conéctate con la Fibra"} <span>{c.titleHighlight || "más rápida de Chile"}</span>
+            <EditableText path="hero.title">{c.title || "Conéctate con la Fibra"}</EditableText>{" "}
+            <EditableText path="hero.titleHighlight" tag="span">{c.titleHighlight || "más rápida de Chile"}</EditableText>
           </h1>
           <p>
-            {c.description ||
-              "Contrata hoy con asesoría personalizada. Disfruta de la mejor relación precio-calidad, instalación express y soporte dedicado sin salir de casa."}
+            <EditableText path="hero.description" multiline>
+              {c.description ||
+                "Contrata hoy con asesoría personalizada. Disfruta de la mejor relación precio-calidad, instalación express y soporte dedicado sin salir de casa."}
+            </EditableText>
           </p>
           <div className="hero-ctas">
             <button onClick={() => onScrollTo("planes")} className="btn btn-secondary">
-              {c.ctaPrimary || "Ver Planes"}
+              <EditableText path="hero.ctaPrimary">{c.ctaPrimary || "Ver Planes"}</EditableText>
             </button>
             <button
               onClick={onOpenModal}
               className="btn btn-outline"
               style={{ borderColor: "#fff", color: "#fff" }}
             >
-              {c.ctaSecondary || "Evaluar Cobertura"}
+              <EditableText path="hero.ctaSecondary">{c.ctaSecondary || "Evaluar Cobertura"}</EditableText>
             </button>
           </div>
         </div>
 
         <div className="hero-image-container">
           <div className="hero-card">
-            <span className="badge-promo">{c.cardBadge || "¡El más vendido!"}</span>
-            <div className="hero-card-title">{companyName.toUpperCase()} {c.cardTitleSuffix || "FIBRA"}</div>
+            <span className="badge-promo">
+              <EditableText path="hero.cardBadge">{c.cardBadge || "¡El más vendido!"}</EditableText>
+            </span>
+            <div className="hero-card-title">
+              {companyName.toUpperCase()}{" "}
+              <EditableText path="hero.cardTitleSuffix">{c.cardTitleSuffix || "FIBRA"}</EditableText>
+            </div>
             <div className="hero-card-subtitle">
-              {featuredPlan
-                ? `${featuredPlan.speed} ${featuredPlan.speedLabel || "Megas Simétricos"}`
-                : c.cardFallbackSubtitle || "Fibra Óptica de Alta Velocidad"}
+              {featuredPlan ? (
+                <>
+                  <EditableText path={`plan.${plans.indexOf(featuredPlan)}.speed`}>{featuredPlan.speed}</EditableText>{" "}
+                  <EditableText path={`plan.${plans.indexOf(featuredPlan)}.speedLabel`}>{featuredPlan.speedLabel || "Megas Simétricos"}</EditableText>
+                </>
+              ) : (
+                <EditableText path="hero.cardFallbackSubtitle">{c.cardFallbackSubtitle || "Fibra Óptica de Alta Velocidad"}</EditableText>
+              )}
             </div>
             <div className="hero-card-price">
-              {featuredPlan ? featuredPlan.price : c.cardFallbackPrice || "Desde $12.990"} <span>/ mes</span>
+              {featuredPlan ? (
+                <EditableText path={`plan.${plans.indexOf(featuredPlan)}.price`}>{featuredPlan.price}</EditableText>
+              ) : (
+                <EditableText path="hero.cardFallbackPrice">{c.cardFallbackPrice || "Desde $12.990"}</EditableText>
+              )}{" "}
+              <span>/ mes</span>
             </div>
             <div className="hero-card-price-sub">
-              {featuredPlan ? featuredPlan.priceSubtitle : c.cardFallbackPriceSubtitle || "Sujeto a factibilidad técnica."}
+              {featuredPlan ? (
+                <EditableText path={`plan.${plans.indexOf(featuredPlan)}.priceSubtitle`}>
+                  {featuredPlan.priceSubtitle}
+                </EditableText>
+              ) : (
+                <EditableText path="hero.cardFallbackPriceSubtitle">
+                  {c.cardFallbackPriceSubtitle || "Sujeto a factibilidad técnica."}
+                </EditableText>
+              )}
             </div>
             <ul className="hero-card-features">
-              {(featuredPlan?.features || []).slice(0, 4).map((feature, idx) => (
-                <li key={idx}>
-                  <i className={feature.unavailable ? "bi bi-x-circle-fill" : "bi bi-check-circle-fill"}></i> {feature.text}
-                </li>
-              ))}
+              {(featuredPlan?.features || []).slice(0, 4).map((feature, idx) => {
+                const planIndex = plans.findIndex((p) => p.id === featuredPlan.id);
+                return (
+                  <li key={idx}>
+                    <i className={feature.unavailable ? "bi bi-x-circle-fill" : "bi bi-check-circle-fill"}></i>{" "}
+                    {planIndex >= 0 ? (
+                      <EditableText path={`plan.${planIndex}.features.${idx}.text`}>{feature.text}</EditableText>
+                    ) : (
+                      feature.text
+                    )}
+                  </li>
+                );
+              })}
               {!featuredPlan && (
                 <>
                   <li><i className="bi bi-check-circle-fill"></i> Velocidad simétrica de alta capacidad</li>
@@ -73,7 +111,8 @@ export default function Hero({
               onClick={() => onSelectPlan(featuredPlan ? featuredPlan.value : "")}
               className="btn btn-primary plan-cta w-100"
             >
-              <i className="bi bi-send-fill"></i> Solicitar este plan
+              <i className="bi bi-send-fill"></i>{" "}
+              <EditableText path="hero.ctaPrimary">Solicitar este plan</EditableText>
             </button>
           </div>
         </div>

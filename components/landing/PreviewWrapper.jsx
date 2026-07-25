@@ -15,6 +15,7 @@ export default function PreviewWrapper({ id, label, active, children }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onClickCapture={(e) => {
+        if (e.target.closest("[data-edit]")) return;
         e.preventDefault();
         e.stopPropagation();
         window.parent?.postMessage(

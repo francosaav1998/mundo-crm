@@ -1,9 +1,28 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import RippleButton from "@/components/ui/RippleButton";
 import { useLandingEditor } from "../hooks/useLandingEditor";
 import LandingChat from "./landing/LandingChat";
+import {
+  HeroControls,
+  SellerControls,
+  PlansControls,
+  BenefitsControls,
+  CoverageControls,
+  HeaderControls,
+  FooterControls,
+} from "./landing/LandingControls";
+
+const SECTIONS = [
+  { id: "hero", label: "Hero", icon: "bi-house-door-fill" },
+  { id: "seller", label: "Vendedor", icon: "bi-person-badge-fill" },
+  { id: "plans", label: "Planes", icon: "bi-wifi-fill" },
+  { id: "benefits", label: "Beneficios", icon: "bi-stars" },
+  { id: "coverage", label: "Cobertura", icon: "bi-geo-alt-fill" },
+  { id: "header", label: "Header", icon: "bi-layout-text-window-reverse" },
+  { id: "footer", label: "Footer", icon: "bi-layout-text-sidebar-reverse" },
+];
 
 export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
   const {
@@ -24,6 +43,8 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
     removeArrayItem,
     updateProfile,
     updatePlan,
+    addPlan,
+    removePlan,
     updatePlanFeature,
     addPlanFeature,
     removePlanFeature,
@@ -31,7 +52,9 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
   } = useLandingEditor({ sellerInfo, showToast });
 
   const [mobileTab, setMobileTab] = useState("edit");
+  const [sidebarMode, setSidebarMode] = useState("chat");
   const [iframeReady, setIframeReady] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const iframeRef = useRef(null);
 
   const sellerSlug = sellerInfo?.slug || "";
@@ -41,6 +64,26 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
     const ok = await save();
     if (ok && isMobile) setMobileTab("preview");
   };
+
+  const handlePhotoUpload = useCallback(async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingPhoto(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", "seller");
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Error al subir foto");
+      updateProfile({ photo: data.url });
+      showToast("Foto actualizada");
+    } catch (err) {
+      showToast(err.message || "Error al subir foto");
+    } finally {
+      setUploadingPhoto(false);
+    }
+  }, [updateProfile, showToast]);
 
   const applyAiAction = (action) => {
     if (!action || !action.type) return;
@@ -88,21 +131,67 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
     }
   };
 
+  const applyPreviewEdit = useCallback((path, value) => {
+    const parts = path.split(".");
+    if (parts[0] === "profile") {
+      updateProfile({ [parts[1]]: value });
+      setActiveSection("seller");
+      return;
+    }
+    if (parts[0] === "plan" && !Number.isNaN(Number(parts[1]))) {
+      const planIndex = Number(parts[1]);
+      const field = parts[2];
+      if (field === "features") {
+        const featureIndex = Number(parts[3]);
+        const featureField = parts[4];
+        updatePlanFeature(planIndex, featureIndex, { [featureField]: value });
+      } else {
+        updatePlan(planIndex, { [field]: value });
+      }
+      setActiveSection("plans");
+      return;
+    }
+    const arrayKeys = new Set(["stats", "items", "steps", "navLinks", "links"]);
+    const section = parts[0];
+    const sub = parts[1];
+    if (sub === "header") {
+      updateContent(section, { [parts[2]]: value });
+    } else if (arrayKeys.has(sub)) {
+      const index = Number(parts[2]);
+      const field = parts[3];
+      updateArrayItem(section, sub, index, { [field]: value });
+    } else {
+      updateContent(section, { [sub]: value });
+    }
+    setActiveSection(section);
+  }, [
+    updateProfile,
+    updatePlan,
+    updatePlanFeature,
+    updateContent,
+    updateArrayItem,
+    setActiveSection,
+  ]);
+
   useEffect(() => {
     const handleMessage = (event) => {
       if (event.origin !== window.location.origin) return;
       if (event.source !== iframeRef.current?.contentWindow) return;
       const data = event.data;
-      if (data?.type === "LANDING_PREVIEW_READY") {
+      if (!data || typeof data !== "object") return;
+      if (data.type === "LANDING_PREVIEW_READY") {
         setIframeReady(true);
-      } else if (data?.type === "LANDING_PREVIEW_SECTION_SELECTED" && data.sectionId) {
+      } else if (data.type === "LANDING_PREVIEW_SECTION_SELECTED" && data.sectionId) {
         setActiveSection(data.sectionId);
+        setSidebarMode("manual");
         if (isMobile) setMobileTab("edit");
+      } else if (data.type === "LANDING_PREVIEW_TEXT_EDIT" && data.payload) {
+        applyPreviewEdit(data.payload.path, data.payload.value);
       }
     };
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, [isMobile, setActiveSection, setMobileTab]);
+  }, [isMobile, setActiveSection, setSidebarMode, setMobileTab, applyPreviewEdit]);
 
   useEffect(() => {
     if (!iframeReady || !previewUrl) return;
@@ -313,7 +402,7 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
               cursor: "pointer",
             }}
           >
-            <i className="bi bi-stars" style={{ marginRight: 6 }}></i> Asistente
+            <i className="bi bi-pencil-square" style={{ marginRight: 6 }}></i> Editar
           </button>
           <button
             onClick={() => setMobileTab("preview")}
@@ -344,12 +433,12 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
           minHeight: 0,
         }}
       >
-        {/* Sidebar chat */}
+        {/* Sidebar */}
         {(!isMobile || mobileTab === "edit") && (
           <div
             style={{
-              width: isMobile ? "100%" : 380,
-              minWidth: isMobile ? "auto" : 380,
+              width: isMobile ? "100%" : 420,
+              minWidth: isMobile ? "auto" : 420,
               flexShrink: 0,
               display: "flex",
               flexDirection: "column",
@@ -361,39 +450,80 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
               height: isMobile ? "auto" : "100%",
             }}
           >
+            {/* Sidebar mode tabs */}
             <div
               style={{
-                padding: isMobile ? "14px 16px" : "16px 18px",
-                borderBottom: `1px solid ${T.border}`,
-                background: `${T.accent}08`,
                 display: "flex",
-                alignItems: "center",
-                gap: 10,
+                padding: 4,
+                gap: 4,
+                background: T.inputBg,
+                borderBottom: `1px solid ${T.border}`,
               }}
             >
-              <i className="bi bi-stars" style={{ color: T.accent, fontSize: 18 }}></i>
-              <div>
-                <div style={{ fontSize: 15, fontWeight: 800, color: T.text }}>Asistente IA</div>
-                <div style={{ fontSize: 11, color: T.muted }}>Edita la landing con instrucciones</div>
-              </div>
+              <SidebarModeButton
+                active={sidebarMode === "chat"}
+                onClick={() => setSidebarMode("chat")}
+                icon="bi-stars"
+                label="Asistente IA"
+                T={T}
+              />
+              <SidebarModeButton
+                active={sidebarMode === "manual"}
+                onClick={() => setSidebarMode("manual")}
+                icon="bi-sliders"
+                label="Edición manual"
+                T={T}
+              />
             </div>
 
+            {/* Section tabs (manual mode) */}
+            {sidebarMode === "manual" && (
+              <div
+                style={{
+                  display: "flex",
+                  gap: 6,
+                  overflowX: "auto",
+                  padding: "12px 14px",
+                  borderBottom: `1px solid ${T.border}`,
+                  background: `${T.accent}04`,
+                }}
+              >
+                {SECTIONS.map((section) => (
+                  <button
+                    key={section.id}
+                    onClick={() => setActiveSection(section.id)}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 6,
+                      padding: "8px 12px",
+                      borderRadius: 10,
+                      border: "none",
+                      background: activeSection === section.id ? T.accent : T.bgCard,
+                      color: activeSection === section.id ? "#fff" : T.muted,
+                      fontSize: 12,
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      whiteSpace: "nowrap",
+                      transition: "all 0.15s",
+                    }}
+                  >
+                    <i className={`bi ${section.icon}`}></i>
+                    {section.label}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Content */}
             <div
               style={{
                 flex: 1,
                 overflowY: "auto",
-                padding: isMobile ? "16px" : "18px",
+                padding: isMobile ? "14px" : "16px",
               }}
             >
-              <div
-                style={{
-                  background: T.inputBg,
-                  border: `1px solid ${T.border}`,
-                  borderRadius: 18,
-                  padding: isMobile ? "16px" : "18px",
-                  height: "100%",
-                }}
-              >
+              {sidebarMode === "chat" ? (
                 <LandingChat
                   mode="seller"
                   role="seller"
@@ -402,7 +532,97 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
                   isMobile={isMobile}
                   context={{ content, plans, profile, company }}
                 />
-              </div>
+              ) : (
+                <div
+                  style={{
+                    background: T.inputBg,
+                    border: `1px solid ${T.border}`,
+                    borderRadius: 18,
+                    padding: isMobile ? "14px" : "16px",
+                    minHeight: "100%",
+                  }}
+                >
+                  {!activeSection && (
+                    <div style={{ color: T.muted, fontSize: 14, textAlign: "center", padding: 30 }}>
+                      Selecciona una sección para editar manualmente.
+                    </div>
+                  )}
+                  {activeSection === "hero" && (
+                    <HeroControls content={content.hero} updateContent={(u) => updateContent("hero", u)} T={T} isMobile={isMobile} />
+                  )}
+                  {activeSection === "seller" && (
+                    <SellerControls
+                      content={content.seller}
+                      updateContent={(u) => updateContent("seller", u)}
+                      profile={profile}
+                      updateProfile={updateProfile}
+                      onPhotoUpload={handlePhotoUpload}
+                      uploadingPhoto={uploadingPhoto}
+                      T={T}
+                      isMobile={isMobile}
+                    />
+                  )}
+                  {activeSection === "plans" && (
+                    <PlansControls
+                      content={content.plans}
+                      updateContent={(u) => updateContent("plans", u)}
+                      plans={plans}
+                      updatePlan={updatePlan}
+                      addPlan={addPlan}
+                      removePlan={removePlan}
+                      updatePlanFeature={updatePlanFeature}
+                      addPlanFeature={addPlanFeature}
+                      removePlanFeature={removePlanFeature}
+                      T={T}
+                      isMobile={isMobile}
+                    />
+                  )}
+                  {activeSection === "benefits" && (
+                    <BenefitsControls
+                      content={content.benefits}
+                      updateContent={(u) => updateContent("benefits", u)}
+                      updateArrayItem={(k, i, v) => updateArrayItem("benefits", k, i, v)}
+                      addArrayItem={(k, t) => addArrayItem("benefits", k, t)}
+                      removeArrayItem={(k, i) => removeArrayItem("benefits", k, i)}
+                      T={T}
+                      isMobile={isMobile}
+                    />
+                  )}
+                  {activeSection === "coverage" && (
+                    <CoverageControls
+                      content={content.coverage}
+                      updateContent={(u) => updateContent("coverage", u)}
+                      updateArrayItem={(k, i, v) => updateArrayItem("coverage", k, i, v)}
+                      addArrayItem={(k, t) => addArrayItem("coverage", k, t)}
+                      removeArrayItem={(k, i) => removeArrayItem("coverage", k, i)}
+                      T={T}
+                      isMobile={isMobile}
+                    />
+                  )}
+                  {activeSection === "header" && (
+                    <HeaderControls
+                      content={content.header}
+                      updateContent={(u) => updateContent("header", u)}
+                      updateArrayItem={(k, i, v) => updateArrayItem("header", k, i, v)}
+                      addArrayItem={(k, t) => addArrayItem("header", k, t)}
+                      removeArrayItem={(k, i) => removeArrayItem("header", k, i)}
+                      T={T}
+                      isMobile={isMobile}
+                    />
+                  )}
+                  {activeSection === "footer" && (
+                    <FooterControls
+                      content={content.footer}
+                      updateContent={(u) => updateContent("footer", u)}
+                      updateArrayItem={(k, i, v) => updateArrayItem("footer", k, i, v)}
+                      addArrayItem={(k, t) => addArrayItem("footer", k, t)}
+                      removeArrayItem={(k, i) => removeArrayItem("footer", k, i)}
+                      T={T}
+                      isMobile={isMobile}
+                    />
+                  )}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -441,7 +661,7 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
                 </span>
               </div>
               <span style={{ fontSize: 11, color: T.muted }}>
-                {iframeReady ? "Sincronizado" : "Cargando preview..."}
+                {iframeReady ? "Haz click en el texto para editar" : "Cargando preview..."}
               </span>
             </div>
             <div
@@ -503,6 +723,34 @@ function ViewportButton({ active, onClick, icon, label, T, hideLabel }) {
     >
       <i className={`bi ${icon}`}></i>
       {!hideLabel && label}
+    </button>
+  );
+}
+
+function SidebarModeButton({ active, onClick, icon, label, T }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        flex: 1,
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 6,
+        padding: "10px 12px",
+        borderRadius: 10,
+        border: "none",
+        background: active ? T.accent : "transparent",
+        color: active ? "#fff" : T.muted,
+        fontSize: 12,
+        fontWeight: 800,
+        cursor: "pointer",
+        transition: "all 0.15s",
+        whiteSpace: "nowrap",
+      }}
+    >
+      <i className={`bi ${icon}`}></i>
+      {label}
     </button>
   );
 }

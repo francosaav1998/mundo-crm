@@ -1,5 +1,7 @@
 "use client";
 
+import EditableText from "./EditableText";
+
 const DEFAULT_OPTIONS = [
   "Necesito Asesoría / Otro",
 ];
@@ -37,16 +39,25 @@ export default function CoverageSection({
         <div className="coverage-layout">
           <div className="coverage-info">
             <h2>
-              {c.title || "¿Tienes Cobertura en tu Sector?"} <span>{titleHighlight}</span>
+              <EditableText path="coverage.header.title">{c.title || "¿Tienes Cobertura en tu Sector?"}</EditableText>{" "}
+              <EditableText path="coverage.header.titleHighlight" tag="span">{titleHighlight}</EditableText>
             </h2>
-            <p>{description}</p>
+            <p>
+              <EditableText path="coverage.header.description" multiline>{description}</EditableText>
+            </p>
             <div className="coverage-steps">
               {steps.map((step, idx) => (
                 <div className="step-card" key={idx}>
                   <div className="step-num">{idx + 1}</div>
                   <div className="step-text">
-                    <h4>{step.title}</h4>
-                    <p>{step.description}</p>
+                    <h4>
+                      <EditableText path={`coverage.steps.${idx}.title`}>{step.title}</EditableText>
+                    </h4>
+                    <p>
+                      <EditableText path={`coverage.steps.${idx}.description`} multiline>
+                        {step.description}
+                      </EditableText>
+                    </p>
                   </div>
                 </div>
               ))}
@@ -54,7 +65,9 @@ export default function CoverageSection({
           </div>
 
           <div className="coverage-card">
-            <h3>{c.formTitle || "Consultar Factibilidad Técnica"}</h3>
+            <h3>
+              <EditableText path="coverage.header.formTitle">{c.formTitle || "Consultar Factibilidad Técnica"}</EditableText>
+            </h3>
             {formStatus.message && (
               <div className={`form-message ${formStatus.type}`}>{formStatus.message}</div>
             )}
@@ -129,7 +142,9 @@ export default function CoverageSection({
               </div>
               <button type="submit" className="btn btn-primary w-100" disabled={submitting}>
                 <i className="bi bi-send-fill"></i>{" "}
-                {submitting ? "Enviando..." : (c.submitLabel || "Enviar solicitud")}
+                <EditableText path="coverage.header.submitLabel">
+                  {submitting ? "Enviando..." : (c.submitLabel || "Enviar solicitud")}
+                </EditableText>
               </button>
             </form>
           </div>

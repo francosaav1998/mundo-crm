@@ -227,7 +227,7 @@ export function SellerControls({ content, updateContent, profile, updateProfile,
   );
 }
 
-export function PlansControls({ content, updateContent, plans, updatePlan, updatePlanFeature, addPlanFeature, removePlanFeature, T, isMobile = false }) {
+export function PlansControls({ content, updateContent, plans, updatePlan, addPlan, removePlan, updatePlanFeature, addPlanFeature, removePlanFeature, T, isMobile = false }) {
   return (
     <>
       <SectionBlock title="Encabezado de Planes" T={T}>
@@ -244,6 +244,29 @@ export function PlansControls({ content, updateContent, plans, updatePlan, updat
           <Input type="text" T={T} value={content.description || ""} onChange={(e) => updateContent({ description: e.target.value })} />
         </Field>
       </SectionBlock>
+
+      <div style={{ marginBottom: 18 }}>
+        <button
+          onClick={addPlan}
+          style={{
+            width: "100%",
+            padding: "12px 16px",
+            borderRadius: 12,
+            border: `1px dashed ${T.accent}`,
+            background: `${T.accent}10`,
+            color: T.accent,
+            fontSize: 13,
+            fontWeight: 800,
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+          }}
+        >
+          <i className="bi bi-plus-lg"></i> Agregar plan
+        </button>
+      </div>
 
       <SectionBlock title="Planes Disponibles" T={T}>
         {plans.map((plan, idx) => (
@@ -264,7 +287,7 @@ export function PlansControls({ content, updateContent, plans, updatePlan, updat
   );
 }
 
-function PlanCardEditor({ plan, idx, updatePlan, updatePlanFeature, addPlanFeature, removePlanFeature, T, isMobile = false }) {
+function PlanCardEditor({ plan, idx, updatePlan, removePlan, updatePlanFeature, addPlanFeature, removePlanFeature, T, isMobile = false }) {
   const [open, setOpen] = useState(true);
 
   return (
@@ -326,7 +349,33 @@ function PlanCardEditor({ plan, idx, updatePlan, updatePlanFeature, addPlanFeatu
             </span>
           )}
         </span>
-        <i className={`bi bi-chevron-${open ? "up" : "down"}`}></i>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (confirm("¿Eliminar este plan? Se borrará de la base de datos.")) {
+                removePlan(idx);
+              }
+            }}
+            title="Eliminar plan"
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: 8,
+              border: "none",
+              background: "rgba(239,68,68,0.08)",
+              color: "#EF4444",
+              cursor: "pointer",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 14,
+            }}
+          >
+            <i className="bi bi-trash3-fill"></i>
+          </button>
+          <i className={`bi bi-chevron-${open ? "up" : "down"}`}></i>
+        </span>
       </button>
 
       {open && (

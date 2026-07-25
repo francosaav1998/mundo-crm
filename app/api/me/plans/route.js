@@ -3,6 +3,49 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { findOrCreateSellerForUser } from "@/lib/seller.server";
 
+export async function POST(request) {
+  try {
+    const session = await requireAuth();
+    const sellerRecord = await findOrCreateSellerForUser(session.user);
+
+    if (!sellerRecord.companyId) {
+      return NextResponse.json({ error: "Vendedor sin compañía asignada" }, { status: 400 });
+    }
+
+    const company = await prisma.company.findUnique({
+      where: { id: sellerRecord.companyId },
+    });
+
+    const body = await request.json().catch(() => ({}));
+    const planCount = await prisma.plan.count({
+      where: { companyId: sellerRecord.companyId },
+    });
+
+    const value = `custom-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const plan = await prisma.plan.create({
+      data: {
+        companyId: sellerRecord.companyId,
+        category: body.category || "internet",
+        title: body.title || "Nuevo plan",
+        speed: body.speed || "",
+        speedLabel: body.speedLabel || "Megas",
+        price: body.price || "",
+        priceSubtitle: body.priceSubtitle || "",
+        features: body.features || [{ icon: "bi-check-circle-fill", text: "Característica" }],
+        featured: false,
+        value,
+        planOrder: typeof body.order === "number" ? body.order : planCount,
+        active: true,
+      },
+    });
+
+    return NextResponse.json({ ...plan, sellerActive: true, sellerOrder: plan.planOrder });
+  } catch (error) {
+    const status = error.message === "Unauthorized" ? 401 : 500;
+    return NextResponse.json({ error: error.message }, { status });
+  }
+}
+
 export async function GET(request) {
   try {
     const session = await requireAuth();
@@ -66,6 +109,35 @@ export async function GET(request) {
     merged.sort((a, b) => a.sellerOrder - b.sellerOrder);
 
     return NextResponse.json(merged);
+  } catch (error) {
+    const status = error.message === "Unauthorized" ? 401 : 500;
+    return NextResponse.json({ error: error.message }, { status });
+  }
+}
+
+export async function DELETE(request) {
+  try {
+    const session = await requireAuth();
+    const sellerRecord = await findOrCreateSellerForUser(session.user);
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json({ error: "id requerido" }, { status: 400 });
+    }
+
+    const plan = await prisma.plan.findUnique({
+      where: { id },
+      include: { company: true },
+    });
+
+    if (!plan || plan.companyId !== sellerRecord.companyId) {
+      return NextResponse.json({ error: "Plan no encontrado" }, { status: 404 });
+    }
+
+    await prisma.plan.delete({ where: { id } });
+
+    return NextResponse.json({ success: true });
   } catch (error) {
     const status = error.message === "Unauthorized" ? 401 : 500;
     return NextResponse.json({ error: error.message }, { status });

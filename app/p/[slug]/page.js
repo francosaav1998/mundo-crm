@@ -19,6 +19,7 @@ import Footer from "@/components/landing/Footer";
 import WhatsAppFloat from "@/components/landing/WhatsAppFloat";
 import LeadModal from "@/components/landing/LeadModal";
 import PreviewWrapper from "@/components/landing/PreviewWrapper";
+import PreviewEditBootstrap from "@/components/landing/PreviewEditBootstrap";
 
 export default function SellerLanding() {
   const params = useParams();
@@ -364,6 +365,7 @@ export default function SellerLanding() {
             onOpenModal={openModal}
             company={displayCompany}
             featuredPlan={featuredPlan}
+            plans={mergedPlans}
             content={landingContent.hero}
           />
         ))}
@@ -406,6 +408,7 @@ export default function SellerLanding() {
           content={landingContent.footer}
         />
       ))}
+      {isPreview && <PreviewEditBootstrap />}
       {!isPreview && <WhatsAppFloat />}
       {!isPreview && (
         <LeadModal

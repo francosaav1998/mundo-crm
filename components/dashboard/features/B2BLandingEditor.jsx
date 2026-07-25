@@ -13,6 +13,8 @@ export default function B2BLandingEditor({ T, isMobile, showToast }) {
   const [body, setBody] = useState(DEFAULT_B2B_LANDING_BODY);
   const [previewMode, setPreviewMode] = useState("desktop");
   const [mobileTab, setMobileTab] = useState("edit");
+  const [sidebarMode, setSidebarMode] = useState("chat");
+  const [activeTab, setActiveTab] = useState("body");
   const [iframeKey, setIframeKey] = useState(0);
   const iframeRef = useRef(null);
 
@@ -284,12 +286,12 @@ export default function B2BLandingEditor({ T, isMobile, showToast }) {
           minHeight: 0,
         }}
       >
-        {/* Sidebar chat */}
+        {/* Sidebar */}
         {(!isMobile || mobileTab === "edit") && (
           <div
             style={{
-              width: isMobile ? "100%" : 380,
-              minWidth: isMobile ? "auto" : 380,
+              width: isMobile ? "100%" : 420,
+              minWidth: isMobile ? "auto" : 420,
               flexShrink: 0,
               display: "flex",
               flexDirection: "column",
@@ -303,19 +305,27 @@ export default function B2BLandingEditor({ T, isMobile, showToast }) {
           >
             <div
               style={{
-                padding: isMobile ? "14px 16px" : "16px 18px",
-                borderBottom: `1px solid ${T.border}`,
-                background: `${T.accent}08`,
                 display: "flex",
-                alignItems: "center",
-                gap: 10,
+                padding: 4,
+                gap: 4,
+                background: T.inputBg,
+                borderBottom: `1px solid ${T.border}`,
               }}
             >
-              <i className="bi bi-stars" style={{ color: T.accent, fontSize: 18 }}></i>
-              <div>
-                <div style={{ fontSize: 15, fontWeight: 800, color: T.text }}>Asistente IA</div>
-                <div style={{ fontSize: 11, color: T.muted }}>Edita la landing con instrucciones</div>
-              </div>
+              <SidebarModeButton
+                active={sidebarMode === "chat"}
+                onClick={() => setSidebarMode("chat")}
+                icon="bi-stars"
+                label="Asistente IA"
+                T={T}
+              />
+              <SidebarModeButton
+                active={sidebarMode === "manual"}
+                onClick={() => setSidebarMode("manual")}
+                icon="bi-code-slash"
+                label="Código"
+                T={T}
+              />
             </div>
 
             <div
@@ -325,15 +335,7 @@ export default function B2BLandingEditor({ T, isMobile, showToast }) {
                 padding: isMobile ? "16px" : "18px",
               }}
             >
-              <div
-                style={{
-                  background: T.inputBg,
-                  border: `1px solid ${T.border}`,
-                  borderRadius: 18,
-                  padding: isMobile ? "16px" : "18px",
-                  height: "100%",
-                }}
-              >
+              {sidebarMode === "chat" ? (
                 <LandingChat
                   mode="b2b"
                   role="admin"
@@ -343,7 +345,97 @@ export default function B2BLandingEditor({ T, isMobile, showToast }) {
                   html={body}
                   css={css}
                 />
-              </div>
+              ) : (
+                <div
+                  style={{
+                    background: T.inputBg,
+                    border: `1px solid ${T.border}`,
+                    borderRadius: 18,
+                    padding: isMobile ? "16px" : "18px",
+                    height: "100%",
+                  }}
+                >
+                  <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
+                    <button
+                      onClick={() => setActiveTab("body")}
+                      style={{
+                        padding: "10px 16px",
+                        borderRadius: 12,
+                        border: "none",
+                        background: activeTab === "body" ? T.accent : "transparent",
+                        color: activeTab === "body" ? "#fff" : T.muted,
+                        fontSize: 13,
+                        fontWeight: 700,
+                        cursor: "pointer",
+                      }}
+                    >
+                      <i className="bi bi-code-slash" style={{ marginRight: 6 }}></i>
+                      HTML
+                    </button>
+                    <button
+                      onClick={() => setActiveTab("css")}
+                      style={{
+                        padding: "10px 16px",
+                        borderRadius: 12,
+                        border: "none",
+                        background: activeTab === "css" ? T.accent : "transparent",
+                        color: activeTab === "css" ? "#fff" : T.muted,
+                        fontSize: 13,
+                        fontWeight: 700,
+                        cursor: "pointer",
+                      }}
+                    >
+                      <i className="bi bi-palette-fill" style={{ marginRight: 6 }}></i>
+                      CSS
+                    </button>
+                  </div>
+
+                  {activeTab === "css" && (
+                    <div>
+                      <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 10 }}>
+                        CSS de la landing
+                      </label>
+                      <textarea
+                        value={css}
+                        onChange={(e) => setCss(e.target.value)}
+                        style={textareaStyle(T)}
+                        spellCheck={false}
+                      />
+                    </div>
+                  )}
+
+                  {activeTab === "body" && (
+                    <div>
+                      <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 10 }}>
+                        HTML de la landing
+                      </label>
+                      <textarea
+                        value={body}
+                        onChange={(e) => setBody(e.target.value)}
+                        style={textareaStyle(T)}
+                        spellCheck={false}
+                      />
+                    </div>
+                  )}
+
+                  <div
+                    style={{
+                      marginTop: 16,
+                      padding: 14,
+                      borderRadius: 12,
+                      background: `${T.accent}10`,
+                      border: `1px solid ${T.accent}25`,
+                      fontSize: 13,
+                      color: T.muted,
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    <i className="bi bi-info-circle-fill" style={{ color: T.accent, marginRight: 8 }}></i>
+                    Los cambios se guardan en la base de datos y se reflejan en la página de inicio <strong>/</strong>.
+                    Puedes usar HTML y CSS libremente. El botón <strong>Restaurar</strong> vuelve al contenido por defecto.
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -412,6 +504,51 @@ export default function B2BLandingEditor({ T, isMobile, showToast }) {
         )}
       </div>
     </div>
+  );
+}
+
+function textareaStyle(T) {
+  return {
+    width: "100%",
+    minHeight: 360,
+    padding: 16,
+    background: T.bgCard,
+    border: `1px solid ${T.border}`,
+    borderRadius: 16,
+    color: T.text,
+    fontSize: 13,
+    fontFamily: "monospace",
+    lineHeight: 1.5,
+    outline: "none",
+    resize: "vertical",
+  };
+}
+
+function SidebarModeButton({ active, onClick, icon, label, T }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        flex: 1,
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 6,
+        padding: "10px 12px",
+        borderRadius: 10,
+        border: "none",
+        background: active ? T.accent : "transparent",
+        color: active ? "#fff" : T.muted,
+        fontSize: 12,
+        fontWeight: 800,
+        cursor: "pointer",
+        transition: "all 0.15s",
+        whiteSpace: "nowrap",
+      }}
+    >
+      <i className={`bi ${icon}`}></i>
+      {label}
+    </button>
   );
 }
 
