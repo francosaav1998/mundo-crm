@@ -182,8 +182,8 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
         display: "flex",
         flexDirection: "column",
         gap: 14,
-        height: isMobile ? "auto" : "calc(100vh - 120px)",
-        minHeight: isMobile ? "auto" : 700,
+        height: "calc(100vh - 120px)",
+        minHeight: isMobile ? "calc(100vh - 120px)" : 700,
       }}
     >
       {/* Top bar */}
@@ -509,7 +509,7 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
           style={{
             flex: 1,
             minWidth: 0,
-            height: isMobile ? 600 : "100%",
+            height: "100%",
             display: "flex",
             flexDirection: "column",
             background: "rgba(0,0,0,0.22)",
@@ -533,7 +533,7 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <i className="bi bi-aspect-ratio" style={{ color: T.muted, fontSize: 14 }}></i>
               <span style={{ fontSize: 12, fontWeight: 700, color: T.text }}>
-                {previewMode === "mobile" ? "Vista móvil" : "Vista escritorio"}
+                {isMobile ? "Vista móvil" : previewMode === "mobile" ? "Vista móvil" : "Vista escritorio"}
               </span>
             </div>
             <span style={{ fontSize: 11, color: T.muted }}>
@@ -545,7 +545,7 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
               flex: 1,
               overflow: "auto",
               display: "flex",
-              justifyContent: previewMode === "mobile" ? "center" : "flex-start",
+              justifyContent: isMobile || previewMode === "mobile" ? "center" : "flex-start",
               background: "rgba(0,0,0,0.05)",
             }}
           >
@@ -556,8 +556,8 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
                 onLoad={() => setIframeReady(false)}
                 title="Vista previa de landing"
                 style={{
-                  width: previewMode === "mobile" ? 390 : "100%",
-                  minWidth: previewMode === "mobile" ? 390 : "100%",
+                  width: isMobile ? "100%" : previewMode === "mobile" ? 390 : "100%",
+                  minWidth: isMobile ? "100%" : previewMode === "mobile" ? 390 : "100%",
                   height: "100%",
                   border: "none",
                   background: "#fff",
