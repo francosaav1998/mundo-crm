@@ -6,87 +6,12 @@ import MessageActionButtons from "./MessageActionButtons";
 import { formatDate, formatTime } from "@/lib/dashboard/utils";
 import { STATUS_CONFIG, ADMIN_STATUS_CONFIG } from "@/lib/dashboard/constants";
 
-function AssignedCell({ lead, isAdmin, T }) {
-  const [value, setValue] = useState(lead.assignedTo || "");
-  const [saving, setSaving] = useState(false);
-
-  const handleBlur = async () => {
-    if (value === (lead.assignedTo || "")) return;
-    setSaving(true);
-    try {
-      const res = await fetch(`/api/leads/${lead.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ assignedTo: value }),
-      });
-      if (!res.ok) throw new Error();
-    } catch {
-      setValue(lead.assignedTo || "");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      e.target.blur();
-    }
-  };
-
-  if (!isAdmin) {
-    return (
-      <span style={{ fontSize: "12px", color: T.muted }}>
-        {lead.assignedTo || <span style={{ fontStyle: "italic" }}>Sin asignar</span>}
-      </span>
-    );
-  }
-
-  return (
-    <div style={{ position: "relative" }}>
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        onBlur={handleBlur}
-        onKeyDown={handleKeyDown}
-        disabled={saving}
-        placeholder="email vendedor"
-        style={{
-          width: 140,
-          padding: "7px 12px",
-          background: T.inputBg,
-          border: `1px solid ${T.border}`,
-          borderRadius: "10px",
-          color: T.text,
-          fontSize: "12px",
-          outline: "none",
-          transition: "all 0.2s",
-        }}
-      />
-      {saving && (
-        <i
-          className="bi bi-arrow-clockwise"
-          style={{
-            position: "absolute",
-            right: 8,
-            top: "50%",
-            transform: "translateY(-50%)",
-            fontSize: 10,
-            color: T.muted,
-            animation: "spin 1s linear infinite",
-          }}
-        />
-      )}
-    </div>
-  );
-}
-
 const LeadTable = memo(function LeadTable({ leads, onUpdateStatus, updating, loading = false, T, isMobile, isAdmin = false, showToast }) {
   const [sentIds, setSentIds] = useState([]);
 
   // ── Skeleton rows mientras se cargan/refrescan los leads ──
   if (loading) {
-    const cols = isMobile ? 2 : 10;
+    const cols = isMobile ? 2 : 9;
     return (
       <div style={{ overflowX: "auto" }} aria-busy="true" aria-label="Cargando leads">
         <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
@@ -150,8 +75,8 @@ const LeadTable = memo(function LeadTable({ leads, onUpdateStatus, updating, loa
   };
 
   const desktopHeaders = isAdmin
-    ? ["Fecha", "Cliente", "Teléfono", "Email", "Ciudad/Comuna", "Asignado a", "Estado", "Acciones"]
-    : ["Fecha", "Cliente", "Teléfono", "Email", "Ciudad/Comuna", "Dirección", "Plan Solicitado", "Asignado a", "Estado", "Acciones"];
+    ? ["Fecha", "Cliente", "Teléfono", "Email", "Ciudad/Comuna", "Estado", "Acciones"]
+    : ["Fecha", "Cliente", "Teléfono", "Email", "Ciudad/Comuna", "Dirección", "Plan Solicitado", "Estado", "Acciones"];
 
   return (
     <div style={{ overflowX: "auto" }}>
@@ -242,9 +167,6 @@ const LeadTable = memo(function LeadTable({ leads, onUpdateStatus, updating, loa
                     </span>
                   </td>
                 )}
-                <td style={{ padding: "18px 20px" }}>
-                  <AssignedCell lead={lead} isAdmin={isAdmin} T={T} />
-                </td>
                 <td style={{ padding: "18px 20px" }}>{currentStatusBadge}</td>
                 <td style={{ padding: "18px 20px" }}>{actions}</td>
               </tr>

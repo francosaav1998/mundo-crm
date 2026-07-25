@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { updateSellerConfig, getSellerLabels } from "@/lib/seller";
 import { getCompanyVars } from "@/lib/company";
 import { getLandingContent, getMergedPlans } from "@/lib/landing";
@@ -18,10 +18,13 @@ import BenefitsSection from "@/components/landing/BenefitsSection";
 import Footer from "@/components/landing/Footer";
 import WhatsAppFloat from "@/components/landing/WhatsAppFloat";
 import LeadModal from "@/components/landing/LeadModal";
+import PreviewWrapper from "@/components/landing/PreviewWrapper";
 
 export default function SellerLanding() {
   const params = useParams();
   const slug = params.slug;
+  const searchParams = useSearchParams();
+  const isPreview = searchParams.get("preview") === "1";
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [inactive, setInactive] = useState(false);
@@ -41,6 +44,40 @@ export default function SellerLanding() {
   const [submitting, setSubmitting] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalPlan, setModalPlan] = useState("");
+  const [previewState, setPreviewState] = useState(null);
+  const [previewActiveSection, setPreviewActiveSection] = useState(null);
+
+  useEffect(() => {
+    if (!isPreview || typeof window === "undefined") return;
+
+    const handleMessage = (event) => {
+      if (event.origin !== window.location.origin) return;
+      if (event.source !== window.parent) return;
+      const data = event.data;
+      if (!data || typeof data !== "object") return;
+
+      if (data.type === "LANDING_PREVIEW_UPDATE") {
+        setPreviewState(data.payload);
+      } else if (data.type === "LANDING_PREVIEW_FOCUS" && data.sectionId) {
+        setPreviewActiveSection(data.sectionId);
+        const target = document.getElementById(data.sectionId);
+        if (target) {
+          const header = document.querySelector(".site-header");
+          const offset = header ? header.offsetHeight : 0;
+          const top = target.getBoundingClientRect().top + window.scrollY - offset - 10;
+          window.scrollTo({ top, behavior: "smooth" });
+        }
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [isPreview]);
+
+  useEffect(() => {
+    if (!isPreview || !seller || typeof window === "undefined") return;
+    window.parent?.postMessage({ type: "LANDING_PREVIEW_READY" }, window.location.origin);
+  }, [isPreview, seller]);
 
   useEffect(() => {
     async function loadSeller() {
@@ -61,9 +98,9 @@ export default function SellerLanding() {
         setSeller(data);
         setCompany(data.company);
 
-        // Si la compañía no es Mundo, mostrar splash con su branding y luego redirigir
         const companySlug = data.company?.slug;
-        if (companySlug && companySlug !== "mundo" && typeof window !== "undefined") {
+        // En preview se queda en la página real; redirección solo en landing pública
+        if (!isPreview && companySlug && companySlug !== "mundo" && typeof window !== "undefined") {
           willRedirect = true;
           // company ya se seteó arriba; loading permanece true para mostrar el splash branded
           setTimeout(() => {
@@ -102,7 +139,7 @@ export default function SellerLanding() {
       }
     }
     loadSeller();
-  }, [slug]);
+  }, [slug, isPreview]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -134,6 +171,36 @@ export default function SellerLanding() {
     };
   }, [loading]);
 
+  const displaySeller = previewState?.profile
+    ? { ...seller, ...previewState.profile, landingContent: previewState.content || seller?.landingContent }
+    : seller;
+  const displayCompany = previewState?.company ? { ...company, ...previewState.company } : company;
+  const displayPlans = (previewState?.plans || plans).filter((p) => p.sellerActive !== false);
+  const sellerPhoto = displaySeller?.photo || "";
+  const sellerBio = displaySeller?.bio || "";
+  const footerText = displaySeller?.footerText || "";
+  const metaPixelId = displaySeller?.metaPixelId || "";
+  const sellerLabels = getSellerLabels(displaySeller?.gender || "");
+  const companyVars = getCompanyVars(displayCompany);
+  const landingContent = getLandingContent(displaySeller);
+  const mergedPlans = isPreview ? displayPlans : getMergedPlans(plans, displaySeller?.planOverrides);
+  const featuredPlan = mergedPlans.find((p) => p.featured) || mergedPlans[0] || null;
+
+  useEffect(() => {
+    if (!displaySeller?.name) return;
+    updateSellerConfig({
+      name: displaySeller.name,
+      phone: displaySeller.phone,
+      defaultMessage: displaySeller.defaultMessage || undefined,
+    });
+  }, [displaySeller?.name, displaySeller?.phone, displaySeller?.defaultMessage]);
+
+  useEffect(() => {
+    if (displaySeller?.landingTheme) {
+      document.documentElement.setAttribute("data-landing-theme", displaySeller.landingTheme);
+    }
+  }, [displaySeller?.landingTheme]);
+
   const scrollToSection = (id) => {
     const target = document.getElementById(id);
     if (!target) return;
@@ -145,16 +212,23 @@ export default function SellerLanding() {
   };
 
   const handlePlanClick = (planValue) => {
+    if (isPreview) return;
     setModalPlan(planValue);
     setModalOpen(true);
   };
 
   const openModal = () => {
+    if (isPreview) return;
     setModalPlan("");
     setModalOpen(true);
   };
 
   const handleSubmit = async (e) => {
+    if (isPreview) {
+      e.preventDefault();
+      return;
+    }
+
     e.preventDefault();
     setSubmitting(true);
     setFormStatus({ type: "", message: "" });
@@ -186,6 +260,13 @@ export default function SellerLanding() {
   };
 
   if (loading) {
+    if (isPreview) {
+      return (
+        <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#0B0F14" }}>
+          <span className="btn-spinner" style={{ width: 28, height: 28, borderColor: "rgba(255,255,255,0.2)", borderTopColor: "rgba(255,255,255,0.9)" }} />
+        </div>
+      );
+    }
     if (company) {
       return <LandingSplash show={loading} appName={company.name} company={company} />;
     }
@@ -252,76 +333,91 @@ export default function SellerLanding() {
     );
   }
 
-  const sellerPhoto = seller?.photo || "";
-  const sellerBio = seller?.bio || "";
-  const footerText = seller?.footerText || "";
-  const metaPixelId = seller?.metaPixelId || "";
-  const sellerLabels = getSellerLabels(seller?.gender || "");
-  const companyVars = getCompanyVars(company);
-  const landingContent = getLandingContent(seller);
-  const mergedPlans = getMergedPlans(plans, seller?.planOverrides);
-  const featuredPlan = mergedPlans.find((p) => p.featured) || mergedPlans[0] || null;
+  const wrapPreview = (id, label, child) => {
+    if (!isPreview) return child;
+    return (
+      <PreviewWrapper id={id} label={label} active={previewActiveSection === id}>
+        {child}
+      </PreviewWrapper>
+    );
+  };
 
   return (
-    <div data-company={company?.slug || "mundo"} style={companyVars}>
-      <CompanyFonts company={company} />
-      <MetaPixel pixelId={metaPixelId} />
-      <Header
-        menuOpen={menuOpen}
-        setMenuOpen={setMenuOpen}
-        onScrollTo={scrollToSection}
-        sellerLabels={sellerLabels}
-        company={company}
-        content={landingContent.header}
-      />
+    <div data-company={displayCompany?.slug || "mundo"} style={companyVars}>
+      <CompanyFonts company={displayCompany} />
+      {!isPreview && <MetaPixel pixelId={metaPixelId} />}
+      {wrapPreview("header", "Header", (
+        <Header
+          menuOpen={menuOpen}
+          setMenuOpen={setMenuOpen}
+          onScrollTo={scrollToSection}
+          sellerLabels={sellerLabels}
+          company={displayCompany}
+          content={landingContent.header}
+        />
+      ))}
       <main>
-        <Hero
-          onScrollTo={scrollToSection}
-          onSelectPlan={handlePlanClick}
-          onOpenModal={openModal}
-          company={company}
-          featuredPlan={featuredPlan}
-          content={landingContent.hero}
-        />
-        <SellerSection
-          sellerPhotoUrl={sellerPhoto}
-          sellerBioText={sellerBio}
-          sellerLabels={sellerLabels}
-          onScrollTo={scrollToSection}
-          company={company}
-          content={landingContent.seller}
-        />
-        <PlansSection plans={mergedPlans} onSelectPlan={handlePlanClick} company={company} content={landingContent.plans} />
-        <CoverageSection
-          formData={formData}
-          setFormData={setFormData}
-          formStatus={formStatus}
-          submitting={submitting}
-          onSubmit={handleSubmit}
-          sellerLabels={sellerLabels}
-          plans={mergedPlans}
-          content={landingContent.coverage}
-        />
-        <BenefitsSection companyName={company?.name || "Mundo"} content={landingContent.benefits} />
+        {wrapPreview("hero", "Hero", (
+          <Hero
+            onScrollTo={scrollToSection}
+            onSelectPlan={handlePlanClick}
+            onOpenModal={openModal}
+            company={displayCompany}
+            featuredPlan={featuredPlan}
+            content={landingContent.hero}
+          />
+        ))}
+        {wrapPreview("seller", "Vendedor", (
+          <SellerSection
+            sellerPhotoUrl={sellerPhoto}
+            sellerBioText={sellerBio}
+            sellerLabels={sellerLabels}
+            onScrollTo={scrollToSection}
+            company={displayCompany}
+            content={landingContent.seller}
+          />
+        ))}
+        {wrapPreview("plans", "Planes", (
+          <PlansSection plans={mergedPlans} onSelectPlan={handlePlanClick} company={displayCompany} content={landingContent.plans} />
+        ))}
+        {wrapPreview("coverage", "Cobertura", (
+          <CoverageSection
+            formData={formData}
+            setFormData={setFormData}
+            formStatus={formStatus}
+            submitting={submitting}
+            onSubmit={handleSubmit}
+            sellerLabels={sellerLabels}
+            plans={mergedPlans}
+            content={landingContent.coverage}
+          />
+        ))}
+        {wrapPreview("benefits", "Beneficios", (
+          <BenefitsSection companyName={displayCompany?.name || "Mundo"} content={landingContent.benefits} />
+        ))}
       </main>
-      <Footer
-        footerText={footerText}
-        onScrollTo={scrollToSection}
-        sellerLabels={sellerLabels}
-        sellerPhone={seller?.phone || ""}
-        company={company}
-        content={landingContent.footer}
-      />
-      <WhatsAppFloat />
-      <LeadModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        initialPlan={modalPlan}
-        sellerId={seller?.id}
-        sellerName={seller?.name}
-        plans={plans}
-        companySlug={company?.slug || "mundo"}
-      />
+      {wrapPreview("footer", "Footer", (
+        <Footer
+          footerText={footerText}
+          onScrollTo={scrollToSection}
+          sellerLabels={sellerLabels}
+          sellerPhone={displaySeller?.phone || ""}
+          company={displayCompany}
+          content={landingContent.footer}
+        />
+      ))}
+      {!isPreview && <WhatsAppFloat />}
+      {!isPreview && (
+        <LeadModal
+          isOpen={modalOpen}
+          onClose={() => setModalOpen(false)}
+          initialPlan={modalPlan}
+          sellerId={displaySeller?.id}
+          sellerName={displaySeller?.name}
+          plans={plans}
+          companySlug={displayCompany?.slug || "mundo"}
+        />
+      )}
     </div>
   );
 }

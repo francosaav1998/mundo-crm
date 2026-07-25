@@ -36,6 +36,9 @@ const SettingsForm = dynamic(() => import("./dashboard/features/SettingsForm"), 
 const LandingEditor = dynamic(() => import("./dashboard/features/LandingEditor"), {
   loading: () => <SkeletonCard lines={7} />,
 });
+const B2BLandingEditor = dynamic(() => import("./dashboard/features/B2BLandingEditor"), {
+  loading: () => <SkeletonCard lines={5} />,
+});
 const LandingManager = dynamic(() => import("./dashboard/features/LandingManager"), {
   loading: () => <SkeletonCard lines={6} />,
 });
@@ -272,12 +275,20 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
               )}
 
               {activeMenu === "landing" && (
-                <LandingEditor
-                  sellerInfo={sellerInfo}
-                  T={T}
-                  isMobile={isMobile}
-                  showToast={showToast}
-                />
+                isAdmin ? (
+                  <B2BLandingEditor
+                    T={T}
+                    isMobile={isMobile}
+                    showToast={showToast}
+                  />
+                ) : (
+                  <LandingEditor
+                    sellerInfo={sellerInfo}
+                    T={T}
+                    isMobile={isMobile}
+                    showToast={showToast}
+                  />
+                )
               )}
 
               {activeMenu === "landings" && (

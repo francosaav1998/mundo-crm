@@ -6,10 +6,11 @@ import { updateSellerConfig } from "@/lib/seller";
 
 const DEFAULT_CONTENT = getLandingContent(null);
 
-export function useLandingEditor({ seller, showToast }) {
+export function useLandingEditor({ showToast }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [activeSection, setActiveSection] = useState("hero");
+  const [dirty, setDirty] = useState(false);
+  const [activeSection, setActiveSection] = useState(null);
   const [content, setContent] = useState(DEFAULT_CONTENT);
   const [plans, setPlans] = useState([]);
   const [previewMode, setPreviewMode] = useState("desktop");
@@ -69,6 +70,7 @@ export function useLandingEditor({ seller, showToast }) {
   }, [showToast]);
 
   const updateContent = useCallback((section, updates) => {
+    setDirty(true);
     setContent((prev) => ({
       ...prev,
       [section]: { ...prev[section], ...updates },
@@ -76,6 +78,7 @@ export function useLandingEditor({ seller, showToast }) {
   }, []);
 
   const updateArrayItem = useCallback((section, key, index, value) => {
+    setDirty(true);
     setContent((prev) => {
       const arr = [...(prev[section]?.[key] || [])];
       arr[index] = { ...arr[index], ...value };
@@ -84,6 +87,7 @@ export function useLandingEditor({ seller, showToast }) {
   }, []);
 
   const addArrayItem = useCallback((section, key, template) => {
+    setDirty(true);
     setContent((prev) => {
       const arr = [...(prev[section]?.[key] || []), template];
       return { ...prev, [section]: { ...prev[section], [key]: arr } };
@@ -91,6 +95,7 @@ export function useLandingEditor({ seller, showToast }) {
   }, []);
 
   const removeArrayItem = useCallback((section, key, index) => {
+    setDirty(true);
     setContent((prev) => {
       const arr = [...(prev[section]?.[key] || [])];
       arr.splice(index, 1);
@@ -99,11 +104,19 @@ export function useLandingEditor({ seller, showToast }) {
   }, []);
 
   const updateProfile = useCallback((updates) => {
+    setDirty(true);
     setProfile((prev) => ({ ...prev, ...updates }));
     setSellerData((prev) => (prev ? { ...prev, ...updates } : null));
+    if (updates.name !== undefined || updates.phone !== undefined) {
+      updateSellerConfig({
+        name: updates.name,
+        phone: updates.phone,
+      });
+    }
   }, []);
 
   const updatePlan = useCallback((index, updates) => {
+    setDirty(true);
     setPlans((prev) => {
       const next = [...prev];
       next[index] = { ...next[index], ...updates };
@@ -112,6 +125,7 @@ export function useLandingEditor({ seller, showToast }) {
   }, []);
 
   const updatePlanFeature = useCallback((planIndex, featureIndex, value) => {
+    setDirty(true);
     setPlans((prev) => {
       const next = [...prev];
       const features = [...(next[planIndex].features || [])];
@@ -122,6 +136,7 @@ export function useLandingEditor({ seller, showToast }) {
   }, []);
 
   const addPlanFeature = useCallback((planIndex) => {
+    setDirty(true);
     setPlans((prev) => {
       const next = [...prev];
       const features = [...(next[planIndex].features || []), { icon: "bi-check-circle-fill", text: "Nueva característica" }];
@@ -131,6 +146,7 @@ export function useLandingEditor({ seller, showToast }) {
   }, []);
 
   const removePlanFeature = useCallback((planIndex, featureIndex) => {
+    setDirty(true);
     setPlans((prev) => {
       const next = [...prev];
       const features = [...(next[planIndex].features || [])];
@@ -148,6 +164,12 @@ export function useLandingEditor({ seller, showToast }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           landingContent: content,
+          name: profile.name,
+          phone: profile.phone,
+          photo: profile.photo,
+          bio: profile.bio,
+          gender: profile.gender,
+          footerText: profile.footerText,
         }),
       });
 
@@ -179,6 +201,7 @@ export function useLandingEditor({ seller, showToast }) {
 
       if (planResults.some((r) => !r.ok)) throw new Error("Error al guardar planes");
 
+      setDirty(false);
       showToast("Landing y planes guardados correctamente");
       return true;
     } catch (err) {
@@ -187,16 +210,18 @@ export function useLandingEditor({ seller, showToast }) {
     } finally {
       setSaving(false);
     }
-  }, [content, plans, showToast]);
+  }, [content, plans, profile, showToast]);
 
   return {
     loading,
     saving,
+    dirty,
     activeSection,
     setActiveSection,
     content,
     plans,
     profile,
+    company: sellerData?.company || null,
     previewMode,
     setPreviewMode,
     sellerData,

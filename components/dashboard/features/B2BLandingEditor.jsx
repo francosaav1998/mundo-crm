@@ -1,135 +1,70 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { DEFAULT_B2B_LANDING_CSS, DEFAULT_B2B_LANDING_BODY } from "@/lib/b2b-landing";
 import RippleButton from "@/components/ui/RippleButton";
-import { useLandingEditor } from "../hooks/useLandingEditor";
+import SectionHeader from "@/components/dashboard/ui/SectionHeader";
 import LandingChat from "./landing/LandingChat";
 
-export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
-  const {
-    loading,
-    saving,
-    dirty,
-    activeSection,
-    setActiveSection,
-    content,
-    plans,
-    profile,
-    company,
-    previewMode,
-    setPreviewMode,
-    updateContent,
-    updateArrayItem,
-    addArrayItem,
-    removeArrayItem,
-    updateProfile,
-    updatePlan,
-    updatePlanFeature,
-    addPlanFeature,
-    removePlanFeature,
-    save,
-  } = useLandingEditor({ sellerInfo, showToast });
-
+export default function B2BLandingEditor({ T, isMobile, showToast }) {
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [css, setCss] = useState(DEFAULT_B2B_LANDING_CSS);
+  const [body, setBody] = useState(DEFAULT_B2B_LANDING_BODY);
+  const [previewMode, setPreviewMode] = useState("desktop");
   const [mobileTab, setMobileTab] = useState("edit");
-  const [iframeReady, setIframeReady] = useState(false);
+  const [iframeKey, setIframeKey] = useState(0);
   const iframeRef = useRef(null);
 
-  const sellerSlug = sellerInfo?.slug || "";
-  const previewUrl = sellerSlug ? `/p/${sellerSlug}?preview=1` : "";
+  useEffect(() => {
+    async function load() {
+      try {
+        const res = await fetch("/api/b2b-landing");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.css) setCss(data.css);
+          if (data.body) setBody(data.body);
+        }
+      } catch (err) {
+        showToast(err.message || "Error al cargar landing");
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, [showToast]);
 
-  const handleSave = async () => {
-    const ok = await save();
-    if (ok && isMobile) setMobileTab("preview");
-  };
+  const handleSave = useCallback(async () => {
+    setSaving(true);
+    try {
+      const res = await fetch("/api/b2b-landing", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ css, body }),
+      });
+      if (!res.ok) throw new Error();
+      showToast("Landing B2B guardada correctamente");
+      setIframeKey((k) => k + 1);
+      if (isMobile) setMobileTab("preview");
+    } catch (err) {
+      showToast(err.message || "Error al guardar");
+    } finally {
+      setSaving(false);
+    }
+  }, [css, body, showToast, isMobile]);
+
+  const handleReset = useCallback(() => {
+    if (confirm("¿Restaurar el contenido por defecto? Se perderán los cambios no guardados.")) {
+      setCss(DEFAULT_B2B_LANDING_CSS);
+      setBody(DEFAULT_B2B_LANDING_BODY);
+    }
+  }, []);
 
   const applyAiAction = (action) => {
-    if (!action || !action.type) return;
-    switch (action.type) {
-      case "updateContent":
-        if (action.section) {
-          updateContent(action.section, action.updates || {});
-          setActiveSection(action.section);
-        }
-        break;
-      case "updateArrayItem":
-        updateArrayItem(action.section, action.key, action.index, action.updates || {});
-        setActiveSection(action.section);
-        break;
-      case "addArrayItem":
-        addArrayItem(action.section, action.key, action.template || {});
-        setActiveSection(action.section);
-        break;
-      case "removeArrayItem":
-        removeArrayItem(action.section, action.key, action.index);
-        setActiveSection(action.section);
-        break;
-      case "updatePlan":
-        updatePlan(action.index, action.updates || {});
-        setActiveSection("plans");
-        break;
-      case "updatePlanFeature":
-        updatePlanFeature(action.planIndex, action.featureIndex, action.updates || {});
-        setActiveSection("plans");
-        break;
-      case "addPlanFeature":
-        addPlanFeature(action.planIndex);
-        setActiveSection("plans");
-        break;
-      case "removePlanFeature":
-        removePlanFeature(action.planIndex, action.featureIndex);
-        setActiveSection("plans");
-        break;
-      case "updateProfile":
-        updateProfile(action.updates || {});
-        setActiveSection("seller");
-        break;
-      default:
-        throw new Error(`Acción IA desconocida: ${action.type}`);
-    }
+    if (action?.type !== "editB2B") throw new Error("Acción no válida para B2B");
+    if (action.html) setBody(action.html);
+    if (action.css) setCss(action.css);
   };
-
-  useEffect(() => {
-    const handleMessage = (event) => {
-      if (event.origin !== window.location.origin) return;
-      if (event.source !== iframeRef.current?.contentWindow) return;
-      const data = event.data;
-      if (data?.type === "LANDING_PREVIEW_READY") {
-        setIframeReady(true);
-      } else if (data?.type === "LANDING_PREVIEW_SECTION_SELECTED" && data.sectionId) {
-        setActiveSection(data.sectionId);
-        if (isMobile) setMobileTab("edit");
-      }
-    };
-    window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
-  }, [isMobile, setActiveSection, setMobileTab]);
-
-  useEffect(() => {
-    if (!iframeReady || !previewUrl) return;
-    iframeRef.current?.contentWindow?.postMessage(
-      {
-        type: "LANDING_PREVIEW_UPDATE",
-        payload: {
-          content,
-          plans: plans.filter((p) => p.sellerActive !== false),
-          profile,
-          company,
-        },
-      },
-      window.location.origin
-    );
-  }, [iframeReady, content, plans, profile, company, previewUrl]);
-
-  useEffect(() => {
-    if (!iframeReady || !activeSection) return;
-    iframeRef.current?.contentWindow?.postMessage(
-      {
-        type: "LANDING_PREVIEW_FOCUS",
-        sectionId: activeSection,
-      },
-      window.location.origin
-    );
-  }, [iframeReady, activeSection]);
 
   if (loading) {
     return (
@@ -149,6 +84,14 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
         minHeight: isMobile ? "auto" : 700,
       }}
     >
+      <SectionHeader
+        eyebrow="Editor de Landing"
+        title="Landing B2B principal"
+        description="Edita la página de inicio con instrucciones al asistente IA."
+        T={T}
+        isMobile={isMobile}
+      />
+
       {/* Top bar */}
       <div
         style={{
@@ -182,31 +125,15 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
           </div>
           <div style={{ minWidth: 0 }}>
             <h2 style={{ fontSize: isMobile ? 15 : 16, fontWeight: 800, color: T.text, margin: 0 }}>
-              Editor de Landing
+              Editor B2B
             </h2>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
-              {dirty ? (
-                <>
-                  <span
-                    style={{
-                      width: 7,
-                      height: 7,
-                      borderRadius: "50%",
-                      background: "#F59E0B",
-                      boxShadow: "0 0 8px rgba(245,158,11,0.6)",
-                    }}
-                  />
-                  <span style={{ fontSize: 11, color: "#F59E0B", fontWeight: 700 }}>Sin guardar</span>
-                </>
-              ) : (
-                <span style={{ fontSize: 11, color: T.muted }}>Todo guardado</span>
-              )}
-            </div>
+            <p style={{ fontSize: 11, color: T.muted, margin: "2px 0 0 0" }}>
+              Asistente IA
+            </p>
           </div>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-          {/* Viewport toggle */}
           <div
             style={{
               display: "inline-flex",
@@ -235,30 +162,45 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
             />
           </div>
 
-          {sellerSlug && (
-            <a
-              href={`/p/${sellerSlug}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "9px 14px",
-                borderRadius: 10,
-                background: `${T.accent}10`,
-                border: `1px solid ${T.accent}30`,
-                color: T.accent,
-                fontSize: 12,
-                fontWeight: 700,
-                textDecoration: "none",
-                whiteSpace: "nowrap",
-              }}
-            >
-              <i className="bi bi-eye-fill"></i>
-              {isMobile ? "Ver" : "Ver publicada"}
-            </a>
-          )}
+          <a
+            href="/"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "9px 14px",
+              borderRadius: 10,
+              background: `${T.accent}10`,
+              border: `1px solid ${T.accent}30`,
+              color: T.accent,
+              fontSize: 12,
+              fontWeight: 700,
+              textDecoration: "none",
+              whiteSpace: "nowrap",
+            }}
+          >
+            <i className="bi bi-eye-fill"></i>
+            {isMobile ? "Ver" : "Ver publicada"}
+          </a>
+
+          <RippleButton
+            onClick={handleReset}
+            style={{
+              padding: "9px 14px",
+              borderRadius: 10,
+              border: `1px solid ${T.border}`,
+              background: "transparent",
+              color: T.muted,
+              fontSize: 12,
+              fontWeight: 700,
+              cursor: "pointer",
+            }}
+          >
+            <i className="bi bi-arrow-counterclockwise"></i>
+            {isMobile ? "Reset" : "Restaurar"}
+          </RippleButton>
 
           <RippleButton
             onClick={handleSave}
@@ -269,16 +211,14 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
               padding: "10px 18px",
               borderRadius: 10,
               border: "none",
-              background: `linear-gradient(135deg, ${T.accent} 0%, #0077A8 100%)`,
+              background: T.accent,
               color: "#fff",
-              fontWeight: 800,
               fontSize: 13,
+              fontWeight: 800,
+              cursor: "pointer",
               display: "inline-flex",
               alignItems: "center",
-              justifyContent: "center",
               gap: 6,
-              whiteSpace: "nowrap",
-              boxShadow: `0 6px 18px ${T.accent}35`,
             }}
           >
             <i className="bi bi-check-lg"></i>
@@ -395,19 +335,20 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
                 }}
               >
                 <LandingChat
-                  mode="seller"
-                  role="seller"
+                  mode="b2b"
+                  role="admin"
                   onApplyAction={applyAiAction}
                   T={T}
                   isMobile={isMobile}
-                  context={{ content, plans, profile, company }}
+                  html={body}
+                  css={css}
                 />
               </div>
             </div>
           </div>
         )}
 
-        {/* Preview canvas */}
+        {/* Preview iframe */}
         {(!isMobile || mobileTab === "preview") && (
           <div
             style={{
@@ -441,7 +382,7 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
                 </span>
               </div>
               <span style={{ fontSize: 11, color: T.muted }}>
-                {iframeReady ? "Sincronizado" : "Cargando preview..."}
+                Se actualiza al guardar
               </span>
             </div>
             <div
@@ -453,25 +394,19 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
                 background: "rgba(0,0,0,0.05)",
               }}
             >
-              {previewUrl ? (
-                <iframe
-                  ref={iframeRef}
-                  src={previewUrl}
-                  onLoad={() => setIframeReady(false)}
-                  title="Vista previa de landing"
-                  style={{
-                    width: previewMode === "mobile" ? 390 : "100%",
-                    minWidth: previewMode === "mobile" ? 390 : "100%",
-                    height: "100%",
-                    border: "none",
-                    background: "#fff",
-                  }}
-                />
-              ) : (
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", color: T.muted, fontSize: 13 }}>
-                  Guarda tu slug de vendedor para ver la vista previa.
-                </div>
-              )}
+              <iframe
+                key={iframeKey}
+                ref={iframeRef}
+                src="/"
+                title="Vista previa B2B"
+                style={{
+                  width: previewMode === "mobile" ? 390 : "100%",
+                  minWidth: previewMode === "mobile" ? 390 : "100%",
+                  height: "100%",
+                  border: "none",
+                  background: "#fff",
+                }}
+              />
             </div>
           </div>
         )}

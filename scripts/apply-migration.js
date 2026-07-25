@@ -107,6 +107,12 @@ const STATEMENTS = [
   `CREATE INDEX IF NOT EXISTS "SellerPlanOverride_sellerId_idx" ON "SellerPlanOverride"("sellerId")`,
   `CREATE INDEX IF NOT EXISTS "SellerPlanOverride_planId_idx" ON "SellerPlanOverride"("planId")`,
 
+  `CREATE TABLE IF NOT EXISTS "Setting" (
+    "key" TEXT NOT NULL,
+    "value" TEXT NOT NULL,
+    CONSTRAINT "Setting_pkey" PRIMARY KEY ("key")
+  )`,
+
   // Limpia videos de fondo heredados para que la landing no muestre video
   `UPDATE "Seller" SET "bgVideoUrl" = '' WHERE "bgVideoUrl" IS NOT NULL AND "bgVideoUrl" != ''`,
   `DELETE FROM "Setting" WHERE key = 'bg_video_url'`,

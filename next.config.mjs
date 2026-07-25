@@ -84,7 +84,33 @@ const nextConfig = {
               "media-src 'self' https: data:",
               "font-src 'self' https: data:",
               "connect-src 'self' https://*.supabase.co https://www.facebook.com",
-              "frame-src 'none'",
+              "frame-src 'self'",
+              "object-src 'none'",
+              "base-uri 'self'",
+              "form-action 'self'",
+            ].join("; "),
+          },
+        ],
+      },
+      {
+        source: "/p/:slug*",
+        headers: [
+          {
+            key: "X-Frame-Options",
+            value: "SAMEORIGIN",
+          },
+          {
+            key: "Content-Security-Policy",
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://connect.facebook.net",
+              "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com",
+              "img-src 'self' data: https: https://www.facebook.com",
+              "media-src 'self' https: data:",
+              "font-src 'self' https: data:",
+              "connect-src 'self' https://*.supabase.co https://www.facebook.com",
+              "frame-src 'self'",
+              "frame-ancestors 'self'",
               "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self'",
@@ -97,3 +123,4 @@ const nextConfig = {
 };
 
 export default nextConfig;
+
