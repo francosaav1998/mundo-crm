@@ -181,7 +181,7 @@ export default function DashboardLayout({
         )}
 
         {/* Nav Links */}
-        <nav style={{ flex: 1, padding: "16px 12px", display: "flex", flexDirection: "column", gap: 4 }}>
+        <nav style={{ flex: 1, padding: "16px 12px", display: "flex", flexDirection: "column", gap: 4, overflowY: "auto", overflowX: "hidden", minHeight: 0 }}>
           {MENU_ITEMS.map((item, index) => (
             <MenuItem
               key={item.id}

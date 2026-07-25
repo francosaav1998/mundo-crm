@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import RippleButton from "@/components/ui/RippleButton";
 import { useLandingEditor } from "../hooks/useLandingEditor";
-import LandingChat from "./landing/LandingChat";
 import {
   HeroControls,
   SellerControls,
@@ -51,8 +50,6 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
     save,
   } = useLandingEditor({ sellerInfo, showToast });
 
-  const [mobileTab, setMobileTab] = useState("edit");
-  const [sidebarMode, setSidebarMode] = useState("chat");
   const [iframeReady, setIframeReady] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const iframeRef = useRef(null);
@@ -61,8 +58,7 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
   const previewUrl = sellerSlug ? `/p/${sellerSlug}?preview=1` : "";
 
   const handleSave = async () => {
-    const ok = await save();
-    if (ok && isMobile) setMobileTab("preview");
+    await save();
   };
 
   const handlePhotoUpload = useCallback(async (e) => {
@@ -84,52 +80,6 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
       setUploadingPhoto(false);
     }
   }, [updateProfile, showToast]);
-
-  const applyAiAction = (action) => {
-    if (!action || !action.type) return;
-    switch (action.type) {
-      case "updateContent":
-        if (action.section) {
-          updateContent(action.section, action.updates || {});
-          setActiveSection(action.section);
-        }
-        break;
-      case "updateArrayItem":
-        updateArrayItem(action.section, action.key, action.index, action.updates || {});
-        setActiveSection(action.section);
-        break;
-      case "addArrayItem":
-        addArrayItem(action.section, action.key, action.template || {});
-        setActiveSection(action.section);
-        break;
-      case "removeArrayItem":
-        removeArrayItem(action.section, action.key, action.index);
-        setActiveSection(action.section);
-        break;
-      case "updatePlan":
-        updatePlan(action.index, action.updates || {});
-        setActiveSection("plans");
-        break;
-      case "updatePlanFeature":
-        updatePlanFeature(action.planIndex, action.featureIndex, action.updates || {});
-        setActiveSection("plans");
-        break;
-      case "addPlanFeature":
-        addPlanFeature(action.planIndex);
-        setActiveSection("plans");
-        break;
-      case "removePlanFeature":
-        removePlanFeature(action.planIndex, action.featureIndex);
-        setActiveSection("plans");
-        break;
-      case "updateProfile":
-        updateProfile(action.updates || {});
-        setActiveSection("seller");
-        break;
-      default:
-        throw new Error(`Acción IA desconocida: ${action.type}`);
-    }
-  };
 
   const applyPreviewEdit = useCallback((path, value) => {
     const parts = path.split(".");
@@ -183,15 +133,13 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
         setIframeReady(true);
       } else if (data.type === "LANDING_PREVIEW_SECTION_SELECTED" && data.sectionId) {
         setActiveSection(data.sectionId);
-        setSidebarMode("manual");
-        if (isMobile) setMobileTab("edit");
       } else if (data.type === "LANDING_PREVIEW_TEXT_EDIT" && data.payload) {
         applyPreviewEdit(data.payload.path, data.payload.value);
       }
     };
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, [isMobile, setActiveSection, setSidebarMode, setMobileTab, applyPreviewEdit]);
+  }, [isMobile, setActiveSection, applyPreviewEdit]);
 
   useEffect(() => {
     if (!iframeReady || !previewUrl) return;
@@ -376,53 +324,6 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
         </div>
       </div>
 
-      {/* Mobile tabs */}
-      {isMobile && (
-        <div
-          style={{
-            display: "flex",
-            gap: 8,
-            background: T.inputBg,
-            border: `1px solid ${T.border}`,
-            borderRadius: 12,
-            padding: 4,
-          }}
-        >
-          <button
-            onClick={() => setMobileTab("edit")}
-            style={{
-              flex: 1,
-              padding: "10px",
-              borderRadius: 10,
-              border: "none",
-              background: mobileTab === "edit" ? T.accent : "transparent",
-              color: mobileTab === "edit" ? "#fff" : T.muted,
-              fontWeight: 800,
-              fontSize: 13,
-              cursor: "pointer",
-            }}
-          >
-            <i className="bi bi-pencil-square" style={{ marginRight: 6 }}></i> Editar
-          </button>
-          <button
-            onClick={() => setMobileTab("preview")}
-            style={{
-              flex: 1,
-              padding: "10px",
-              borderRadius: 10,
-              border: "none",
-              background: mobileTab === "preview" ? T.accent : "transparent",
-              color: mobileTab === "preview" ? "#fff" : T.muted,
-              fontWeight: 800,
-              fontSize: 13,
-              cursor: "pointer",
-            }}
-          >
-            <i className="bi bi-eye" style={{ marginRight: 6 }}></i> Vista previa
-          </button>
-        </div>
-      )}
-
       {/* Body */}
       <div
         style={{
@@ -433,12 +334,12 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
           minHeight: 0,
         }}
       >
-        {/* Sidebar */}
-        {(!isMobile || mobileTab === "edit") && (
+        {/* Sidebar - editor manual (solo escritorio) */}
+        {!isMobile && (
           <div
             style={{
-              width: isMobile ? "100%" : 420,
-              minWidth: isMobile ? "auto" : 420,
+              width: 420,
+              minWidth: 420,
               flexShrink: 0,
               display: "flex",
               flexDirection: "column",
@@ -447,254 +348,228 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
               borderRadius: 20,
               overflow: "hidden",
               boxShadow: "0 20px 50px rgba(0,0,0,0.15)",
-              height: isMobile ? "auto" : "100%",
+              height: "100%",
             }}
           >
-            {/* Sidebar mode tabs */}
+            {/* Section tabs */}
             <div
               style={{
                 display: "flex",
-                padding: 4,
-                gap: 4,
-                background: T.inputBg,
+                gap: 6,
+                overflowX: "auto",
+                padding: "12px 14px",
                 borderBottom: `1px solid ${T.border}`,
+                background: `${T.accent}04`,
               }}
             >
-              <SidebarModeButton
-                active={sidebarMode === "chat"}
-                onClick={() => setSidebarMode("chat")}
-                icon="bi-stars"
-                label="Asistente IA"
-                T={T}
-              />
-              <SidebarModeButton
-                active={sidebarMode === "manual"}
-                onClick={() => setSidebarMode("manual")}
-                icon="bi-sliders"
-                label="Edición manual"
-                T={T}
-              />
+              {SECTIONS.map((section) => (
+                <button
+                  key={section.id}
+                  onClick={() => setActiveSection(section.id)}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "8px 12px",
+                    borderRadius: 10,
+                    border: "none",
+                    background: activeSection === section.id ? T.accent : T.bgCard,
+                    color: activeSection === section.id ? "#fff" : T.muted,
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                    transition: "all 0.15s",
+                  }}
+                >
+                  <i className={`bi ${section.icon}`}></i>
+                  {section.label}
+                </button>
+              ))}
             </div>
-
-            {/* Section tabs (manual mode) */}
-            {sidebarMode === "manual" && (
-              <div
-                style={{
-                  display: "flex",
-                  gap: 6,
-                  overflowX: "auto",
-                  padding: "12px 14px",
-                  borderBottom: `1px solid ${T.border}`,
-                  background: `${T.accent}04`,
-                }}
-              >
-                {SECTIONS.map((section) => (
-                  <button
-                    key={section.id}
-                    onClick={() => setActiveSection(section.id)}
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 6,
-                      padding: "8px 12px",
-                      borderRadius: 10,
-                      border: "none",
-                      background: activeSection === section.id ? T.accent : T.bgCard,
-                      color: activeSection === section.id ? "#fff" : T.muted,
-                      fontSize: 12,
-                      fontWeight: 700,
-                      cursor: "pointer",
-                      whiteSpace: "nowrap",
-                      transition: "all 0.15s",
-                    }}
-                  >
-                    <i className={`bi ${section.icon}`}></i>
-                    {section.label}
-                  </button>
-                ))}
-              </div>
-            )}
 
             {/* Content */}
             <div
               style={{
                 flex: 1,
                 overflowY: "auto",
-                padding: isMobile ? "14px" : "16px",
+                padding: "16px",
               }}
             >
-              {sidebarMode === "chat" ? (
-                <LandingChat
-                  mode="seller"
-                  role="seller"
-                  onApplyAction={applyAiAction}
-                  T={T}
-                  isMobile={isMobile}
-                  context={{ content, plans, profile, company }}
-                />
-              ) : (
-                <div
-                  style={{
-                    background: T.inputBg,
-                    border: `1px solid ${T.border}`,
-                    borderRadius: 18,
-                    padding: isMobile ? "14px" : "16px",
-                    minHeight: "100%",
-                  }}
-                >
-                  {!activeSection && (
-                    <div style={{ color: T.muted, fontSize: 14, textAlign: "center", padding: 30 }}>
-                      Selecciona una sección para editar manualmente.
-                    </div>
-                  )}
-                  {activeSection === "hero" && (
-                    <HeroControls content={content.hero} updateContent={(u) => updateContent("hero", u)} T={T} isMobile={isMobile} />
-                  )}
-                  {activeSection === "seller" && (
-                    <SellerControls
-                      content={content.seller}
-                      updateContent={(u) => updateContent("seller", u)}
-                      profile={profile}
-                      updateProfile={updateProfile}
-                      onPhotoUpload={handlePhotoUpload}
-                      uploadingPhoto={uploadingPhoto}
-                      T={T}
-                      isMobile={isMobile}
-                    />
-                  )}
-                  {activeSection === "plans" && (
-                    <PlansControls
-                      content={content.plans}
-                      updateContent={(u) => updateContent("plans", u)}
-                      plans={plans}
-                      updatePlan={updatePlan}
-                      addPlan={addPlan}
-                      removePlan={removePlan}
-                      updatePlanFeature={updatePlanFeature}
-                      addPlanFeature={addPlanFeature}
-                      removePlanFeature={removePlanFeature}
-                      T={T}
-                      isMobile={isMobile}
-                    />
-                  )}
-                  {activeSection === "benefits" && (
-                    <BenefitsControls
-                      content={content.benefits}
-                      updateContent={(u) => updateContent("benefits", u)}
-                      updateArrayItem={(k, i, v) => updateArrayItem("benefits", k, i, v)}
-                      addArrayItem={(k, t) => addArrayItem("benefits", k, t)}
-                      removeArrayItem={(k, i) => removeArrayItem("benefits", k, i)}
-                      T={T}
-                      isMobile={isMobile}
-                    />
-                  )}
-                  {activeSection === "coverage" && (
-                    <CoverageControls
-                      content={content.coverage}
-                      updateContent={(u) => updateContent("coverage", u)}
-                      updateArrayItem={(k, i, v) => updateArrayItem("coverage", k, i, v)}
-                      addArrayItem={(k, t) => addArrayItem("coverage", k, t)}
-                      removeArrayItem={(k, i) => removeArrayItem("coverage", k, i)}
-                      T={T}
-                      isMobile={isMobile}
-                    />
-                  )}
-                  {activeSection === "header" && (
-                    <HeaderControls
-                      content={content.header}
-                      updateContent={(u) => updateContent("header", u)}
-                      updateArrayItem={(k, i, v) => updateArrayItem("header", k, i, v)}
-                      addArrayItem={(k, t) => addArrayItem("header", k, t)}
-                      removeArrayItem={(k, i) => removeArrayItem("header", k, i)}
-                      T={T}
-                      isMobile={isMobile}
-                    />
-                  )}
-                  {activeSection === "footer" && (
-                    <FooterControls
-                      content={content.footer}
-                      updateContent={(u) => updateContent("footer", u)}
-                      updateArrayItem={(k, i, v) => updateArrayItem("footer", k, i, v)}
-                      addArrayItem={(k, t) => addArrayItem("footer", k, t)}
-                      removeArrayItem={(k, i) => removeArrayItem("footer", k, i)}
-                      T={T}
-                      isMobile={isMobile}
-                    />
-                  )}
-                </div>
-              )}
+              <div
+                style={{
+                  background: `${T.accent}10`,
+                  border: `1px solid ${T.accent}25`,
+                  borderRadius: 12,
+                  padding: 14,
+                  marginBottom: 16,
+                  fontSize: 13,
+                  color: T.muted,
+                  lineHeight: 1.5,
+                }}
+              >
+                <i className="bi bi-info-circle-fill" style={{ color: T.accent, marginRight: 8 }}></i>
+                También podés editar directamente desde la vista previa: hacé clic sobre cualquier texto, cambialo y los cambios se reflejan automáticamente.
+              </div>
+              <div
+                style={{
+                  background: T.inputBg,
+                  border: `1px solid ${T.border}`,
+                  borderRadius: 18,
+                  padding: "16px",
+                  minHeight: "100%",
+                }}
+              >
+                {!activeSection && (
+                  <div style={{ color: T.muted, fontSize: 14, textAlign: "center", padding: 30 }}>
+                    Selecciona una sección para editar manualmente.
+                  </div>
+                )}
+                {activeSection === "hero" && (
+                  <HeroControls content={content.hero} updateContent={(u) => updateContent("hero", u)} T={T} isMobile={isMobile} />
+                )}
+                {activeSection === "seller" && (
+                  <SellerControls
+                    content={content.seller}
+                    updateContent={(u) => updateContent("seller", u)}
+                    profile={profile}
+                    updateProfile={updateProfile}
+                    onPhotoUpload={handlePhotoUpload}
+                    uploadingPhoto={uploadingPhoto}
+                    T={T}
+                    isMobile={isMobile}
+                  />
+                )}
+                {activeSection === "plans" && (
+                  <PlansControls
+                    content={content.plans}
+                    updateContent={(u) => updateContent("plans", u)}
+                    plans={plans}
+                    updatePlan={updatePlan}
+                    addPlan={addPlan}
+                    removePlan={removePlan}
+                    updatePlanFeature={updatePlanFeature}
+                    addPlanFeature={addPlanFeature}
+                    removePlanFeature={removePlanFeature}
+                    T={T}
+                    isMobile={isMobile}
+                  />
+                )}
+                {activeSection === "benefits" && (
+                  <BenefitsControls
+                    content={content.benefits}
+                    updateContent={(u) => updateContent("benefits", u)}
+                    updateArrayItem={(k, i, v) => updateArrayItem("benefits", k, i, v)}
+                    addArrayItem={(k, t) => addArrayItem("benefits", k, t)}
+                    removeArrayItem={(k, i) => removeArrayItem("benefits", k, i)}
+                    T={T}
+                    isMobile={isMobile}
+                  />
+                )}
+                {activeSection === "coverage" && (
+                  <CoverageControls
+                    content={content.coverage}
+                    updateContent={(u) => updateContent("coverage", u)}
+                    updateArrayItem={(k, i, v) => updateArrayItem("coverage", k, i, v)}
+                    addArrayItem={(k, t) => addArrayItem("coverage", k, t)}
+                    removeArrayItem={(k, i) => removeArrayItem("coverage", k, i)}
+                    T={T}
+                    isMobile={isMobile}
+                  />
+                )}
+                {activeSection === "header" && (
+                  <HeaderControls
+                    content={content.header}
+                    updateContent={(u) => updateContent("header", u)}
+                    updateArrayItem={(k, i, v) => updateArrayItem("header", k, i, v)}
+                    addArrayItem={(k, t) => addArrayItem("header", k, t)}
+                    removeArrayItem={(k, i) => removeArrayItem("header", k, i)}
+                    T={T}
+                    isMobile={isMobile}
+                  />
+                )}
+                {activeSection === "footer" && (
+                  <FooterControls
+                    content={content.footer}
+                    updateContent={(u) => updateContent("footer", u)}
+                    updateArrayItem={(k, i, v) => updateArrayItem("footer", k, i, v)}
+                    addArrayItem={(k, t) => addArrayItem("footer", k, t)}
+                    removeArrayItem={(k, i) => removeArrayItem("footer", k, i)}
+                    T={T}
+                    isMobile={isMobile}
+                  />
+                )}
+              </div>
             </div>
           </div>
         )}
 
         {/* Preview canvas */}
-        {(!isMobile || mobileTab === "preview") && (
+        <div
+          style={{
+            flex: 1,
+            minWidth: 0,
+            height: isMobile ? 600 : "100%",
+            display: "flex",
+            flexDirection: "column",
+            background: "rgba(0,0,0,0.22)",
+            borderRadius: 20,
+            border: `1px solid ${T.border}`,
+            overflow: "hidden",
+            boxShadow: "0 20px 50px rgba(0,0,0,0.2)",
+          }}
+        >
+          <div
+            style={{
+              padding: "10px 14px",
+              background: T.bgCard,
+              borderBottom: `1px solid ${T.border}`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 12,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <i className="bi bi-aspect-ratio" style={{ color: T.muted, fontSize: 14 }}></i>
+              <span style={{ fontSize: 12, fontWeight: 700, color: T.text }}>
+                {previewMode === "mobile" ? "Vista móvil" : "Vista escritorio"}
+              </span>
+            </div>
+            <span style={{ fontSize: 11, color: T.muted }}>
+              {iframeReady ? "Haz click en el texto para editar" : "Cargando preview..."}
+            </span>
+          </div>
           <div
             style={{
               flex: 1,
-              minWidth: 0,
-              height: isMobile ? 600 : "100%",
+              overflow: "auto",
               display: "flex",
-              flexDirection: "column",
-              background: "rgba(0,0,0,0.22)",
-              borderRadius: 20,
-              border: `1px solid ${T.border}`,
-              overflow: "hidden",
-              boxShadow: "0 20px 50px rgba(0,0,0,0.2)",
+              justifyContent: previewMode === "mobile" ? "center" : "flex-start",
+              background: "rgba(0,0,0,0.05)",
             }}
           >
-            <div
-              style={{
-                padding: "10px 14px",
-                background: T.bgCard,
-                borderBottom: `1px solid ${T.border}`,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: 12,
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <i className="bi bi-aspect-ratio" style={{ color: T.muted, fontSize: 14 }}></i>
-                <span style={{ fontSize: 12, fontWeight: 700, color: T.text }}>
-                  {previewMode === "mobile" ? "Vista móvil" : "Vista escritorio"}
-                </span>
+            {previewUrl ? (
+              <iframe
+                ref={iframeRef}
+                src={previewUrl}
+                onLoad={() => setIframeReady(false)}
+                title="Vista previa de landing"
+                style={{
+                  width: previewMode === "mobile" ? 390 : "100%",
+                  minWidth: previewMode === "mobile" ? 390 : "100%",
+                  height: "100%",
+                  border: "none",
+                  background: "#fff",
+                }}
+              />
+            ) : (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", color: T.muted, fontSize: 13 }}>
+                Guarda tu slug de vendedor para ver la vista previa.
               </div>
-              <span style={{ fontSize: 11, color: T.muted }}>
-                {iframeReady ? "Haz click en el texto para editar" : "Cargando preview..."}
-              </span>
-            </div>
-            <div
-              style={{
-                flex: 1,
-                overflow: "auto",
-                display: "flex",
-                justifyContent: previewMode === "mobile" ? "center" : "flex-start",
-                background: "rgba(0,0,0,0.05)",
-              }}
-            >
-              {previewUrl ? (
-                <iframe
-                  ref={iframeRef}
-                  src={previewUrl}
-                  onLoad={() => setIframeReady(false)}
-                  title="Vista previa de landing"
-                  style={{
-                    width: previewMode === "mobile" ? 390 : "100%",
-                    minWidth: previewMode === "mobile" ? 390 : "100%",
-                    height: "100%",
-                    border: "none",
-                    background: "#fff",
-                  }}
-                />
-              ) : (
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", color: T.muted, fontSize: 13 }}>
-                  Guarda tu slug de vendedor para ver la vista previa.
-                </div>
-              )}
-            </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
@@ -727,30 +602,3 @@ function ViewportButton({ active, onClick, icon, label, T, hideLabel }) {
   );
 }
 
-function SidebarModeButton({ active, onClick, icon, label, T }) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        flex: 1,
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 6,
-        padding: "10px 12px",
-        borderRadius: 10,
-        border: "none",
-        background: active ? T.accent : "transparent",
-        color: active ? "#fff" : T.muted,
-        fontSize: 12,
-        fontWeight: 800,
-        cursor: "pointer",
-        transition: "all 0.15s",
-        whiteSpace: "nowrap",
-      }}
-    >
-      <i className={`bi ${icon}`}></i>
-      {label}
-    </button>
-  );
-}
