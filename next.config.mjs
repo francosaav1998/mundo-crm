@@ -56,7 +56,7 @@ const nextConfig = {
         headers: [
           {
             key: "X-Frame-Options",
-            value: "DENY",
+            value: "SAMEORIGIN",
           },
           {
             key: "X-Content-Type-Options",
@@ -85,6 +85,7 @@ const nextConfig = {
               "font-src 'self' https: data:",
               "connect-src 'self' https://*.supabase.co https://www.facebook.com",
               "frame-src 'self'",
+              "frame-ancestors 'self'",
               "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self'",
