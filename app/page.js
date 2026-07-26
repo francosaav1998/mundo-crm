@@ -4,8 +4,8 @@ import { getB2BLandingContent } from "@/lib/b2b-landing.server";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "CRM Vendedor Mundo | Gestiona tus clientes y vende más",
-  description: "Accede al CRM Vendedor Mundo: tu web profesional, leads calificados, seguimiento automático y mensajes masivos por WhatsApp. Prueba 7 días gratis.",
+  title: "Gestion Vendedores | CRM y landings para vender más",
+  description: "Gestion Vendedores: tu CRM comercial con landing, leads, seguimiento, WhatsApp masivo y prueba gratis.",
 };
 
 export default async function Home() {

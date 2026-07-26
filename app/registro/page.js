@@ -187,7 +187,7 @@ export default function RegistroPage() {
             <span style={{ color: T.accent, fontWeight: 900, fontSize: "26px" }}>M</span>
           </div>
           <h1 style={{ fontSize: "24px", fontWeight: 800, letterSpacing: "-0.02em" }}>
-            Únete como Ejecutiva Mundo
+            Únete a Gestion Vendedores
           </h1>
           <p style={{ color: T.muted, fontSize: "13px", marginTop: "6px" }}>
             Completa tus datos y obtén tu landing personalizada

@@ -23,8 +23,8 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata = {
-  title: "Tu Ejecutiva Mundo - Fibra Óptica, TV HD y Telefonía Hogar",
-  description: "Contrata Internet Fibra Óptica, TV Smart GO! y Telefonía Móvil al mejor precio con tu ejecutiva de ventas autorizada.",
+  title: "Gestion Vendedores | CRM y Landings para equipos comerciales",
+  description: "Gestion Vendedores: CRM, landings, leads, WhatsApp y facturación para vendedores y equipos comerciales.",
 };
 
 export const viewport = {
