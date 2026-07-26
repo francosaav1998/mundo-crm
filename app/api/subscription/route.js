@@ -84,13 +84,21 @@ export async function POST(request) {
     }
 
     const seller = await findOrCreateSellerForUser(session.user);
+    const payerEmail = seller.email || session.user.email || "";
+    if (!payerEmail) {
+      return NextResponse.json(
+        { error: "El vendedor no tiene correo configurado para MercadoPago" },
+        { status: 400 }
+      );
+    }
+
     const body = await request.json().catch(() => ({}));
     const origin = new URL(request.url).origin;
     const backUrl = body.backUrl || `${origin}/dashboard?tab=billing`;
 
     const result = await createPreapproval({
       sellerId: seller.id,
-      payerEmail: seller.email || session.user.email || "",
+      payerEmail,
       backUrl,
     });
 

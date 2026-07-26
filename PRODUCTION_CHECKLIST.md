@@ -10,10 +10,12 @@ Estado actual:
 
 - [ ] Crear aplicacion en MercadoPago Developers.
 - [ ] Obtener `MERCADOPAGO_ACCESS_TOKEN`.
-- [ ] Agregar variable en Vercel:
+- [ ] Definir un token simple para proteger el webhook (`MERCADOPAGO_WEBHOOK_TOKEN`).
+- [ ] Agregar variables en Vercel:
 
 ```env
 MERCADOPAGO_ACCESS_TOKEN=APP_USR-...
+MERCADOPAGO_WEBHOOK_TOKEN=token-seguro-largo
 ```
 
 - [ ] Probar creacion de suscripcion desde `/dashboard?tab=billing`.
@@ -24,7 +26,7 @@ MERCADOPAGO_ACCESS_TOKEN=APP_USR-...
 - [ ] Configurar URL:
 
 ```text
-https://mundo-crm.vercel.app/api/webhooks/mercadopago
+https://mundo-crm.vercel.app/api/webhooks/mercadopago?token=TU_TOKEN
 ```
 
 - [ ] Activar eventos de:
