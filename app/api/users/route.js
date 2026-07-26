@@ -148,3 +148,44 @@ export async function GET(request) {
     return NextResponse.json({ error: error.message }, { status });
   }
 }
+
+export async function DELETE(request) {
+  try {
+    const rateLimitResponse = await checkUsersRateLimit(request);
+    if (rateLimitResponse) return rateLimitResponse;
+
+    await requireAdmin();
+
+    const { searchParams } = new URL(request.url);
+    const userId = String(searchParams.get("id") || "").trim();
+    const email = String(searchParams.get("email") || "").trim().toLowerCase();
+
+    if (!userId && !email) {
+      return NextResponse.json({ error: "ID o email requerido" }, { status: 400 });
+    }
+
+    const where = userId
+      ? { OR: [{ userId }, ...(email ? [{ email }] : [])] }
+      : { email };
+
+    const seller = await prisma.seller.findFirst({ where, select: { id: true } });
+    if (seller) {
+      await prisma.lead.deleteMany({ where: { sellerId: seller.id } });
+      await prisma.seller.delete({ where: { id: seller.id } });
+    }
+
+    if (userId) {
+      const supabase = createServiceClient();
+      const { error } = await supabase.auth.admin.deleteUser(userId);
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    const status =
+      error.message === "Unauthorized" ? 401 : error.message === "Forbidden" ? 403 : 500;
+    return NextResponse.json({ error: error.message }, { status });
+  }
+}

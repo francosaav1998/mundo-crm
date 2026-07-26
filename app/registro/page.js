@@ -29,7 +29,7 @@ export default function RegistroPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
-  const [needsConfirmation, setNeedsConfirmation] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
@@ -77,29 +77,39 @@ export default function RegistroPage() {
 
     const normalizedPhone = normalizeWhatsApp(form.phone);
 
+    if (!acceptedTerms) {
+      setError("Debes aceptar los términos y la política de privacidad");
+      setLoading(false);
+      return;
+    }
+
     try {
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email: form.email,
-        password: form.password,
-        options: {
-          data: {
-            full_name: form.name,
-            company: form.company,
-          },
-        },
+      const registerRes = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: form.email,
+          password: form.password,
+          name: form.name,
+          phone: normalizedPhone,
+          bio: form.bio,
+          companySlug: form.company,
+          acceptedTerms,
+        }),
       });
 
-      if (signUpError) throw signUpError;
+      const registerData = await registerRes.json().catch(() => ({}));
+      if (!registerRes.ok) throw new Error(registerData.error || "Error al registrarse");
 
-      if (data.user) {
-        setSuccess(true);
-        // Si Supabase requiere confirmación por email, data.session será null.
-        if (data.session) {
-          setTimeout(() => router.push("/dashboard"), 1500);
-        } else {
-          setNeedsConfirmation(true);
-        }
-      }
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: form.email,
+        password: form.password,
+      });
+
+      if (signInError) throw signInError;
+
+      setSuccess(true);
+      setTimeout(() => router.push("/dashboard"), 900);
     } catch (err) {
       setError(err.message || "Error al registrarse");
     } finally {
@@ -226,9 +236,7 @@ export default function RegistroPage() {
               }}
             >
               <i className="bi bi-check-circle-fill" style={{ marginRight: "8px" }}></i>
-              {needsConfirmation
-                ? "¡Cuenta creada! Revisa tu correo para confirmar y luego inicia sesión."
-                : "¡Cuenta creada! Redirigiendo a tu dashboard..."}
+              {"¡Cuenta creada! Redirigiendo a tu dashboard..."}
             </div>
           )}
 
@@ -380,6 +388,19 @@ export default function RegistroPage() {
             >
               {loading ? "Creando cuenta..." : "Crear mi cuenta y dashboard"}
             </button>
+
+            <label style={{ display: "flex", alignItems: "flex-start", gap: 10, marginTop: 4, cursor: "pointer" }}>
+              <input
+                type="checkbox"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                style={{ marginTop: 3 }}
+              />
+              <span style={{ fontSize: "12px", color: "#64748B", lineHeight: 1.5 }}>
+                Acepto los <span style={{ color: "#00748E", fontWeight: 700 }}>Términos y Condiciones</span> y la{" "}
+                <a href="/politica-de-privacidad" style={{ color: "#00748E", fontWeight: 700 }}>Política de Privacidad</a>.
+              </span>
+            </label>
           </form>
 
           <div style={{ marginTop: "20px", paddingTop: "16px", borderTop: "1px solid #E2E8F0", textAlign: "center" }}>
@@ -401,10 +422,7 @@ export default function RegistroPage() {
         </div>
 
         <p style={{ fontSize: "11px", color: "rgba(248, 250, 252, 0.6)", marginTop: "16px" }}>
-          Al registrarte, aceptas nuestra{" "}
-          <a href="/politica-de-privacidad" style={{ color: "rgba(248, 250, 252, 0.8)" }}>
-            Política de Privacidad
-          </a>
+          El acceso se activa al instante y comienza tu prueba gratis de 7 días.
         </p>
       </div>
     </div>

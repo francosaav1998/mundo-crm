@@ -165,11 +165,29 @@ export default function UserManager({ T, isMobile, showToast }) {
             : u
         )
       );
-      showToast?.(updated.active ? "Landing activada" : "Landing desactivada");
+      showToast?.(updated.active ? "Landing y dashboard activados" : "Landing y dashboard desactivados");
     } catch (err) {
       showToast?.(err.message);
     } finally {
       setToggling(null);
+    }
+  };
+
+  const deleteUser = async (user) => {
+    if (!user?.id) return;
+    const confirmed = confirm(`Vas a eliminar definitivamente a ${user.seller?.name || user.email}. Esta acción borra su cuenta, dashboard, landing y leads asociados. ¿Continuar?`);
+    if (!confirmed) return;
+
+    try {
+      const params = new URLSearchParams({ id: user.id });
+      if (user.email) params.set("email", user.email);
+      const res = await fetch(`/api/users?${params.toString()}`, { method: "DELETE" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Error al eliminar cliente");
+      setUsers((prev) => prev.filter((u) => u.id !== user.id));
+      showToast?.("Cliente eliminado definitivamente");
+    } catch (err) {
+      showToast?.(err.message || "Error al eliminar cliente");
     }
   };
 
@@ -463,8 +481,8 @@ export default function UserManager({ T, isMobile, showToast }) {
                           alignItems: "center",
                           opacity: toggling === seller.id ? 0.6 : 1,
                         }}
-                        title={seller.active ? "Desactivar landing" : "Activar landing"}
-                        aria-label={seller.active ? "Desactivar landing" : "Activar landing"}
+                        title={seller.active ? "Desactivar landing y dashboard" : "Activar landing y dashboard"}
+                        aria-label={seller.active ? "Desactivar landing y dashboard" : "Activar landing y dashboard"}
                       >
                         <i className={`bi ${toggling === seller.id ? "bi-arrow-clockwise" : (seller.active ? "bi-toggle-on" : "bi-toggle-off")}`} />
                       </button>
@@ -552,6 +570,29 @@ export default function UserManager({ T, isMobile, showToast }) {
                         Ver landing
                       </a>
                     )}
+                    <button
+                      onClick={() => deleteUser(u)}
+                      style={{
+                        flex: 1,
+                        minWidth: 110,
+                        padding: "10px 14px",
+                        borderRadius: "12px",
+                        background: "rgba(239, 68, 68, 0.12)",
+                        border: "1px solid rgba(239, 68, 68, 0.35)",
+                        color: "#EF4444",
+                        fontSize: "13px",
+                        fontWeight: 700,
+                        textAlign: "center",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 6,
+                        cursor: "pointer",
+                      }}
+                    >
+                      <i className="bi bi-trash3-fill" />
+                      Eliminar
+                    </button>
                     {whatsappUrl ? (
                       <a
                         href={whatsappUrl}

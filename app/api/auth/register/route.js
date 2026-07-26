@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
 import { rateLimit, getClientKey } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
+import { createServiceClient } from "@/lib/supabase/server";
+import { findOrCreateSellerForUser } from "@/lib/seller.server";
+import { normalizeWhatsAppNumber, inferGender } from "@/lib/seller";
 
 export async function POST(request) {
   try {
@@ -20,7 +21,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { email, password, name, phone, companySlug } = body;
+    const { email, password, name, phone, bio, companySlug, acceptedTerms } = body;
 
     if (!email || !email.includes("@")) {
       return NextResponse.json({ error: "El correo es obligatorio" }, { status: 400 });
@@ -31,47 +32,25 @@ export async function POST(request) {
     if (!name || name.trim().length < 2) {
       return NextResponse.json({ error: "El nombre es obligatorio" }, { status: 400 });
     }
+    if (!acceptedTerms) {
+      return NextResponse.json({ error: "Debes aceptar los términos y condiciones" }, { status: 400 });
+    }
 
     const sanitizedCompanySlug = String(companySlug || "").trim().toLowerCase();
     const company = sanitizedCompanySlug
       ? await prisma.company.findUnique({ where: { slug: sanitizedCompanySlug } })
       : null;
 
-    const cookieStore = await cookies();
-    const res = NextResponse.json({ success: true });
+    const supabase = createServiceClient();
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    const cookieOptions = {
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 7,
-    };
-
-    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
-      cookieOptions,
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            res.cookies.set(name, value, { ...cookieOptions, ...options });
-          });
-        },
-      },
-    });
-
-    const { data, error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.admin.createUser({
       email: email.toLowerCase().trim(),
       password,
-      options: {
-        data: {
-          full_name: name.trim(),
-          role: "user",
-          company: company?.slug || sanitizedCompanySlug || null,
-        },
+      email_confirm: true,
+      user_metadata: {
+        full_name: name.trim(),
+        role: "user",
+        company: company?.slug || sanitizedCompanySlug || null,
       },
     });
 
@@ -82,7 +61,18 @@ export async function POST(request) {
       );
     }
 
-    return res;
+    const seller = await findOrCreateSellerForUser(data.user, company?.slug || sanitizedCompanySlug || undefined);
+    await prisma.seller.update({
+      where: { id: seller.id },
+      data: {
+        email: email.toLowerCase().trim(),
+        phone: normalizeWhatsAppNumber(phone || ""),
+        bio: String(bio || "").slice(0, 1000),
+        gender: inferGender(name),
+      },
+    });
+
+    return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
