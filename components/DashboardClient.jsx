@@ -42,6 +42,9 @@ const B2BLandingEditor = dynamic(() => import("./dashboard/features/B2BLandingEd
 const LandingManager = dynamic(() => import("./dashboard/features/LandingManager"), {
   loading: () => <SkeletonCard lines={6} />,
 });
+const Billing = dynamic(() => import("./dashboard/features/Billing"), {
+  loading: () => <SkeletonCard lines={4} />,
+});
 
 function getPageTitle(activeMenu, isAdmin) {
   const map = {
@@ -53,12 +56,13 @@ function getPageTitle(activeMenu, isAdmin) {
     users: isAdmin ? "Clientes" : "Usuarios",
     settings: "Configuración",
     landing: "Editor de Landing",
+    billing: "Facturación",
     landings: "Landings por Compañía",
   };
   return map[activeMenu] || activeMenu;
 }
 
-const VALID_MENU_IDS = ["dashboard", "leads", "emails", "whatsapp", "import", "users", "settings", "landing", "landings"];
+const VALID_MENU_IDS = ["dashboard", "leads", "emails", "whatsapp", "import", "users", "settings", "landing", "billing", "landings"];
 
 const SPLASH_DURATION = 1700; // ms — sincronizado con la barra de progreso del splash
 
@@ -289,6 +293,14 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
                     showToast={showToast}
                   />
                 )
+              )}
+
+              {activeMenu === "billing" && !isAdmin && (
+                <Billing
+                  T={T}
+                  isMobile={isMobile}
+                  showToast={showToast}
+                />
               )}
 
               {activeMenu === "landings" && (

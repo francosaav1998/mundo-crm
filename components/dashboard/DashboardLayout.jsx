@@ -14,14 +14,15 @@ const BASE_MENU_ITEMS = [
   { id: "whatsapp", icon: "bi-whatsapp", label: "Mensajes Directos" },
   { id: "import", icon: "bi-file-earmark-spreadsheet-fill", label: "Importar Datos" },
   { id: "landing", icon: "bi-palette-fill", label: "Editor de Landing" },
+  { id: "billing", icon: "bi-credit-card-fill", label: "Facturación", sellerOnly: true },
   { id: "landings", icon: "bi-globe-americas", label: "Landings por Compañía", adminOnly: true },
   { id: "users", icon: "bi-shield-lock-fill", label: "Usuarios", adminOnly: true },
   { id: "settings", icon: "bi-gear-fill", label: "Configuraciones" },
 ];
 
 function getMenuItems(isAdmin) {
-  if (!isAdmin) return BASE_MENU_ITEMS;
-  return BASE_MENU_ITEMS.map((item) => {
+  if (!isAdmin) return BASE_MENU_ITEMS.filter((item) => !item.adminOnly);
+  return BASE_MENU_ITEMS.filter((item) => !item.sellerOnly).map((item) => {
     if (item.id === "leads") return { ...item, label: "Prospectos" };
     if (item.id === "users") return { ...item, label: "Clientes", icon: "bi-people-fill" };
     return item;

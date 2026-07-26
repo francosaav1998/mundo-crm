@@ -22,17 +22,45 @@ async function checkUsersRateLimit(request) {
   return null;
 }
 
-function getTrialInfo(createdAt) {
-  if (!createdAt) return { daysActive: 0, trialDaysLeft: 0, trialExpired: false };
-  const start = new Date(createdAt);
+function getSubscriptionStatus(subscription, createdAt) {
   const now = new Date();
+
+  if (subscription) {
+    const isTrial = subscription.status === "trial";
+    const trialExpired = isTrial && new Date(subscription.trialEndsAt) < now;
+    const isActive = subscription.status === "active";
+    const daysActive = Math.floor(
+      Math.max(0, now.getTime() - new Date(createdAt).getTime()) / (1000 * 60 * 60 * 24)
+    );
+    return {
+      status: subscription.status,
+      isTrial,
+      isActive,
+      trialExpired,
+      daysActive,
+      trialDaysLeft: trialExpired
+        ? 0
+        : Math.max(0, TRIAL_DAYS - daysActive),
+      planAmount: subscription.planAmount,
+      nextPaymentDate: subscription.currentPeriodEnd || subscription.trialEndsAt,
+    };
+  }
+
+  // Fallback para sellers sin registro de suscripción (cálculo legacy)
+  if (!createdAt) return { status: "trial", isTrial: true, isActive: false, daysActive: 0, trialDaysLeft: TRIAL_DAYS, trialExpired: false, planAmount: 29990, nextPaymentDate: null };
+  const start = new Date(createdAt);
   const ms = Math.max(0, now.getTime() - start.getTime());
   const daysActive = Math.floor(ms / (1000 * 60 * 60 * 24));
-  const trialDaysLeft = Math.max(0, TRIAL_DAYS - daysActive);
+  const trialExpired = daysActive >= TRIAL_DAYS;
   return {
+    status: "trial",
+    isTrial: true,
+    isActive: false,
     daysActive,
-    trialDaysLeft,
-    trialExpired: daysActive >= TRIAL_DAYS,
+    trialDaysLeft: Math.max(0, TRIAL_DAYS - daysActive),
+    trialExpired,
+    planAmount: 29990,
+    nextPaymentDate: null,
   };
 }
 
@@ -72,6 +100,7 @@ export async function GET(request) {
       },
       include: {
         company: true,
+        subscription: true,
         _count: { select: { leads: true } },
       },
     });
@@ -86,7 +115,7 @@ export async function GET(request) {
     const simplified = sellerUsers.map((u) => {
       const seller =
         byUserId.get(u.id) || byEmail.get(String(u.email || "").toLowerCase()) || null;
-      const trial = seller ? getTrialInfo(seller.createdAt) : getTrialInfo(u.created_at);
+      const sub = seller ? getSubscriptionStatus(seller.subscription, seller.createdAt) : getSubscriptionStatus(null, u.created_at);
       return {
         id: u.id,
         email: u.email,
@@ -101,13 +130,13 @@ export async function GET(request) {
               phone: seller.phone,
               company: seller.company?.name || null,
               companySlug: seller.company?.slug || null,
-              active: seller.active,
+              active: seller.active && (sub.isActive || sub.isTrial),
               createdAt: seller.createdAt,
               leadsCount: seller._count?.leads || 0,
               landingUrl: `${process.env.NEXT_PUBLIC_APP_URL || ""}/p/${seller.slug}`,
-              ...trial,
+              ...sub,
             }
-          : { ...trial, active: true, leadsCount: 0, landingUrl: null },
+          : { ...sub, active: true, leadsCount: 0, landingUrl: null },
       };
     });
 

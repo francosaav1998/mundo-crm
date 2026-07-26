@@ -122,10 +122,55 @@ model Seller {
 
   leads         Lead[]
   planOverrides SellerPlanOverride[]
+  subscription  Subscription?
 
   @@index([userId])
   @@index([slug])
   @@index([companyId])
+}
+
+model Subscription {
+  id                 String   @id @default(uuid())
+  sellerId           String   @unique
+  seller             Seller   @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  status             String   @default("trial") // trial, active, past_due, cancelled, inactive
+  planName           String   @default("Plan Ejecutivo")
+  planAmount         Int      @default(29990)
+  planCurrency       String   @default("CLP")
+  trialEndsAt        DateTime
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  preapprovalId      String?
+  payerId            String?
+  paymentMethodId    String?
+  lastFourDigits     String?
+  cardBrand          String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  payments PaymentHistory[]
+
+  @@index([sellerId])
+  @@index([status])
+  @@index([preapprovalId])
+}
+
+model PaymentHistory {
+  id             String       @id @default(uuid())
+  subscriptionId String
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  sellerId       String
+  amount         Int
+  currency       String       @default("CLP")
+  status         String       // approved, rejected, refunded, pending
+  externalId     String?
+  paymentDate    DateTime     @default(now())
+  metadata       Json?
+  createdAt      DateTime     @default(now())
+
+  @@index([subscriptionId])
+  @@index([sellerId])
+  @@index([externalId])
 }
 
 model Setting {
