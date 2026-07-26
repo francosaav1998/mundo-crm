@@ -151,6 +151,21 @@ export default function Billing({ T, isMobile, showToast }) {
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div
+            style={{
+              padding: 14,
+              borderRadius: 12,
+              background: "rgba(245, 158, 11, 0.10)",
+              border: "1px solid rgba(245, 158, 11, 0.25)",
+              color: T.muted,
+              fontSize: 13,
+              lineHeight: 1.5,
+            }}
+          >
+            <i className="bi bi-credit-card-2-front-fill" style={{ color: "#F59E0B", marginRight: 8 }} />
+            Para la suscripción mensual automática recomendamos usar tarjeta de crédito o débito compatible. Algunas tarjetas prepago o virtuales pueden ser rechazadas por Mercado Pago.
+          </div>
+
           {isTrial && subscription?.trialEndsAt && !isExpired && (
             <InfoRow
               icon="bi-gift-fill"
