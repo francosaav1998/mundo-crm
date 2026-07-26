@@ -5,6 +5,7 @@ import { findOrCreateSellerForUser } from "@/lib/seller.server";
 import {
   createPreapproval,
   formatAmount,
+  getPreapproval,
   getSubscriptionStatusLabel,
   hasMercadoPagoConfig,
 } from "@/lib/mercadopago";
@@ -23,7 +24,39 @@ export async function GET(request) {
       },
     });
 
-    if (!subscription) {
+    let normalizedSubscription = subscription;
+    if (
+      normalizedSubscription?.preapprovalId &&
+      hasMercadoPagoConfig() &&
+      (normalizedSubscription.status === "pending" || normalizedSubscription.status === "trial")
+    ) {
+      try {
+        const preapproval = await getPreapproval(normalizedSubscription.preapprovalId);
+        if (preapproval?.status === "authorized" && normalizedSubscription.status !== "active") {
+          normalizedSubscription = await prisma.subscription.update({
+            where: { id: normalizedSubscription.id },
+            data: {
+              status: "active",
+              payerId: preapproval.payer_id ? String(preapproval.payer_id) : normalizedSubscription.payerId,
+            },
+            include: {
+              payments: {
+                orderBy: { paymentDate: "desc" },
+                take: 10,
+              },
+            },
+          });
+          await prisma.seller.update({
+            where: { id: seller.id },
+            data: { active: true },
+          });
+        }
+      } catch {
+        // Si MercadoPago aún no confirma, devolvemos el estado actual sin romper la vista.
+      }
+    }
+
+    if (!normalizedSubscription) {
       return NextResponse.json({
         status: "inactive",
         label: "Sin suscripción",
@@ -38,28 +71,28 @@ export async function GET(request) {
     }
 
     const now = new Date();
-    const isTrial = subscription.status === "trial";
-    const isActive = subscription.status === "active";
+    const isTrial = normalizedSubscription.status === "trial";
+    const isActive = normalizedSubscription.status === "active";
     const isExpired =
-      isTrial && subscription.trialEndsAt && new Date(subscription.trialEndsAt) < now;
+      isTrial && normalizedSubscription.trialEndsAt && new Date(normalizedSubscription.trialEndsAt) < now;
 
     return NextResponse.json({
-      id: subscription.id,
-      status: subscription.status,
-      label: getSubscriptionStatusLabel(subscription.status),
-      planName: subscription.planName,
-      planAmount: subscription.planAmount,
-      formattedAmount: formatAmount(subscription.planAmount),
-      trialEndsAt: subscription.trialEndsAt,
-      currentPeriodEnd: subscription.currentPeriodEnd,
-      nextPaymentDate: subscription.currentPeriodEnd || subscription.trialEndsAt,
-      lastFourDigits: subscription.lastFourDigits,
-      cardBrand: subscription.cardBrand,
-      preapprovalId: subscription.preapprovalId,
+      id: normalizedSubscription.id,
+      status: normalizedSubscription.status,
+      label: getSubscriptionStatusLabel(normalizedSubscription.status),
+      planName: normalizedSubscription.planName,
+      planAmount: normalizedSubscription.planAmount,
+      formattedAmount: formatAmount(normalizedSubscription.planAmount),
+      trialEndsAt: normalizedSubscription.trialEndsAt,
+      currentPeriodEnd: normalizedSubscription.currentPeriodEnd,
+      nextPaymentDate: normalizedSubscription.currentPeriodEnd || normalizedSubscription.trialEndsAt,
+      lastFourDigits: normalizedSubscription.lastFourDigits,
+      cardBrand: normalizedSubscription.cardBrand,
+      preapprovalId: normalizedSubscription.preapprovalId,
       isActive: isActive || (isTrial && !isExpired),
       isTrial,
       isExpired,
-      payments: subscription.payments.map((p) => ({
+      payments: normalizedSubscription.payments.map((p) => ({
         id: p.id,
         amount: p.amount,
         formattedAmount: formatAmount(p.amount),

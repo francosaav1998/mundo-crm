@@ -25,6 +25,23 @@ export default function Billing({ T, isMobile, showToast }) {
     loadSubscription();
   }, [showToast]);
 
+  useEffect(() => {
+    if (subscription?.status !== "pending") return undefined;
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch("/api/subscription");
+        if (!res.ok) return;
+        const data = await res.json();
+        setSubscription(data);
+      } catch {
+        // noop
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [subscription?.status]);
+
   async function handleSetupPayment() {
     setProcessing(true);
     try {
