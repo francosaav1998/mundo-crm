@@ -8,11 +8,18 @@ import SectionHeader from "@/components/dashboard/ui/SectionHeader";
 const TRIAL_DAYS = 7;
 const FILTERS = [
   { id: "todos", label: "Todos" },
-  { id: "activo", label: "Trial activo" },
+  { id: "activo", label: "Activos" },
   { id: "vencido", label: "Trial vencido" },
   { id: "inactivo", label: "Inactivos" },
   { id: "noconfig", label: "Sin configurar" },
 ];
+
+function isSellerActive(seller) {
+  if (!seller?.landingUrl || !seller?.active) return false;
+  if (seller.status === "active") return true;
+  if (seller.status === "trial" && !seller.trialExpired) return true;
+  return false;
+}
 
 function formatDate(iso) {
   if (!iso) return "—";
@@ -169,11 +176,11 @@ export default function UserManager({ T, isMobile, showToast }) {
     }
     switch (filter) {
       case "activo":
-        return list.filter((u) => u.seller?.landingUrl && !u.seller?.trialExpired);
+        return list.filter((u) => isSellerActive(u.seller));
       case "vencido":
-        return list.filter((u) => u.seller?.landingUrl && u.seller?.trialExpired);
+        return list.filter((u) => u.seller?.landingUrl && u.seller?.status === "trial" && u.seller?.trialExpired);
       case "inactivo":
-        return list.filter((u) => u.seller?.landingUrl && !u.seller?.active);
+        return list.filter((u) => u.seller?.landingUrl && !isSellerActive(u.seller));
       case "noconfig":
         return list.filter((u) => !u.seller?.landingUrl);
       default:
@@ -183,9 +190,9 @@ export default function UserManager({ T, isMobile, showToast }) {
 
   const stats = useMemo(() => {
     const configured = users.filter((u) => u.seller?.landingUrl);
-    const activeTrials = configured.filter((u) => !u.seller?.trialExpired).length;
-    const expiredTrials = configured.filter((u) => u.seller?.trialExpired).length;
-    const inactive = configured.filter((u) => !u.seller?.active).length;
+    const activeTrials = configured.filter((u) => isSellerActive(u.seller)).length;
+    const expiredTrials = configured.filter((u) => u.seller?.status === "trial" && u.seller?.trialExpired).length;
+    const inactive = configured.filter((u) => !isSellerActive(u.seller)).length;
     return {
       total: users.length,
       activeTrials,
@@ -269,7 +276,7 @@ export default function UserManager({ T, isMobile, showToast }) {
             gap: 12,
           }}>
             <KpiStat icon="bi-people-fill" label="Total vendedores" value={stats.total} color={T.accent} T={T} />
-            <KpiStat icon="bi-hourglass-split" label="Trial activo" value={stats.activeTrials} color="#10B981" T={T} />
+            <KpiStat icon="bi-check-circle-fill" label="Activos" value={stats.activeTrials} color="#10B981" T={T} />
             <KpiStat icon="bi-exclamation-triangle-fill" label="Trial vencido" value={stats.expiredTrials} color="#EF4444" T={T} />
             <KpiStat icon="bi-pause-circle-fill" label="Inactivos" value={stats.inactive} color="#F59E0B" T={T} />
           </div>

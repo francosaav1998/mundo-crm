@@ -26,6 +26,7 @@ function SellersStrip({ stats, T, onViewClients }) {
     >
       {[
         { label: "Vendedores registrados", value: stats.totalSellers, color: T.accent, icon: "bi-people-fill" },
+        { label: "Activos", value: stats.activeSellers || 0, color: "#10B981", icon: "bi-check-circle-fill" },
         { label: "Nuevos (7 días)", value: stats.sellersLast7Days, color: "#8080FF", icon: "bi-rocket-takeoff-fill" },
         { label: "Trial vencido", value: stats.trialExpiredSellers, color: "#EF4444", icon: "bi-exclamation-triangle-fill" },
       ].map((k) => (

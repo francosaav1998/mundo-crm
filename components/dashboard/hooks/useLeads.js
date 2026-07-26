@@ -98,7 +98,7 @@ export function useLeads(initialLeads = [], initialTotal = 0) {
     setCustomDateState(value);
     filtersRef.current.customDate = value;
     if (filtersRef.current.dateFilter === "custom") {
-      fetchLeads(1, { customDate: value });
+      fetchLeads(1, { dateFilter: "custom", customDate: value });
     }
   }, [fetchLeads]);
 

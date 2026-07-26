@@ -29,11 +29,12 @@ export function useStats({ search, statusFilter, dateFilter, customDate, initial
   }, [search, statusFilter, dateFilter, customDate]);
 
   useEffect(() => {
-    if (!stats) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+    const timer = setTimeout(() => {
       refresh();
-    }
-  }, [stats, refresh]);
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, [refresh]);
 
   return { stats, loading, error, refresh };
 }

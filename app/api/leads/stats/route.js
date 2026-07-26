@@ -47,6 +47,19 @@ function getDateRange(filter, customDate) {
   }
 }
 
+function getSellerSubscriptionMeta(subscription) {
+  const now = new Date();
+  if (!subscription) {
+    return { isActive: false, trialExpired: false };
+  }
+
+  const isTrial = subscription.status === "trial";
+  const trialExpired = isTrial && new Date(subscription.trialEndsAt) < now;
+  const isActive = subscription.status === "active" || (isTrial && !trialExpired);
+
+  return { isActive, trialExpired };
+}
+
 export async function GET(request) {
   try {
     const session = await requireAuth();
@@ -175,12 +188,16 @@ export async function GET(request) {
       sevenDaysAgo.setDate(now.getDate() - 7);
       const sellers = await prisma.seller.findMany({
         where: { active: true },
-        select: { createdAt: true },
+        select: { createdAt: true, subscription: true },
       });
+      const sellersWithMeta = sellers.map((seller) => ({
+        ...seller,
+        ...getSellerSubscriptionMeta(seller.subscription),
+      }));
       response.totalSellers = await prisma.seller.count();
-      response.activeSellers = sellers.length;
-      response.sellersLast7Days = sellers.filter((s) => new Date(s.createdAt) >= sevenDaysAgo).length;
-      response.trialExpiredSellers = sellers.filter((s) => new Date(s.createdAt) < sevenDaysAgo).length;
+      response.activeSellers = sellersWithMeta.filter((s) => s.isActive).length;
+      response.sellersLast7Days = sellersWithMeta.filter((s) => new Date(s.createdAt) >= sevenDaysAgo).length;
+      response.trialExpiredSellers = sellersWithMeta.filter((s) => s.trialExpired).length;
     }
 
     return NextResponse.json(response);

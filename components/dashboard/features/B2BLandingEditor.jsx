@@ -4,7 +4,6 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { DEFAULT_B2B_LANDING_CSS, DEFAULT_B2B_LANDING_BODY } from "@/lib/b2b-landing";
 import RippleButton from "@/components/ui/RippleButton";
 import SectionHeader from "@/components/dashboard/ui/SectionHeader";
-import LandingChat from "./landing/LandingChat";
 
 export default function B2BLandingEditor({ T, isMobile, showToast }) {
   const [loading, setLoading] = useState(true);
@@ -13,9 +12,7 @@ export default function B2BLandingEditor({ T, isMobile, showToast }) {
   const [body, setBody] = useState(DEFAULT_B2B_LANDING_BODY);
   const [previewMode, setPreviewMode] = useState("desktop");
   const [mobileTab, setMobileTab] = useState("edit");
-  const [sidebarMode, setSidebarMode] = useState("chat");
-  const [activeTab, setActiveTab] = useState("body");
-  const [iframeKey, setIframeKey] = useState(0);
+  const [activeTab, setActiveTab] = useState("visual");
   const iframeRef = useRef(null);
 
   useEffect(() => {
@@ -46,7 +43,6 @@ export default function B2BLandingEditor({ T, isMobile, showToast }) {
       });
       if (!res.ok) throw new Error();
       showToast("Landing B2B guardada correctamente");
-      setIframeKey((k) => k + 1);
       if (isMobile) setMobileTab("preview");
     } catch (err) {
       showToast(err.message || "Error al guardar");
@@ -62,11 +58,25 @@ export default function B2BLandingEditor({ T, isMobile, showToast }) {
     }
   }, []);
 
-  const applyAiAction = (action) => {
-    if (action?.type !== "editB2B") throw new Error("Acción no válida para B2B");
-    if (action.html) setBody(action.html);
-    if (action.css) setCss(action.css);
-  };
+  useEffect(() => {
+    const handleMessage = (event) => {
+      if (event.source !== iframeRef.current?.contentWindow) return;
+      const data = event.data;
+      if (!data || typeof data !== "object") return;
+      if (data.type === "B2B_PREVIEW_HTML_UPDATE" && typeof data.html === "string") {
+        setBody(data.html);
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, []);
+
+  const previewSrcDoc = getB2BPreviewDocument({
+    body,
+    css,
+    editable: activeTab === "visual",
+  });
 
   if (loading) {
     return (
@@ -89,7 +99,7 @@ export default function B2BLandingEditor({ T, isMobile, showToast }) {
       <SectionHeader
         eyebrow="Editor de Landing"
         title="Landing B2B principal"
-        description="Edita la página de inicio con instrucciones al asistente IA."
+        description="Edita la página de inicio manualmente y también desde la vista previa."
         T={T}
         isMobile={isMobile}
       />
@@ -130,7 +140,7 @@ export default function B2BLandingEditor({ T, isMobile, showToast }) {
               Editor B2B
             </h2>
             <p style={{ fontSize: 11, color: T.muted, margin: "2px 0 0 0" }}>
-              Asistente IA
+              Edición manual + vista previa en vivo
             </p>
           </div>
         </div>
@@ -255,7 +265,7 @@ export default function B2BLandingEditor({ T, isMobile, showToast }) {
               cursor: "pointer",
             }}
           >
-            <i className="bi bi-stars" style={{ marginRight: 6 }}></i> Asistente
+            <i className="bi bi-pencil-square" style={{ marginRight: 6 }}></i> Editar
           </button>
           <button
             onClick={() => setMobileTab("preview")}
@@ -305,57 +315,52 @@ export default function B2BLandingEditor({ T, isMobile, showToast }) {
           >
             <div
               style={{
-                display: "flex",
-                padding: 4,
-                gap: 4,
-                background: T.inputBg,
-                borderBottom: `1px solid ${T.border}`,
-              }}
-            >
-              <SidebarModeButton
-                active={sidebarMode === "chat"}
-                onClick={() => setSidebarMode("chat")}
-                icon="bi-stars"
-                label="Asistente IA"
-                T={T}
-              />
-              <SidebarModeButton
-                active={sidebarMode === "manual"}
-                onClick={() => setSidebarMode("manual")}
-                icon="bi-code-slash"
-                label="Código"
-                T={T}
-              />
-            </div>
-
-            <div
-              style={{
                 flex: 1,
                 overflowY: "auto",
                 padding: isMobile ? "16px" : "18px",
               }}
             >
-              {sidebarMode === "chat" ? (
-                <LandingChat
-                  mode="b2b"
-                  role="admin"
-                  onApplyAction={applyAiAction}
-                  T={T}
-                  isMobile={isMobile}
-                  html={body}
-                  css={css}
-                />
-              ) : (
+              <div
+                style={{
+                  background: T.inputBg,
+                  border: `1px solid ${T.border}`,
+                  borderRadius: 18,
+                  padding: isMobile ? "16px" : "18px",
+                  height: "100%",
+                }}
+              >
                 <div
                   style={{
-                    background: T.inputBg,
-                    border: `1px solid ${T.border}`,
-                    borderRadius: 18,
-                    padding: isMobile ? "16px" : "18px",
-                    height: "100%",
+                    padding: 14,
+                    borderRadius: 12,
+                    background: `${T.accent}10`,
+                    border: `1px solid ${T.accent}25`,
+                    fontSize: 13,
+                    color: T.muted,
+                    lineHeight: 1.5,
+                    marginBottom: 16,
                   }}
                 >
-                  <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
+                  <i className="bi bi-info-circle-fill" style={{ color: T.accent, marginRight: 8 }}></i>
+                  Podés editar los textos desde la vista previa o usar HTML y CSS manualmente. La barra deslizante superior tambien se puede editar desde la vista previa.
+                </div>
+                <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
+                    <button
+                      onClick={() => setActiveTab("visual")}
+                      style={{
+                        padding: "10px 16px",
+                        borderRadius: 12,
+                        border: "none",
+                        background: activeTab === "visual" ? T.accent : "transparent",
+                        color: activeTab === "visual" ? "#fff" : T.muted,
+                        fontSize: 13,
+                        fontWeight: 700,
+                        cursor: "pointer",
+                      }}
+                    >
+                      <i className="bi bi-cursor-text" style={{ marginRight: 6 }}></i>
+                      Visual
+                    </button>
                     <button
                       onClick={() => setActiveTab("body")}
                       style={{
@@ -388,54 +393,72 @@ export default function B2BLandingEditor({ T, isMobile, showToast }) {
                       <i className="bi bi-palette-fill" style={{ marginRight: 6 }}></i>
                       CSS
                     </button>
-                  </div>
-
-                  {activeTab === "css" && (
-                    <div>
-                      <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 10 }}>
-                        CSS de la landing
-                      </label>
-                      <textarea
-                        value={css}
-                        onChange={(e) => setCss(e.target.value)}
-                        style={textareaStyle(T)}
-                        spellCheck={false}
-                      />
-                    </div>
-                  )}
-
-                  {activeTab === "body" && (
-                    <div>
-                      <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 10 }}>
-                        HTML de la landing
-                      </label>
-                      <textarea
-                        value={body}
-                        onChange={(e) => setBody(e.target.value)}
-                        style={textareaStyle(T)}
-                        spellCheck={false}
-                      />
-                    </div>
-                  )}
-
-                  <div
-                    style={{
-                      marginTop: 16,
-                      padding: 14,
-                      borderRadius: 12,
-                      background: `${T.accent}10`,
-                      border: `1px solid ${T.accent}25`,
-                      fontSize: 13,
-                      color: T.muted,
-                      lineHeight: 1.5,
-                    }}
-                  >
-                    <i className="bi bi-info-circle-fill" style={{ color: T.accent, marginRight: 8 }}></i>
-                    Los cambios se guardan en la base de datos y se reflejan en la página de inicio <strong>/</strong>.
-                    Puedes usar HTML y CSS libremente. El botón <strong>Restaurar</strong> vuelve al contenido por defecto.
-                  </div>
                 </div>
-              )}
+
+                {activeTab === "visual" && (
+                  <div>
+                    <div
+                      style={{
+                        padding: 14,
+                        borderRadius: 12,
+                        background: `${T.accent}10`,
+                        border: `1px solid ${T.accent}25`,
+                        fontSize: 13,
+                        color: T.muted,
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      <i className="bi bi-mouse2-fill" style={{ color: T.accent, marginRight: 8 }}></i>
+                      Haz clic sobre cualquier texto en la vista previa, incluida la barra superior deslizante, y edítalo directamente.
+                      {isMobile ? " En móvil cambia a la pestaña Vista previa para editar visualmente." : ""}
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === "css" && (
+                  <div>
+                    <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 10 }}>
+                      CSS de la landing
+                    </label>
+                    <textarea
+                      value={css}
+                      onChange={(e) => setCss(e.target.value)}
+                      style={textareaStyle(T)}
+                      spellCheck={false}
+                    />
+                  </div>
+                )}
+
+                {activeTab === "body" && (
+                  <div>
+                    <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 10 }}>
+                      HTML de la landing
+                    </label>
+                    <textarea
+                      value={body}
+                      onChange={(e) => setBody(e.target.value)}
+                      style={textareaStyle(T)}
+                      spellCheck={false}
+                    />
+                  </div>
+                )}
+
+                <div
+                  style={{
+                    marginTop: 16,
+                    padding: 14,
+                    borderRadius: 12,
+                    background: `${T.accent}10`,
+                    border: `1px solid ${T.accent}25`,
+                    fontSize: 13,
+                    color: T.muted,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  <i className="bi bi-info-circle-fill" style={{ color: T.accent, marginRight: 8 }}></i>
+                  Los cambios se guardan en la base de datos y se reflejan en la página de inicio <strong>/</strong>. El botón <strong>Restaurar</strong> vuelve al contenido por defecto.
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -474,7 +497,7 @@ export default function B2BLandingEditor({ T, isMobile, showToast }) {
                 </span>
               </div>
               <span style={{ fontSize: 11, color: T.muted }}>
-                Se actualiza al guardar
+                Se actualiza en vivo
               </span>
             </div>
             <div
@@ -487,9 +510,8 @@ export default function B2BLandingEditor({ T, isMobile, showToast }) {
               }}
             >
               <iframe
-                key={iframeKey}
                 ref={iframeRef}
-                src="/"
+                srcDoc={previewSrcDoc}
                 title="Vista previa B2B"
                 style={{
                   width: previewMode === "mobile" ? 390 : "100%",
@@ -507,6 +529,88 @@ export default function B2BLandingEditor({ T, isMobile, showToast }) {
   );
 }
 
+function getB2BPreviewDocument({ body, css, editable }) {
+  const previewScript = `
+    (() => {
+      const root = document.getElementById("b2b-preview-root");
+      if (!root) return;
+
+      const EDITABLE_SELECTOR = "h1,h2,h3,h4,h5,h6,p,span,a,button,li,strong,small,label,.marquee-item";
+
+      document.addEventListener("click", (event) => {
+        const link = event.target.closest("a");
+        if (link) event.preventDefault();
+      });
+
+      const setupEditable = () => {
+        if (!${editable ? "true" : "false"}) return;
+
+        const marqueeItems = Array.from(root.querySelectorAll('.marquee-item')).filter((el) => el.textContent && el.textContent.trim());
+        const textElements = Array.from(root.querySelectorAll(EDITABLE_SELECTOR)).filter((el) => {
+          if (el.classList.contains('marquee-item')) return false;
+          if (el.closest('.marquee-item')) return false;
+          if (!el.textContent || !el.textContent.trim()) return false;
+          return !el.querySelector('h1,h2,h3,h4,h5,h6,p,span,a,button,li,strong,small,label');
+        });
+        const elements = [...marqueeItems, ...textElements];
+
+        elements.forEach((el) => {
+          el.setAttribute("data-b2b-editable", "true");
+          el.setAttribute("contenteditable", "true");
+          el.addEventListener("blur", () => {
+            window.parent.postMessage(
+              { type: "B2B_PREVIEW_HTML_UPDATE", html: root.innerHTML },
+              "*"
+            );
+          });
+          el.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") {
+              event.preventDefault();
+              el.blur();
+            }
+            if (event.key === "Enter" && el.tagName !== "P" && el.tagName !== "LI") {
+              event.preventDefault();
+              el.blur();
+            }
+          });
+        });
+      };
+
+      setupEditable();
+    })();
+  `;
+
+  return `<!DOCTYPE html>
+  <html lang="es">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+      <style>
+        body { margin: 0; }
+        [data-b2b-editable="true"] {
+          cursor: text;
+          outline: none;
+          border-radius: 4px;
+          transition: background .2s ease, box-shadow .2s ease;
+        }
+        [data-b2b-editable="true"]:hover {
+          background: rgba(37, 99, 235, 0.10);
+        }
+        [data-b2b-editable="true"]:focus {
+          background: rgba(37, 99, 235, 0.14);
+          box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.35);
+        }
+      </style>
+      <style>${css}</style>
+    </head>
+    <body>
+      <div id="b2b-preview-root">${body}</div>
+      <script>${previewScript}</script>
+    </body>
+  </html>`;
+}
+
 function textareaStyle(T) {
   return {
     width: "100%",
@@ -522,34 +626,6 @@ function textareaStyle(T) {
     outline: "none",
     resize: "vertical",
   };
-}
-
-function SidebarModeButton({ active, onClick, icon, label, T }) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        flex: 1,
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 6,
-        padding: "10px 12px",
-        borderRadius: 10,
-        border: "none",
-        background: active ? T.accent : "transparent",
-        color: active ? "#fff" : T.muted,
-        fontSize: 12,
-        fontWeight: 800,
-        cursor: "pointer",
-        transition: "all 0.15s",
-        whiteSpace: "nowrap",
-      }}
-    >
-      <i className={`bi ${icon}`}></i>
-      {label}
-    </button>
-  );
 }
 
 function ViewportButton({ active, onClick, icon, label, T, hideLabel }) {
