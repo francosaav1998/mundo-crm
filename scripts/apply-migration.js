@@ -160,6 +160,14 @@ const STATEMENTS = [
   `CREATE INDEX IF NOT EXISTS "PaymentHistory_sellerId_idx" ON "PaymentHistory"("sellerId")`,
   `CREATE INDEX IF NOT EXISTS "PaymentHistory_externalId_idx" ON "PaymentHistory"("externalId")`,
 
+  // Normaliza logos base de companias conocidas.
+  `UPDATE "Company" SET "logoUrl" = 'https://www.tumundo.cl/wp-content/uploads/2022/12/logo-mundo-negative.svg' WHERE "slug" = 'mundo'`,
+  `UPDATE "Company" SET "logoUrl" = 'https://ww2.movistar.cl/base/img/iconografia-menu/logo-movistar.svg' WHERE "slug" = 'movistar' AND ("logoUrl" IS NULL OR "logoUrl" = '' OR "logoUrl" LIKE '%movistar%')`,
+  `UPDATE "Company" SET "logoUrl" = 'https://www.clarochile.cl/portal/cl/recursos_tema_evo/assets/vector/logo-claro-blanco.svg' WHERE "slug" = 'claro' AND ("logoUrl" IS NULL OR "logoUrl" = '' OR "logoUrl" LIKE '%claro%')`,
+  `UPDATE "Company" SET "logoUrl" = 'https://www.vtr.com/content/b2c/2nzYdvWEr8RiGJ4JFpezOM/logo-vtr-small.png' WHERE "slug" = 'vtr' AND ("logoUrl" IS NULL OR "logoUrl" = '' OR "logoUrl" LIKE '%vtr%')`,
+  `UPDATE "Company" SET "logoUrl" = 'https://images.ctfassets.net/vlub6abkwzvo/2ShWjPXcxzlLkgtic62hes/a7c11a86c399b6e6283d0c6ac6e87ca1/Vector__2_.svg' WHERE "slug" = 'wom' AND ("logoUrl" IS NULL OR "logoUrl" = '' OR "logoUrl" LIKE '%wom%')`,
+  `UPDATE "Company" SET "logoUrl" = 'https://entel.cdn.modyo.com/uploads/2bdf0650-482f-45b7-a340-2d9700e880ea/original/Size_Extra_large_xl_22_.png' WHERE "slug" = 'entel' AND ("logoUrl" IS NULL OR "logoUrl" = '' OR "logoUrl" LIKE '%entel%')`,
+
   `INSERT INTO "Subscription" ("sellerId", "status", "trialEndsAt")
    SELECT s."id", 'trial', CURRENT_TIMESTAMP + INTERVAL '7 days'
    FROM "Seller" s

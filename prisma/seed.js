@@ -10,7 +10,7 @@ const COMPANIES = [
     brandColorDark: "#005A6F",
     secondaryColor: "#FDDC02",
     accentColor: "#FF8000",
-    logoUrl: "https://www.tumundo.cl/wp-content/uploads/2022/12/isotipo.png",
+    logoUrl: "https://www.tumundo.cl/wp-content/uploads/2022/12/logo-mundo-negative.svg",
     websiteUrl: "https://www.tumundo.cl",
     order: 1,
   },
