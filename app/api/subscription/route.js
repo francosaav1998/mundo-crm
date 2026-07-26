@@ -10,6 +10,11 @@ import {
   hasMercadoPagoConfig,
 } from "@/lib/mercadopago";
 
+function getPlanName(companyName) {
+  const cleanName = String(companyName || "").trim();
+  return cleanName ? `Plan Ejecutivo ${cleanName}` : "Plan Ejecutivo";
+}
+
 function formatChargeDate(value) {
   return new Date(value).toLocaleDateString("es-CL", {
     day: "2-digit",
@@ -21,9 +26,13 @@ function formatChargeDate(value) {
 export async function GET(request) {
   try {
     const session = await requireAuth();
-    const seller = await findOrCreateSellerForUser(session.user);
+    const sellerRecord = await findOrCreateSellerForUser(session.user);
+    const seller = await prisma.seller.findUnique({
+      where: { id: sellerRecord.id },
+      include: { company: true },
+    });
     const subscription = await prisma.subscription.findUnique({
-      where: { sellerId: seller.id },
+      where: { sellerId: sellerRecord.id },
       include: {
         payments: {
           orderBy: { paymentDate: "desc" },
@@ -88,7 +97,7 @@ export async function GET(request) {
       id: normalizedSubscription.id,
       status: normalizedSubscription.status,
       label: getSubscriptionStatusLabel(normalizedSubscription.status),
-      planName: normalizedSubscription.planName,
+      planName: normalizedSubscription.planName || getPlanName(seller?.company?.name),
       planAmount: normalizedSubscription.planAmount,
       formattedAmount: formatAmount(normalizedSubscription.planAmount),
       trialEndsAt: normalizedSubscription.trialEndsAt,
@@ -124,9 +133,13 @@ export async function POST(request) {
       );
     }
 
-    const seller = await findOrCreateSellerForUser(session.user);
+    const sellerRecord = await findOrCreateSellerForUser(session.user);
+    const seller = await prisma.seller.findUnique({
+      where: { id: sellerRecord.id },
+      include: { company: true },
+    });
     const existingSubscription = await prisma.subscription.findUnique({
-      where: { sellerId: seller.id },
+      where: { sellerId: sellerRecord.id },
       select: { id: true, trialEndsAt: true, status: true },
     });
     const payerEmail = seller.email || session.user.email || "";
@@ -148,10 +161,11 @@ export async function POST(request) {
       Math.max(scheduledStartDate.getTime(), minStartDate.getTime())
     ).toISOString();
     const firstChargeDateLabel = formatChargeDate(startDate);
-    const reason = `Plan Ejecutivo Mundo - Primer cobro el ${firstChargeDateLabel}`;
+    const planName = getPlanName(seller?.company?.name);
+    const reason = `${planName} - Primer cobro el ${firstChargeDateLabel}`;
 
     const result = await createPreapproval({
-      sellerId: seller.id,
+      sellerId: sellerRecord.id,
       payerEmail,
       backUrl,
       startDate,
@@ -166,17 +180,19 @@ export async function POST(request) {
     }
 
     await prisma.subscription.upsert({
-      where: { sellerId: seller.id },
+      where: { sellerId: sellerRecord.id },
       create: {
-        sellerId: seller.id,
+        sellerId: sellerRecord.id,
         status: "pending",
         preapprovalId: result.id,
         trialEndsAt: existingSubscription?.trialEndsAt || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         planAmount: 29990,
+        planName,
       },
       update: {
         status: "pending",
         preapprovalId: result.id,
+        planName,
       },
     });
 
