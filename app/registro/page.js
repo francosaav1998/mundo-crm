@@ -402,7 +402,7 @@ export default function RegistroPage() {
                 style={{ marginTop: 3 }}
               />
               <span style={{ fontSize: "12px", color: T.muted, lineHeight: 1.5 }}>
-                Acepto los <span style={{ color: T.accent, fontWeight: 700 }}>Términos y Condiciones</span> y la{" "}
+                Acepto los <a href="/terminos-y-condiciones" style={{ color: T.accent, fontWeight: 700 }}>Términos y Condiciones</a> y la{" "}
                 <a href="/politica-de-privacidad" style={{ color: T.accent, fontWeight: 700 }}>Política de Privacidad</a>.
               </span>
             </label>

@@ -36,6 +36,7 @@ export default async function PoliticaPrivacidadPage({ searchParams }) {
   const logoUrl = getLogoUrl(company, "header");
   const invertLogo = shouldInvertLogo(company);
   const policyUrl = `/politica-de-privacidad?company=${company.slug}`;
+  const termsUrl = `/terminos-y-condiciones?company=${company.slug}`;
   const homeUrl = company.slug === "mundo" ? "/" : `/p/demo-${company.slug}`;
 
   return (
@@ -229,6 +230,13 @@ export default async function PoliticaPrivacidadPage({ searchParams }) {
               informativos y de captación comercial por parte de una ejecutiva oficial independiente.
             </p>
             <p style={{ marginTop: "0.75rem" }}>
+              <Link
+                href={termsUrl}
+                className="text-[var(--color-primary)] hover:underline font-medium"
+              >
+                Términos y Condiciones
+              </Link>
+              {" · "}
               <Link
                 href={policyUrl}
                 className="text-[var(--color-primary)] hover:underline font-medium"
