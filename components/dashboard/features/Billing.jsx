@@ -153,6 +153,23 @@ export default function Billing({ T, isMobile, showToast }) {
             />
           )}
 
+          {isTrial && subscription?.trialEndsAt && !isExpired && (
+            <div
+              style={{
+                padding: 14,
+                borderRadius: 12,
+                background: `${T.accent}10`,
+                border: `1px solid ${T.accent}25`,
+                color: T.muted,
+                fontSize: 14,
+                lineHeight: 1.5,
+              }}
+            >
+              <i className="bi bi-info-circle-fill" style={{ color: T.accent, marginRight: 8 }} />
+              Puedes registrar la tarjeta ahora. El primer cobro mensual se programará para cuando termine tu prueba gratis.
+            </div>
+          )}
+
           {isTrial && isExpired && (
             <div
               style={{
@@ -232,7 +249,7 @@ export default function Billing({ T, isMobile, showToast }) {
               }}
             >
               <i className="bi bi-credit-card-fill" />
-              {isExpired ? "Reactivar suscripción" : isPending ? "Completar pago" : isTrial ? "Configurar tarjeta antes de que termine la prueba" : "Configurar tarjeta"}
+              {isExpired ? "Reactivar suscripción" : isPending ? "Completar autorización" : isTrial ? "Configurar tarjeta ahora" : "Configurar tarjeta"}
             </RippleButton>
           </div>
         )}

@@ -117,6 +117,10 @@ export async function POST(request) {
     }
 
     const seller = await findOrCreateSellerForUser(session.user);
+    const existingSubscription = await prisma.subscription.findUnique({
+      where: { sellerId: seller.id },
+      select: { id: true, trialEndsAt: true, status: true },
+    });
     const payerEmail = seller.email || session.user.email || "";
     if (!payerEmail) {
       return NextResponse.json(
@@ -128,11 +132,19 @@ export async function POST(request) {
     const body = await request.json().catch(() => ({}));
     const origin = new URL(request.url).origin;
     const backUrl = body.backUrl || `${origin}/dashboard?tab=billing`;
+    const minStartDate = new Date(Date.now() + 10 * 60 * 1000);
+    const scheduledStartDate = existingSubscription?.trialEndsAt
+      ? new Date(existingSubscription.trialEndsAt)
+      : minStartDate;
+    const startDate = new Date(
+      Math.max(scheduledStartDate.getTime(), minStartDate.getTime())
+    ).toISOString();
 
     const result = await createPreapproval({
       sellerId: seller.id,
       payerEmail,
       backUrl,
+      startDate,
     });
 
     if (!result?.id) {
@@ -148,7 +160,7 @@ export async function POST(request) {
         sellerId: seller.id,
         status: "pending",
         preapprovalId: result.id,
-        trialEndsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        trialEndsAt: existingSubscription?.trialEndsAt || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         planAmount: 29990,
       },
       update: {
@@ -160,6 +172,7 @@ export async function POST(request) {
     return NextResponse.json({
       initPoint: result.init_point,
       preapprovalId: result.id,
+      scheduledStartDate: startDate,
     });
   } catch (error) {
     const status = error.message === "Unauthorized" ? 401 : 500;
