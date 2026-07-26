@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { useMemo, memo } from "react";
 import RippleButton from "@/components/ui/RippleButton";
 import Tooltip from "@/components/ui/Tooltip";
+import { buildSellerLandingUrl } from "@/lib/urls";
 
 const BASE_MENU_ITEMS = [
   { id: "dashboard", icon: "bi-grid-1x2-fill", label: "Dashboard General" },
@@ -67,6 +68,8 @@ export default function DashboardLayout({
     await fetch("/api/auth/logout", { method: "POST" });
     router.push("/dashboard/login");
   };
+
+  const sellerLandingUrl = sellerSlug ? buildSellerLandingUrl(sellerSlug) : "/";
 
   return (
     <div
@@ -217,7 +220,7 @@ export default function DashboardLayout({
           </Tooltip>
           {sidebarOpen && (
             <a
-              href={isAdmin ? "/" : sellerSlug ? `/p/${sellerSlug}` : "/"}
+              href={isAdmin ? "/" : sellerLandingUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="micro-btn"
@@ -308,7 +311,7 @@ export default function DashboardLayout({
             {(isAdmin || sellerSlug) && (
               <Tooltip content={isAdmin ? "Ver landing de ventas" : "Ver mi landing"} position="bottom">
                 <RippleButton
-                  onClick={() => window.open(isAdmin ? "/" : `/p/${sellerSlug}`, "_blank", "noopener,noreferrer")}
+                  onClick={() => window.open(isAdmin ? "/" : sellerLandingUrl, "_blank", "noopener,noreferrer")}
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
@@ -446,7 +449,7 @@ export default function DashboardLayout({
             <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
               {sellerSlug && (
                 <RippleButton
-                  onClick={() => window.open(`/p/${sellerSlug}`, "_blank", "noopener,noreferrer")}
+                  onClick={() => window.open(sellerLandingUrl, "_blank", "noopener,noreferrer")}
                   style={{
                     padding: "10px 18px",
                     borderRadius: "9999px",

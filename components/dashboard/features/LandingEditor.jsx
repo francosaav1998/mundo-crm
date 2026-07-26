@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import RippleButton from "@/components/ui/RippleButton";
 import { useLandingEditor } from "../hooks/useLandingEditor";
+import { buildSellerLandingUrl } from "@/lib/urls";
 import {
   HeroControls,
   SellerControls,
@@ -56,6 +57,7 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
 
   const sellerSlug = sellerInfo?.slug || "";
   const previewUrl = sellerSlug ? `/p/${sellerSlug}?preview=1` : "";
+  const publishedUrl = sellerSlug ? buildSellerLandingUrl(sellerSlug) : "/";
 
   const handleSave = async () => {
     await save();
@@ -274,7 +276,7 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
 
           {sellerSlug && (
             <a
-              href={`/p/${sellerSlug}`}
+              href={publishedUrl}
               target="_blank"
               rel="noopener noreferrer"
               style={{
@@ -601,4 +603,3 @@ function ViewportButton({ active, onClick, icon, label, T, hideLabel }) {
     </button>
   );
 }
-

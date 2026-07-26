@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { rateLimit, getClientKey } from "@/lib/rate-limit";
+import { buildSellerLandingUrl, getAppOrigin } from "@/lib/urls";
 
 const TRIAL_DAYS = 7;
 
@@ -133,7 +134,7 @@ export async function GET(request) {
               active: seller.active && (sub.isActive || sub.isTrial),
               createdAt: seller.createdAt,
               leadsCount: seller._count?.leads || 0,
-              landingUrl: `${process.env.NEXT_PUBLIC_APP_URL || ""}/p/${seller.slug}`,
+              landingUrl: buildSellerLandingUrl(seller.slug, { origin: getAppOrigin() }),
               ...sub,
             }
           : { ...sub, active: true, leadsCount: 0, landingUrl: null },

@@ -56,6 +56,12 @@ A      @      -> IP de Vercel
 CNAME  *      -> cname.vercel-dns.com
 ```
 
+- [ ] Agregar variable en Vercel:
+
+```env
+NEXT_PUBLIC_ROOT_DOMAIN=tudominio.cl
+```
+
 - [ ] Verificar que cargue el dominio principal.
 
 ## 5. Implementar subdominios por vendedor
@@ -69,10 +75,14 @@ https://carla.tudominio.com      -> landing del vendedor carla
 ```
 
 Pendiente en codigo:
-- [ ] Leer el `host` en middleware.
-- [ ] Resolver subdominio a seller slug.
-- [ ] Mostrar landing del vendedor sin usar `/p/[slug]` en el link principal.
-- [ ] Mantener `/p/[slug]` como fallback.
+- [x] Leer el `host` en middleware.
+- [x] Resolver subdominio a seller slug.
+- [x] Mostrar landing del vendedor sin usar `/p/[slug]` en el link principal.
+- [x] Mantener `/p/[slug]` como fallback.
+
+Notas:
+- Cuando `NEXT_PUBLIC_ROOT_DOMAIN` este configurado, la app reescribe `https://fran.tudominio.cl/` a la landing del seller `fran`.
+- Si la variable no existe, la app sigue usando `/p/[slug]`.
 
 ## 6. Revisar flujo comercial
 
