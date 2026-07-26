@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import RippleButton from "@/components/ui/RippleButton";
 import SectionHeader from "@/components/dashboard/ui/SectionHeader";
@@ -102,29 +102,50 @@ function KpiStat({ icon, label, value, color, T }) {
 export default function UserManager({ T, isMobile, showToast }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [toggling, setToggling] = useState(null);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("todos");
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
-    fetch("/api/users")
-      .then((res) => {
-        if (!res.ok) throw new Error("No autorizado o error del servidor");
-        return res.json();
-      })
-      .then((data) => {
-        if (!cancelled) setUsers(data);
-      })
-      .catch((err) => {
-        if (!cancelled) showToast?.(err.message || "Error cargando clientes");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => { cancelled = true; };
+  const loadUsers = useCallback(async (background = false) => {
+    if (background) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
+
+    try {
+      const res = await fetch("/api/users");
+      if (!res.ok) throw new Error("No autorizado o error del servidor");
+      const data = await res.json();
+      setUsers(data);
+    } catch (err) {
+      showToast?.(err.message || "Error cargando clientes");
+    } finally {
+      if (background) {
+        setRefreshing(false);
+      } else {
+        setLoading(false);
+      }
+    }
   }, [showToast]);
+
+  useEffect(() => {
+    const initialTimer = setTimeout(() => {
+      loadUsers();
+    }, 0);
+
+    const onFocus = () => loadUsers(true);
+    const interval = setInterval(() => loadUsers(true), 30000);
+
+    window.addEventListener("focus", onFocus);
+    return () => {
+      clearTimeout(initialTimer);
+      window.removeEventListener("focus", onFocus);
+      clearInterval(interval);
+    };
+  }, [loadUsers]);
 
   const toggleActive = async (seller) => {
     if (!seller?.id) return;
@@ -250,24 +271,45 @@ export default function UserManager({ T, isMobile, showToast }) {
                 Comparte este enlace para que cada vendedor se registre con su propio correo.
               </p>
             </div>
-            <RippleButton
-              onClick={copyRegistroLink}
-              style={{
-                padding: "10px 18px",
-                borderRadius: "9999px",
-                border: `1px solid ${T.accent}50`,
-                background: `${T.accent}15`,
-                color: T.accent,
-                fontSize: "13px",
-                fontWeight: 700,
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-              }}
-            >
-              <i className={`bi ${copied ? "bi-check-lg" : "bi-copy"}`} />
-              {copied ? "Copiado" : "Copiar link"}
-            </RippleButton>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <RippleButton
+                onClick={() => loadUsers(true)}
+                disabled={refreshing}
+                style={{
+                  padding: "10px 18px",
+                  borderRadius: "9999px",
+                  border: `1px solid ${T.border}`,
+                  background: T.inputBg,
+                  color: T.text,
+                  fontSize: "13px",
+                  fontWeight: 700,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+              >
+                <i className={`bi ${refreshing ? "bi-arrow-clockwise" : "bi-arrow-repeat"}`} />
+                {refreshing ? "Actualizando" : "Actualizar"}
+              </RippleButton>
+              <RippleButton
+                onClick={copyRegistroLink}
+                style={{
+                  padding: "10px 18px",
+                  borderRadius: "9999px",
+                  border: `1px solid ${T.accent}50`,
+                  background: `${T.accent}15`,
+                  color: T.accent,
+                  fontSize: "13px",
+                  fontWeight: 700,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+              >
+                <i className={`bi ${copied ? "bi-check-lg" : "bi-copy"}`} />
+                {copied ? "Copiado" : "Copiar link"}
+              </RippleButton>
+            </div>
           </div>
 
           <div style={{
