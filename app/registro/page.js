@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { NEON_THEME } from "@/lib/dashboard/constants";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,7 @@ function normalizeWhatsApp(number) {
 }
 
 export default function RegistroPage() {
+  const T = NEON_THEME.dark;
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -120,21 +122,21 @@ export default function RegistroPage() {
   const inputStyle = {
     width: "100%",
     padding: "12px 16px",
-    background: "#F8FAFC",
-    border: "2px solid #E2E8F0",
+    background: T.inputBg,
+    border: `1px solid ${T.border}`,
     borderRadius: "12px",
-    color: "#1E293B",
+    color: T.text,
     fontSize: "14px",
     fontWeight: 600,
     outline: "none",
-    transition: "border-color 0.2s",
+    transition: "border-color 0.2s, box-shadow 0.2s",
   };
 
   const labelStyle = {
     display: "block",
     fontSize: "12px",
     fontWeight: 700,
-    color: "#1E293B",
+    color: T.text,
     textTransform: "uppercase",
     letterSpacing: "0.05em",
     marginBottom: "6px",
@@ -144,9 +146,9 @@ export default function RegistroPage() {
     <div
       style={{
         minHeight: "100vh",
-        background: "linear-gradient(135deg, #005A6F 0%, #00748E 100%)",
-        color: "#F8FAFC",
-        fontFamily: "'Montserrat', sans-serif",
+        background: T.bgGradient,
+        color: T.text,
+        fontFamily: "var(--font-body), system-ui, sans-serif",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -158,8 +160,8 @@ export default function RegistroPage() {
           position: "fixed",
           inset: 0,
           backgroundImage: `
-            radial-gradient(circle at 10% 20%, rgba(253, 220, 2, 0.12) 0%, transparent 35%),
-            radial-gradient(circle at 90% 80%, rgba(0, 180, 216, 0.15) 0%, transparent 40%)
+            radial-gradient(circle at 10% 20%, rgba(212, 165, 116, 0.12) 0%, transparent 35%),
+            radial-gradient(circle at 90% 80%, rgba(128, 128, 255, 0.10) 0%, transparent 40%)
           `,
           pointerEvents: "none",
           zIndex: 0,
@@ -172,39 +174,42 @@ export default function RegistroPage() {
             style={{
               width: "64px",
               height: "64px",
-              background: "#FFFFFF",
+              background: T.bgCard,
+              border: `1px solid ${T.border}`,
               borderRadius: "18px",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               margin: "0 auto 16px",
-              boxShadow: "0 10px 30px rgba(0, 0, 0, 0.2)",
+              boxShadow: T.glowGold,
             }}
           >
-            <span style={{ color: "#00748E", fontWeight: 900, fontSize: "26px" }}>M</span>
+            <span style={{ color: T.accent, fontWeight: 900, fontSize: "26px" }}>M</span>
           </div>
           <h1 style={{ fontSize: "24px", fontWeight: 800, letterSpacing: "-0.02em" }}>
             Únete como Ejecutiva Mundo
           </h1>
-          <p style={{ color: "rgba(248, 250, 252, 0.85)", fontSize: "13px", marginTop: "6px" }}>
+          <p style={{ color: T.muted, fontSize: "13px", marginTop: "6px" }}>
             Completa tus datos y obtén tu landing personalizada
           </p>
         </div>
 
         <div
           style={{
-            background: "#FFFFFF",
+            background: T.bgCard,
+            border: `1px solid ${T.border}`,
             borderRadius: "24px",
             padding: "32px",
             boxShadow: "0 20px 50px rgba(0, 0, 0, 0.25)",
             textAlign: "left",
+            backdropFilter: "blur(20px)",
           }}
         >
           {error && (
             <div
               style={{
                 background: "rgba(239, 68, 68, 0.08)",
-                color: "#DC2626",
+                color: "#EF4444",
                 border: "1px solid rgba(239, 68, 68, 0.2)",
                 padding: "12px 16px",
                 borderRadius: "12px",
@@ -225,7 +230,7 @@ export default function RegistroPage() {
             <div
               style={{
                 background: "rgba(37, 211, 102, 0.1)",
-                color: "#16a34a",
+                color: "#10B981",
                 border: "1px solid rgba(37, 211, 102, 0.25)",
                 padding: "14px 16px",
                 borderRadius: "12px",
@@ -248,10 +253,10 @@ export default function RegistroPage() {
                 value={form.name}
                 onChange={(e) => update("name", e.target.value)}
                 required
-                placeholder="María González"
-                style={inputStyle}
-                onFocus={(e) => (e.target.style.borderColor = "#00748E")}
-                onBlur={(e) => (e.target.style.borderColor = "#E2E8F0")}
+                 placeholder="María González"
+                 style={inputStyle}
+                 onFocus={(e) => { e.target.style.borderColor = T.accent; e.target.style.boxShadow = T.glowGold; }}
+                 onBlur={(e) => { e.target.style.borderColor = T.border; e.target.style.boxShadow = "none"; }}
               />
             </div>
 
@@ -264,9 +269,9 @@ export default function RegistroPage() {
                   onChange={(e) => update("email", e.target.value)}
                   required
                   placeholder="maria@gmail.com"
-                  style={inputStyle}
-                  onFocus={(e) => (e.target.style.borderColor = "#00748E")}
-                  onBlur={(e) => (e.target.style.borderColor = "#E2E8F0")}
+                   style={inputStyle}
+                   onFocus={(e) => { e.target.style.borderColor = T.accent; e.target.style.boxShadow = T.glowGold; }}
+                   onBlur={(e) => { e.target.style.borderColor = T.border; e.target.style.boxShadow = "none"; }}
                 />
               </div>
 
@@ -278,29 +283,29 @@ export default function RegistroPage() {
                   onChange={(e) => update("password", e.target.value)}
                   required
                   placeholder="Mín. 6 caracteres"
-                  style={inputStyle}
-                  onFocus={(e) => (e.target.style.borderColor = "#00748E")}
-                  onBlur={(e) => (e.target.style.borderColor = "#E2E8F0")}
+                   style={inputStyle}
+                   onFocus={(e) => { e.target.style.borderColor = T.accent; e.target.style.boxShadow = T.glowGold; }}
+                   onBlur={(e) => { e.target.style.borderColor = T.border; e.target.style.boxShadow = "none"; }}
                 />
               </div>
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
               <div>
-                <label style={{ ...labelStyle, color: "#DC2626" }}>WhatsApp *</label>
+                 <label style={{ ...labelStyle, color: T.accent }}>WhatsApp *</label>
                 <input
                   type="tel"
                   value={form.phone}
                   onChange={(e) => update("phone", e.target.value)}
                   required
                   placeholder="+56912345678"
-                  style={inputStyle}
-                  onFocus={(e) => (e.target.style.borderColor = "#00748E")}
-                  onBlur={(e) => (e.target.style.borderColor = "#E2E8F0")}
-                />
-                <p style={{ fontSize: "11px", color: "#64748B", marginTop: "4px" }}>
-                  Los clientes te contactarán aquí
-                </p>
+                   style={inputStyle}
+                   onFocus={(e) => { e.target.style.borderColor = T.accent; e.target.style.boxShadow = T.glowGold; }}
+                   onBlur={(e) => { e.target.style.borderColor = T.border; e.target.style.boxShadow = "none"; }}
+                 />
+                 <p style={{ fontSize: "11px", color: T.muted, marginTop: "4px" }}>
+                   Los clientes te contactarán aquí
+                 </p>
               </div>
 
               <div>
@@ -310,15 +315,15 @@ export default function RegistroPage() {
                   value={form.city}
                   onChange={(e) => update("city", e.target.value)}
                   placeholder="Santiago (opcional)"
-                  style={inputStyle}
-                  onFocus={(e) => (e.target.style.borderColor = "#00748E")}
-                  onBlur={(e) => (e.target.style.borderColor = "#E2E8F0")}
+                   style={inputStyle}
+                   onFocus={(e) => { e.target.style.borderColor = T.accent; e.target.style.boxShadow = T.glowGold; }}
+                   onBlur={(e) => { e.target.style.borderColor = T.border; e.target.style.boxShadow = "none"; }}
                 />
               </div>
             </div>
 
             <div>
-              <label style={{ ...labelStyle, color: "#DC2626" }}>Compañía a la que vendes *</label>
+               <label style={{ ...labelStyle, color: T.accent }}>Compañía a la que vendes *</label>
               <select
                 value={form.company}
                 onChange={(e) => update("company", e.target.value)}
@@ -331,9 +336,9 @@ export default function RegistroPage() {
                   backgroundPosition: "right 1rem center",
                   paddingRight: "2.5rem",
                 }}
-                onFocus={(e) => (e.target.style.borderColor = "#00748E")}
-                onBlur={(e) => (e.target.style.borderColor = "#E2E8F0")}
-              >
+                 onFocus={(e) => { e.target.style.borderColor = T.accent; e.target.style.boxShadow = T.glowGold; }}
+                 onBlur={(e) => { e.target.style.borderColor = T.border; e.target.style.boxShadow = "none"; }}
+               >
                 <option value="" disabled>
                   Selecciona tu compañía
                 </option>
@@ -343,9 +348,9 @@ export default function RegistroPage() {
                   </option>
                 ))}
               </select>
-              <p style={{ fontSize: "11px", color: "#64748B", marginTop: "4px" }}>
-                Esta compañía quedará asignada permanentemente a tu cuenta.
-              </p>
+               <p style={{ fontSize: "11px", color: T.muted, marginTop: "4px" }}>
+                 Esta compañía quedará asignada permanentemente a tu cuenta.
+               </p>
             </div>
 
             <div>
@@ -355,13 +360,13 @@ export default function RegistroPage() {
                 onChange={(e) => update("bio", e.target.value)}
                 placeholder="Como tu ejecutiva comercial especializada, te ayudo a gestionar tu contrato..."
                 rows={3}
-                style={{ ...inputStyle, resize: "none", lineHeight: "1.5" }}
-                onFocus={(e) => (e.target.style.borderColor = "#00748E")}
-                onBlur={(e) => (e.target.style.borderColor = "#E2E8F0")}
-              />
-              <p style={{ fontSize: "11px", color: "#64748B", marginTop: "4px" }}>
-                Si lo dejas vacío, usaremos un texto por defecto. Podrás editarlo después.
-              </p>
+                 style={{ ...inputStyle, resize: "none", lineHeight: "1.5" }}
+                 onFocus={(e) => { e.target.style.borderColor = T.accent; e.target.style.boxShadow = T.glowGold; }}
+                 onBlur={(e) => { e.target.style.borderColor = T.border; e.target.style.boxShadow = "none"; }}
+               />
+               <p style={{ fontSize: "11px", color: T.muted, marginTop: "4px" }}>
+                 Si lo dejas vacío, usaremos un texto por defecto. Podrás editarlo después.
+               </p>
             </div>
 
             <button
@@ -369,15 +374,15 @@ export default function RegistroPage() {
               disabled={loading || success}
               style={{
                 width: "100%",
-                background: "linear-gradient(135deg, #00748E 0%, #005A6F 100%)",
-                color: "#FFFFFF",
+                 background: `linear-gradient(135deg, ${T.accent} 0%, ${T.accent2} 100%)`,
+                 color: "#FFFFFF",
                 fontWeight: 800,
                 padding: "14px",
                 borderRadius: "12px",
                 border: "none",
                 cursor: loading ? "not-allowed" : "pointer",
                 fontSize: "14px",
-                boxShadow: "0 4px 20px rgba(0, 116, 142, 0.35)",
+                 boxShadow: T.glowGold,
                 transition: "all 0.2s",
                 display: "flex",
                 alignItems: "center",
@@ -396,21 +401,21 @@ export default function RegistroPage() {
                 onChange={(e) => setAcceptedTerms(e.target.checked)}
                 style={{ marginTop: 3 }}
               />
-              <span style={{ fontSize: "12px", color: "#64748B", lineHeight: 1.5 }}>
-                Acepto los <span style={{ color: "#00748E", fontWeight: 700 }}>Términos y Condiciones</span> y la{" "}
-                <a href="/politica-de-privacidad" style={{ color: "#00748E", fontWeight: 700 }}>Política de Privacidad</a>.
+              <span style={{ fontSize: "12px", color: T.muted, lineHeight: 1.5 }}>
+                Acepto los <span style={{ color: T.accent, fontWeight: 700 }}>Términos y Condiciones</span> y la{" "}
+                <a href="/politica-de-privacidad" style={{ color: T.accent, fontWeight: 700 }}>Política de Privacidad</a>.
               </span>
             </label>
           </form>
 
-          <div style={{ marginTop: "20px", paddingTop: "16px", borderTop: "1px solid #E2E8F0", textAlign: "center" }}>
-            <p style={{ fontSize: "13px", color: "#64748B", marginBottom: "6px" }}>¿Ya tienes cuenta?</p>
+          <div style={{ marginTop: "20px", paddingTop: "16px", borderTop: `1px solid ${T.border}`, textAlign: "center" }}>
+            <p style={{ fontSize: "13px", color: T.muted, marginBottom: "6px" }}>¿Ya tienes cuenta?</p>
             <button
               onClick={() => router.push("/dashboard/login")}
               style={{
                 fontSize: "14px",
                 fontWeight: 700,
-                color: "#00748E",
+                color: T.accent,
                 background: "none",
                 border: "none",
                 cursor: "pointer",
@@ -421,7 +426,7 @@ export default function RegistroPage() {
           </div>
         </div>
 
-        <p style={{ fontSize: "11px", color: "rgba(248, 250, 252, 0.6)", marginTop: "16px" }}>
+        <p style={{ fontSize: "11px", color: T.muted, marginTop: "16px" }}>
           El acceso se activa al instante y comienza tu prueba gratis de 7 días.
         </p>
       </div>
