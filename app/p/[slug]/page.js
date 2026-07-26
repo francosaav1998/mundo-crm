@@ -8,7 +8,6 @@ import { getCompanyVars } from "@/lib/company";
 import { getLandingContent, getMergedPlans } from "@/lib/landing";
 import MetaPixel from "@/components/landing/MetaPixel";
 import CompanyFonts from "@/components/landing/CompanyFonts";
-import LandingSplash from "@/components/ui/LandingSplash";
 import Header from "@/components/landing/Header";
 import Hero from "@/components/landing/Hero";
 import SellerSection from "@/components/landing/SellerSection";
@@ -82,7 +81,6 @@ export default function SellerLanding() {
 
   useEffect(() => {
     async function loadSeller() {
-      let willRedirect = false;
       try {
         const res = await fetch(`/api/sellers?slug=${encodeURIComponent(slug)}`);
         if (!res.ok) {
@@ -100,17 +98,6 @@ export default function SellerLanding() {
         setCompany(data.company);
 
         const companySlug = data.company?.slug;
-        // En preview se queda en la página real; redirección solo en landing pública
-        if (!isPreview && companySlug && companySlug !== "mundo" && typeof window !== "undefined") {
-          willRedirect = true;
-          // company ya se seteó arriba; loading permanece true para mostrar el splash branded
-          setTimeout(() => {
-            const params = new URLSearchParams(window.location.search);
-            params.set("slug", slug);
-            window.location.replace(`/landings/${companySlug}.html?${params.toString()}`);
-          }, 1600);
-          return;
-        }
 
         updateSellerConfig({
           name: data.name,
@@ -136,7 +123,7 @@ export default function SellerLanding() {
       } catch {
         setError("Error de conexión");
       } finally {
-        if (!willRedirect) setLoading(false);
+        setLoading(false);
       }
     }
     loadSeller();
@@ -261,16 +248,6 @@ export default function SellerLanding() {
   };
 
   if (loading) {
-    if (isPreview) {
-      return (
-        <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#0B0F14" }}>
-          <span className="btn-spinner" style={{ width: 28, height: 28, borderColor: "rgba(255,255,255,0.2)", borderTopColor: "rgba(255,255,255,0.9)" }} />
-        </div>
-      );
-    }
-    if (company) {
-      return <LandingSplash show={loading} appName={company.name} company={company} />;
-    }
     return (
       <div
         style={{

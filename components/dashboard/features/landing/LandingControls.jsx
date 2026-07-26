@@ -95,8 +95,38 @@ export function Field({ label, help, T, children }) {
 }
 
 export function HeroControls({ content, updateContent, T, isMobile = false }) {
+  const [uploadingBg, setUploadingBg] = useState(false);
+
+  const handleBackgroundUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setUploadingBg(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", "seller");
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Error al subir imagen");
+      updateContent({ backgroundImageUrl: data.url });
+    } catch (err) {
+      alert(err.message || "Error al subir imagen");
+    } finally {
+      setUploadingBg(false);
+      event.target.value = "";
+    }
+  };
+
   return (
     <>
+      <SectionBlock title="Imagen de fondo del hero" T={T}>
+        <Field label="URL de la imagen" help="Si la completas, reemplaza el fondo por defecto del hero." T={T}>
+          <Input type="text" T={T} value={content.backgroundImageUrl || ""} onChange={(e) => updateContent({ backgroundImageUrl: e.target.value })} placeholder="https://.../mi-imagen.jpg" />
+        </Field>
+        <Field label="Subir imagen" help={uploadingBg ? "Subiendo imagen..." : "También puedes subir una imagen desde tu computador."} T={T}>
+          <input type="file" accept="image/*" onChange={handleBackgroundUpload} disabled={uploadingBg} style={{ width: "100%", padding: 12, background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: 12, color: T.text }} />
+        </Field>
+      </SectionBlock>
       <SectionBlock title="Badge / Etiqueta" T={T}>
         <Field label="Texto del badge" help="Aparece arriba del título principal." T={T}>
           <Input type="text" T={T} value={content.badge || ""} onChange={(e) => updateContent({ badge: e.target.value })} />

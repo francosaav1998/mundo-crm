@@ -119,6 +119,11 @@ export function useLeads(initialLeads = [], initialTotal = 0) {
     setTotal((prev) => prev + newLeads.length);
   }, []);
 
+  const removeLead = useCallback((leadId) => {
+    setLeads((prev) => prev.filter((l) => l.id !== leadId));
+    setTotal((prev) => Math.max(0, prev - 1));
+  }, []);
+
   useEffect(() => {
     return () => {
       if (searchTimeoutRef.current) {
@@ -147,5 +152,6 @@ export function useLeads(initialLeads = [], initialTotal = 0) {
     refresh,
     updateLead,
     addLeads,
+    removeLead,
   };
 }

@@ -13,9 +13,18 @@ export default function Hero({
 }) {
   const companyName = company?.name || "Mundo";
   const c = content || {};
+  const backgroundImageUrl = String(c.backgroundImageUrl || "").trim();
+  const sectionStyle = backgroundImageUrl
+    ? {
+        backgroundImage: `linear-gradient(135deg, rgba(15, 23, 42, 0.82) 0%, rgba(15, 23, 42, 0.55) 100%), url("${backgroundImageUrl}")`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }
+    : undefined;
 
   return (
-    <section id="inicio" className="hero">
+    <section id="inicio" className="hero" style={sectionStyle}>
       <div className="container">
         <div className="hero-content">
           <span className="badge-promo">
