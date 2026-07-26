@@ -6,7 +6,7 @@ import LeadTable from "./ui/LeadTable";
 import Pagination from "./ui/Pagination";
 import SectionHeader from "./ui/SectionHeader";
 
-export default function LeadsView({ leads, total, page, totalPages, search, setSearch, statusFilter, setStatusFilter, onPageChange, onUpdateStatus, updating, loading = false, T, isMobile, isAdmin = false, showToast }) {
+export default function LeadsView({ leads, total, page, totalPages, search, setSearch, statusFilter, setStatusFilter, onPageChange, onUpdateStatus, onDeleteLead, updating, loading = false, T, isMobile, isAdmin = false, showToast }) {
   return (
     <div>
       <SectionHeader
@@ -37,6 +37,7 @@ export default function LeadsView({ leads, total, page, totalPages, search, setS
       <LeadTable
         leads={leads}
         onUpdateStatus={onUpdateStatus}
+        onDeleteLead={onDeleteLead}
         updating={updating}
         loading={loading}
         T={T}

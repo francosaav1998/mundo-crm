@@ -191,6 +191,31 @@ export default function UserManager({ T, isMobile, showToast }) {
     }
   };
 
+  const clearSellerLeads = async (seller) => {
+    if (!seller?.id) return;
+    const confirmed = confirm(`Vas a eliminar todos los leads de ${seller.name}. Esta acción no se puede deshacer. ¿Continuar?`);
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch(`/api/leads?sellerId=${encodeURIComponent(seller.id)}`, {
+        method: "DELETE",
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Error al limpiar leads");
+
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.seller?.id === seller.id
+            ? { ...u, seller: { ...u.seller, leadsCount: 0 } }
+            : u
+        )
+      );
+      showToast?.(`Se eliminaron ${data.deleted || 0} leads`);
+    } catch (err) {
+      showToast?.(err.message || "Error al limpiar leads");
+    }
+  };
+
   const copyRegistroLink = () => {
     const url = typeof window !== "undefined" ? `${window.location.origin}/registro` : "/registro";
     if (navigator.clipboard) {
@@ -569,6 +594,31 @@ export default function UserManager({ T, isMobile, showToast }) {
                         <i className="bi bi-globe" />
                         Ver landing
                       </a>
+                    )}
+                    {hasSeller && (
+                      <button
+                        onClick={() => clearSellerLeads(seller)}
+                        style={{
+                          flex: 1,
+                          minWidth: 110,
+                          padding: "10px 14px",
+                          borderRadius: "12px",
+                          background: "rgba(245, 158, 11, 0.12)",
+                          border: "1px solid rgba(245, 158, 11, 0.35)",
+                          color: "#F59E0B",
+                          fontSize: "13px",
+                          fontWeight: 700,
+                          textAlign: "center",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 6,
+                          cursor: "pointer",
+                        }}
+                      >
+                        <i className="bi bi-database-fill-x" />
+                        Borrar leads
+                      </button>
                     )}
                     <button
                       onClick={() => deleteUser(u)}

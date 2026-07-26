@@ -197,3 +197,25 @@ export async function POST(request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+export async function DELETE(request) {
+  try {
+    const session = await requireAuth();
+    if (!isAdmin(session.user)) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 403 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const sellerId = sanitizeString(searchParams.get("sellerId") || "", 100);
+
+    if (!sellerId) {
+      return NextResponse.json({ error: "sellerId requerido" }, { status: 400 });
+    }
+
+    const result = await prisma.lead.deleteMany({ where: { sellerId } });
+    return NextResponse.json({ success: true, deleted: result.count });
+  } catch (error) {
+    const status = error.message === "Unauthorized" ? 401 : 500;
+    return NextResponse.json({ error: error.message }, { status });
+  }
+}

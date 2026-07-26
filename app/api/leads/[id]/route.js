@@ -123,3 +123,47 @@ export async function PATCH(request, { params }) {
     return NextResponse.json({ error: error.message }, { status });
   }
 }
+
+export async function DELETE(request, { params }) {
+  try {
+    const session = await requireAuth();
+
+    const limit = await rateLimit({
+      windowMs: 60 * 1000,
+      maxRequests: 30,
+      key: `lead-delete:${getClientKey(request)}`,
+    });
+
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { error: "Demasiadas solicitudes. Inténtalo más tarde." },
+        { status: 429, headers: { "Retry-After": String(limit.retryAfter) } }
+      );
+    }
+
+    const { id } = await params;
+    const userIsAdmin = isAdmin(session.user);
+
+    const existing = await prisma.lead.findUnique({ where: { id } });
+    if (!existing) {
+      return NextResponse.json({ error: "Lead no encontrado" }, { status: 404 });
+    }
+
+    if (!userIsAdmin) {
+      const userId = session.user?.id;
+      const userEmail = session.user?.email || "";
+      const seller = await prisma.seller.findUnique({ where: { userId } }) || await prisma.seller.findFirst({ where: { email: userEmail } });
+      const ownsBySeller = seller && existing.sellerId === seller.id;
+      const ownsByEmail = existing.assignedTo && existing.assignedTo === userEmail;
+      if (!ownsBySeller && !ownsByEmail) {
+        return NextResponse.json({ error: "No autorizado" }, { status: 403 });
+      }
+    }
+
+    await prisma.lead.delete({ where: { id } });
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    const status = error.message === "Unauthorized" ? 401 : 500;
+    return NextResponse.json({ error: error.message }, { status });
+  }
+}

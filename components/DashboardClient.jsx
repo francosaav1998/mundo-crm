@@ -118,6 +118,7 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
     goToPage,
     refresh,
     updateLead,
+    removeLead,
     loading: leadsLoading,
   } = useLeads(initialLeads, initialTotal);
 
@@ -148,6 +149,20 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
   const handleImportSuccess = useCallback(() => {
     refresh();
   }, [refresh]);
+
+  const handleDeleteLead = useCallback(async (id) => {
+    try {
+      const res = await fetch(`/api/leads/${id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Error al eliminar lead");
+      removeLead(id);
+      showToast("Lead eliminado correctamente");
+    } catch (err) {
+      showToast(err.message || "Error al eliminar lead");
+    }
+  }, [removeLead, showToast]);
 
   const handleSaveSettings = useCallback(async (settingsToSave) => {
     const ok = await saveSettings(settingsToSave);
@@ -254,6 +269,7 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
                   setStatusFilter={setStatusFilter}
                   onPageChange={goToPage}
                   onUpdateStatus={handleUpdateStatus}
+                  onDeleteLead={handleDeleteLead}
                   updating={updating}
                   loading={leadsLoading}
                   T={T}
