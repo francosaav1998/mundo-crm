@@ -43,6 +43,14 @@ export default function Billing({ T, isMobile, showToast }) {
   }, [subscription?.status]);
 
   async function handleSetupPayment() {
+    if (subscription?.isTrial && subscription?.trialEndsAt) {
+      const chargeDate = new Date(subscription.trialEndsAt).toLocaleDateString("es-CL");
+      const confirmed = window.confirm(
+        `Vas a registrar tu tarjeta ahora. El primer cobro de ${subscription.formattedAmount || "$29.990"} se realizará el ${chargeDate}. ¿Quieres continuar?`
+      );
+      if (!confirmed) return;
+    }
+
     setProcessing(true);
     try {
       const res = await fetch("/api/subscription", {
@@ -166,7 +174,7 @@ export default function Billing({ T, isMobile, showToast }) {
               }}
             >
               <i className="bi bi-info-circle-fill" style={{ color: T.accent, marginRight: 8 }} />
-              Puedes registrar la tarjeta ahora. El primer cobro mensual se programará para cuando termine tu prueba gratis.
+              Puedes registrar la tarjeta ahora. El primer cobro de <strong>{subscription.formattedAmount || "$29.990"}</strong> se programará para el <strong>{new Date(subscription.trialEndsAt).toLocaleDateString("es-CL")}</strong>, cuando termine tu prueba gratis.
             </div>
           )}
 

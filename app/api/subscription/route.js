@@ -10,6 +10,14 @@ import {
   hasMercadoPagoConfig,
 } from "@/lib/mercadopago";
 
+function formatChargeDate(value) {
+  return new Date(value).toLocaleDateString("es-CL", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+}
+
 export async function GET(request) {
   try {
     const session = await requireAuth();
@@ -139,12 +147,15 @@ export async function POST(request) {
     const startDate = new Date(
       Math.max(scheduledStartDate.getTime(), minStartDate.getTime())
     ).toISOString();
+    const firstChargeDateLabel = formatChargeDate(startDate);
+    const reason = `Plan Ejecutivo Mundo - Primer cobro el ${firstChargeDateLabel}`;
 
     const result = await createPreapproval({
       sellerId: seller.id,
       payerEmail,
       backUrl,
       startDate,
+      reason,
     });
 
     if (!result?.id) {
@@ -173,6 +184,7 @@ export async function POST(request) {
       initPoint: result.init_point,
       preapprovalId: result.id,
       scheduledStartDate: startDate,
+      scheduledStartDateLabel: firstChargeDateLabel,
     });
   } catch (error) {
     const status = error.message === "Unauthorized" ? 401 : 500;
