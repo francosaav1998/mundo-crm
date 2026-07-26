@@ -90,6 +90,7 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
   const effectiveSidebarOpen = sidebarOpen ?? !isMobile;
 
   const [updating, setUpdating] = useState(null);
+  const [subscription, setSubscription] = useState(null);
 
   const {
     settings,
@@ -155,6 +156,40 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
     }
   }, [saveSettings]);
 
+  useEffect(() => {
+    if (isAdmin) return undefined;
+
+    let cancelled = false;
+
+    async function loadSubscription() {
+      try {
+        const res = await fetch("/api/subscription");
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!cancelled) setSubscription(data);
+      } catch {
+        // noop
+      }
+    }
+
+    loadSubscription();
+    return () => {
+      cancelled = true;
+    };
+  }, [isAdmin, activeMenu]);
+
+  useEffect(() => {
+    if (isAdmin) return;
+    if (!subscription?.isExpired) return;
+    if (activeMenu === "billing") return;
+
+    const timer = setTimeout(() => {
+      setActiveMenu("billing");
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, [isAdmin, subscription?.isExpired, activeMenu]);
+
   return (
     <MotionConfig reducedMotion="user">
       {/* Splash de ingreso (fade + scale de salida) */}
@@ -200,8 +235,10 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
                   T={T}
                   isMobile={isMobile}
                   isAdmin={isAdmin}
+                  subscription={subscription}
                   onViewAllLeads={() => setActiveMenu("leads")}
                   onViewClients={() => setActiveMenu("users")}
+                  onOpenBilling={() => setActiveMenu("billing")}
                 />
               )}
 

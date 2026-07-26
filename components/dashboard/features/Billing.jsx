@@ -77,6 +77,7 @@ export default function Billing({ T, isMobile, showToast }) {
   const isTrial = subscription?.isTrial;
   const isActive = subscription?.isActive;
   const isPending = subscription?.status === "pending";
+  const isPaidSubscription = subscription?.status === "active";
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
@@ -207,7 +208,7 @@ export default function Billing({ T, isMobile, showToast }) {
           )}
         </div>
 
-        {!isActive && (
+        {!isPaidSubscription && (
           <div style={{ marginTop: 8 }}>
             <RippleButton
               onClick={handleSetupPayment}
@@ -231,12 +232,12 @@ export default function Billing({ T, isMobile, showToast }) {
               }}
             >
               <i className="bi bi-credit-card-fill" />
-              {isExpired ? "Reactivar suscripción" : isPending ? "Completar pago" : "Configurar tarjeta"}
+              {isExpired ? "Reactivar suscripción" : isPending ? "Completar pago" : isTrial ? "Configurar tarjeta antes de que termine la prueba" : "Configurar tarjeta"}
             </RippleButton>
           </div>
         )}
 
-        {isActive && (
+        {isPaidSubscription && (
           <div style={{ marginTop: 8 }}>
             <p style={{ fontSize: 13, color: T.muted }}>
               Tu suscripción está activa. Si cambiás de tarjeta, hacé clic en el botón de abajo.

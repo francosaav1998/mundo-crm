@@ -68,7 +68,74 @@ function SellersStrip({ stats, T, onViewClients }) {
   );
 }
 
-export default function DashboardOverview({ filters, initialStats, T, isMobile, onViewAllLeads, isAdmin = false, onViewClients }) {
+function SellerBillingStrip({ subscription, T, onOpenBilling }) {
+  if (!subscription) return null;
+
+  const statusColor = subscription.isActive ? "#16A34A" : subscription.isExpired ? "#DC2626" : "#F59E0B";
+  const ctaLabel = subscription.status === "active"
+    ? "Administrar tarjeta"
+    : subscription.isExpired
+    ? "Configurar tarjeta"
+    : subscription.status === "pending"
+    ? "Completar pago"
+    : subscription.isTrial
+    ? "Configurar tarjeta"
+    : "Ir a facturación";
+
+  return (
+    <motion.div
+      variants={fadeInUp}
+      initial="hidden"
+      animate="visible"
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        gap: 16,
+        flexWrap: "wrap",
+        padding: "18px 20px",
+        borderRadius: 18,
+        background: T.inputBg,
+        border: `1px solid ${T.border}`,
+        marginBottom: 24,
+      }}
+    >
+      <div>
+        <div style={{ fontSize: 12, color: T.muted, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+          Facturación
+        </div>
+        <div style={{ fontSize: 18, fontWeight: 800, color: T.text, marginTop: 4 }}>
+          {subscription.planName || "Plan Ejecutivo"} · {subscription.formattedAmount || "$29.990"}/mes
+        </div>
+        <div style={{ fontSize: 13, color: statusColor, fontWeight: 700, marginTop: 6 }}>
+          {subscription.label}
+          {subscription.isTrial && subscription.trialEndsAt ? ` · finaliza ${new Date(subscription.trialEndsAt).toLocaleDateString("es-CL")}` : ""}
+        </div>
+      </div>
+
+      <RippleButton
+        onClick={onOpenBilling}
+        style={{
+          padding: "12px 18px",
+          borderRadius: "9999px",
+          border: "none",
+          background: `linear-gradient(135deg, ${T.accent} 0%, ${T.accent2} 100%)`,
+          color: "#fff",
+          fontSize: 13,
+          fontWeight: 800,
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 8,
+        }}
+      >
+        <i className="bi bi-credit-card-fill" />
+        {ctaLabel}
+      </RippleButton>
+    </motion.div>
+  );
+}
+
+export default function DashboardOverview({ filters, initialStats, T, isMobile, onViewAllLeads, isAdmin = false, onViewClients, subscription = null, onOpenBilling }) {
   const { stats, loading, refresh } = useStats({ ...filters, initialStats });
 
   // ── Skeletons mientras llegan los datos (sin spinners vacíos) ──
@@ -150,6 +217,7 @@ export default function DashboardOverview({ filters, initialStats, T, isMobile, 
       </motion.div>
 
       {/* KPIs con contadores animados y entrada escalonada */}
+      {!isAdmin && <SellerBillingStrip subscription={subscription} T={T} onOpenBilling={onOpenBilling} />}
       {isAdmin && <SellersStrip stats={stats} T={T} onViewClients={onViewClients} />}
       <KpiCards kpis={kpis} T={T} isAdmin={isAdmin} />
 
