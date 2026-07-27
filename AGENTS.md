@@ -70,6 +70,10 @@ Compact context for working in this repo. If a fact is obvious from filenames, i
 - To keep labels/names correct in the preview, `useLandingEditor` initializes the global `SELLER_CONFIG` via `updateSellerConfig()` after loading the seller.
 - Inactive plans are filtered in the preview with `plans.filter(p => p.sellerActive !== false)`.
 
+## Uploads
+
+- `/api/upload` allows up to 50 MB in code, **but Vercel serverless functions cap the request body at ~4.5 MB** and respond `413` with a non-JSON page. All dashboard image uploads (seller photo, hero/benefits backgrounds, B2B images) must go through `lib/upload-image.js` (`uploadImage`), which compresses in the client (canvas → JPEG, max 1600px, ~0.85 quality) before POSTing and handles the non-JSON 413 gracefully. Never write raw `FormData` upload code in new UI; reuse `uploadImage`.
+
 ## Security / Headers
 
 - `next.config.mjs` defines `Content-Security-Policy`, `HSTS`, `X-Frame-Options`, etc. If you need to embed anything in an iframe or load external scripts/styles, update both the headers and the `images.remotePatterns` list.
