@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { requireAuth, isAdmin } from "@/lib/auth";
-import { getB2BContent, setB2BContent } from "@/lib/b2b-landing.server";
+import { getB2BLandingContent, setB2BLandingContent } from "@/lib/b2b-landing.server";
 
 export async function GET() {
   try {
     await requireAuth();
-    const content = await getB2BContent();
-    return NextResponse.json({ content });
+    const content = await getB2BLandingContent();
+    return NextResponse.json(content);
   } catch (error) {
     const status = error.message === "Unauthorized" ? 401 : 500;
     return NextResponse.json({ error: error.message }, { status });
@@ -21,13 +21,13 @@ export async function PUT(request) {
     }
 
     const body = await request.json();
-    const content = body?.content;
+    const { css, body: html } = body;
 
-    if (!content || typeof content !== "object" || Array.isArray(content)) {
-      return NextResponse.json({ error: "Se requiere content como objeto" }, { status: 400 });
+    if (typeof css !== "string" || typeof html !== "string") {
+      return NextResponse.json({ error: "Se requieren css y body como strings" }, { status: 400 });
     }
 
-    await setB2BContent(content);
+    await setB2BLandingContent({ css, body: html });
     return NextResponse.json({ ok: true });
   } catch (error) {
     const status = error.message === "Unauthorized" ? 401 : 500;

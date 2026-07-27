@@ -1,36 +1,18 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { DEFAULT_B2B_CONTENT, mergeB2BContent } from "@/lib/b2b-content";
+import { DEFAULT_B2B_LANDING_CSS, DEFAULT_B2B_LANDING_BODY } from "@/lib/b2b-landing";
 import RippleButton from "@/components/ui/RippleButton";
 import SectionHeader from "@/components/dashboard/ui/SectionHeader";
-import {
-  B2BHeaderControls,
-  B2BHeroControls,
-  B2BCompaniesControls,
-  B2BBenefitsControls,
-  B2BCtaControls,
-  B2BFooterControls,
-} from "./landing/B2BControls";
-
-const SECTIONS = [
-  { id: "hero", label: "Hero", icon: "bi-house-door-fill" },
-  { id: "companies", label: "Compañías", icon: "bi-buildings-fill" },
-  { id: "benefits", label: "Beneficios", icon: "bi-stars" },
-  { id: "cta", label: "CTA Final", icon: "bi-cursor-fill" },
-  { id: "header", label: "Header", icon: "bi-layout-text-window-reverse" },
-  { id: "footer", label: "Footer", icon: "bi-layout-text-sidebar-reverse" },
-];
 
 export default function B2BLandingEditor({ T, isMobile, showToast }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [dirty, setDirty] = useState(false);
-  const [content, setContent] = useState(DEFAULT_B2B_CONTENT);
+  const [css, setCss] = useState(DEFAULT_B2B_LANDING_CSS);
+  const [body, setBody] = useState(DEFAULT_B2B_LANDING_BODY);
   const [previewMode, setPreviewMode] = useState("desktop");
   const [mobileTab, setMobileTab] = useState("edit");
-  const [activeSection, setActiveSection] = useState("hero");
-  const [iframeReady, setIframeReady] = useState(false);
+  const [activeTab, setActiveTab] = useState("visual");
   const iframeRef = useRef(null);
 
   useEffect(() => {
@@ -39,7 +21,8 @@ export default function B2BLandingEditor({ T, isMobile, showToast }) {
         const res = await fetch("/api/b2b-landing");
         if (res.ok) {
           const data = await res.json();
-          setContent(mergeB2BContent(data.content));
+          if (data.css) setCss(data.css);
+          if (data.body) setBody(data.body);
         }
       } catch (err) {
         showToast(err.message || "Error al cargar landing");
@@ -50,24 +33,15 @@ export default function B2BLandingEditor({ T, isMobile, showToast }) {
     load();
   }, [showToast]);
 
-  const updateSection = useCallback((section, updates) => {
-    setDirty(true);
-    setContent((prev) => ({
-      ...prev,
-      [section]: { ...prev[section], ...updates },
-    }));
-  }, []);
-
   const handleSave = useCallback(async () => {
     setSaving(true);
     try {
       const res = await fetch("/api/b2b-landing", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content }),
+        body: JSON.stringify({ css, body }),
       });
       if (!res.ok) throw new Error();
-      setDirty(false);
       showToast("Landing B2B guardada correctamente");
       if (isMobile) setMobileTab("preview");
     } catch (err) {
@@ -75,36 +49,34 @@ export default function B2BLandingEditor({ T, isMobile, showToast }) {
     } finally {
       setSaving(false);
     }
-  }, [content, showToast, isMobile]);
+  }, [css, body, showToast, isMobile]);
 
   const handleReset = useCallback(() => {
     if (confirm("¿Restaurar el contenido por defecto? Se perderán los cambios no guardados.")) {
-      setContent(DEFAULT_B2B_CONTENT);
-      setDirty(true);
+      setCss(DEFAULT_B2B_LANDING_CSS);
+      setBody(DEFAULT_B2B_LANDING_BODY);
     }
   }, []);
 
-  // Escuchar el READY del iframe de vista previa.
   useEffect(() => {
     const handleMessage = (event) => {
-      if (event.origin !== window.location.origin) return;
       if (event.source !== iframeRef.current?.contentWindow) return;
-      if (event.data?.type === "B2B_PREVIEW_READY") {
-        setIframeReady(true);
+      const data = event.data;
+      if (!data || typeof data !== "object") return;
+      if (data.type === "B2B_PREVIEW_HTML_UPDATE" && typeof data.html === "string") {
+        setBody(data.html);
       }
     };
+
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
   }, []);
 
-  // Enviar cambios en vivo a la vista previa.
-  useEffect(() => {
-    if (!iframeReady) return;
-    iframeRef.current?.contentWindow?.postMessage(
-      { type: "B2B_PREVIEW_UPDATE", content },
-      window.location.origin
-    );
-  }, [iframeReady, content]);
+  const previewSrcDoc = getB2BPreviewDocument({
+    body,
+    css,
+    editable: activeTab === "visual",
+  });
 
   if (loading) {
     return (
@@ -127,7 +99,7 @@ export default function B2BLandingEditor({ T, isMobile, showToast }) {
       <SectionHeader
         eyebrow="Editor de Landing"
         title="Landing B2B principal"
-        description="Edita cada sección manualmente y mira los cambios en vivo. Al guardar se publican en la página de inicio."
+        description="Edita la página de inicio manualmente y también desde la vista previa."
         T={T}
         isMobile={isMobile}
       />
@@ -167,16 +139,9 @@ export default function B2BLandingEditor({ T, isMobile, showToast }) {
             <h2 style={{ fontSize: isMobile ? 15 : 16, fontWeight: 800, color: T.text, margin: 0 }}>
               Editor B2B
             </h2>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
-              {dirty ? (
-                <>
-                  <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#F59E0B", boxShadow: "0 0 8px rgba(245,158,11,0.6)" }} />
-                  <span style={{ fontSize: 11, color: "#F59E0B", fontWeight: 700 }}>Sin guardar</span>
-                </>
-              ) : (
-                <span style={{ fontSize: 11, color: T.muted }}>Todo guardado</span>
-              )}
-            </div>
+            <p style={{ fontSize: 11, color: T.muted, margin: "2px 0 0 0" }}>
+              Edición manual + vista previa en vivo
+            </p>
           </div>
         </div>
 
@@ -331,7 +296,7 @@ export default function B2BLandingEditor({ T, isMobile, showToast }) {
           minHeight: 0,
         }}
       >
-        {/* Sidebar - edición manual por secciones */}
+        {/* Sidebar */}
         {(!isMobile || mobileTab === "edit") && (
           <div
             style={{
@@ -348,87 +313,151 @@ export default function B2BLandingEditor({ T, isMobile, showToast }) {
               height: isMobile ? "auto" : "100%",
             }}
           >
-            {/* Section tabs */}
             <div
               style={{
-                display: "flex",
-                gap: 6,
-                overflowX: "auto",
-                padding: "12px 14px",
-                borderBottom: `1px solid ${T.border}`,
-                background: `${T.accent}04`,
+                flex: 1,
+                overflowY: "auto",
+                padding: isMobile ? "16px" : "18px",
               }}
             >
-              {SECTIONS.map((section) => (
-                <button
-                  key={section.id}
-                  onClick={() => setActiveSection(section.id)}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 6,
-                    padding: "8px 12px",
-                    borderRadius: 10,
-                    border: "none",
-                    background: activeSection === section.id ? T.accent : T.bgCard,
-                    color: activeSection === section.id ? "#fff" : T.muted,
-                    fontSize: 12,
-                    fontWeight: 700,
-                    cursor: "pointer",
-                    whiteSpace: "nowrap",
-                    transition: "all 0.15s",
-                  }}
-                >
-                  <i className={`bi ${section.icon}`}></i>
-                  {section.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Content */}
-            <div style={{ flex: 1, overflowY: "auto", padding: "16px" }}>
-              <div
-                style={{
-                  background: `${T.accent}10`,
-                  border: `1px solid ${T.accent}25`,
-                  borderRadius: 12,
-                  padding: 14,
-                  marginBottom: 16,
-                  fontSize: 13,
-                  color: T.muted,
-                  lineHeight: 1.5,
-                }}
-              >
-                <i className="bi bi-info-circle-fill" style={{ color: T.accent, marginRight: 8 }}></i>
-                Edita los campos de cada sección. La vista previa se actualiza en vivo y al guardar se publica en la página de inicio <strong>/</strong>.
-              </div>
               <div
                 style={{
                   background: T.inputBg,
                   border: `1px solid ${T.border}`,
                   borderRadius: 18,
-                  padding: "16px",
-                  minHeight: "100%",
+                  padding: isMobile ? "16px" : "18px",
+                  height: "100%",
                 }}
               >
-                {activeSection === "hero" && (
-                  <B2BHeroControls content={content.hero} updateSection={(u) => updateSection("hero", u)} T={T} isMobile={isMobile} />
+                <div
+                  style={{
+                    padding: 14,
+                    borderRadius: 12,
+                    background: `${T.accent}10`,
+                    border: `1px solid ${T.accent}25`,
+                    fontSize: 13,
+                    color: T.muted,
+                    lineHeight: 1.5,
+                    marginBottom: 16,
+                  }}
+                >
+                  <i className="bi bi-info-circle-fill" style={{ color: T.accent, marginRight: 8 }}></i>
+                  Podés editar los textos desde la vista previa o usar HTML y CSS manualmente. La barra deslizante superior tambien se puede editar desde la vista previa.
+                </div>
+                <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
+                    <button
+                      onClick={() => setActiveTab("visual")}
+                      style={{
+                        padding: "10px 16px",
+                        borderRadius: 12,
+                        border: "none",
+                        background: activeTab === "visual" ? T.accent : "transparent",
+                        color: activeTab === "visual" ? "#fff" : T.muted,
+                        fontSize: 13,
+                        fontWeight: 700,
+                        cursor: "pointer",
+                      }}
+                    >
+                      <i className="bi bi-cursor-text" style={{ marginRight: 6 }}></i>
+                      Visual
+                    </button>
+                    <button
+                      onClick={() => setActiveTab("body")}
+                      style={{
+                        padding: "10px 16px",
+                        borderRadius: 12,
+                        border: "none",
+                        background: activeTab === "body" ? T.accent : "transparent",
+                        color: activeTab === "body" ? "#fff" : T.muted,
+                        fontSize: 13,
+                        fontWeight: 700,
+                        cursor: "pointer",
+                      }}
+                    >
+                      <i className="bi bi-code-slash" style={{ marginRight: 6 }}></i>
+                      HTML
+                    </button>
+                    <button
+                      onClick={() => setActiveTab("css")}
+                      style={{
+                        padding: "10px 16px",
+                        borderRadius: 12,
+                        border: "none",
+                        background: activeTab === "css" ? T.accent : "transparent",
+                        color: activeTab === "css" ? "#fff" : T.muted,
+                        fontSize: 13,
+                        fontWeight: 700,
+                        cursor: "pointer",
+                      }}
+                    >
+                      <i className="bi bi-palette-fill" style={{ marginRight: 6 }}></i>
+                      CSS
+                    </button>
+                </div>
+
+                {activeTab === "visual" && (
+                  <div>
+                    <div
+                      style={{
+                        padding: 14,
+                        borderRadius: 12,
+                        background: `${T.accent}10`,
+                        border: `1px solid ${T.accent}25`,
+                        fontSize: 13,
+                        color: T.muted,
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      <i className="bi bi-mouse2-fill" style={{ color: T.accent, marginRight: 8 }}></i>
+                      Haz clic sobre cualquier texto en la vista previa, incluida la barra superior deslizante, y edítalo directamente.
+                      {isMobile ? " En móvil cambia a la pestaña Vista previa para editar visualmente." : ""}
+                    </div>
+                  </div>
                 )}
-                {activeSection === "companies" && (
-                  <B2BCompaniesControls content={content.companies} updateSection={(u) => updateSection("companies", u)} T={T} />
+
+                {activeTab === "css" && (
+                  <div>
+                    <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 10 }}>
+                      CSS de la landing
+                    </label>
+                    <textarea
+                      value={css}
+                      onChange={(e) => setCss(e.target.value)}
+                      style={textareaStyle(T)}
+                      spellCheck={false}
+                    />
+                  </div>
                 )}
-                {activeSection === "benefits" && (
-                  <B2BBenefitsControls content={content.benefits} updateSection={(u) => updateSection("benefits", u)} T={T} isMobile={isMobile} />
+
+                {activeTab === "body" && (
+                  <div>
+                    <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 10 }}>
+                      HTML de la landing
+                    </label>
+                    <textarea
+                      value={body}
+                      onChange={(e) => setBody(e.target.value)}
+                      style={textareaStyle(T)}
+                      spellCheck={false}
+                    />
+                  </div>
                 )}
-                {activeSection === "cta" && (
-                  <B2BCtaControls content={content.cta} updateSection={(u) => updateSection("cta", u)} T={T} />
-                )}
-                {activeSection === "header" && (
-                  <B2BHeaderControls content={content.header} updateSection={(u) => updateSection("header", u)} T={T} />
-                )}
-                {activeSection === "footer" && (
-                  <B2BFooterControls content={content.footer} updateSection={(u) => updateSection("footer", u)} T={T} />
-                )}
+
+                <div
+                  style={{
+                    marginTop: 16,
+                    padding: 14,
+                    borderRadius: 12,
+                    background: `${T.accent}10`,
+                    border: `1px solid ${T.accent}25`,
+                    fontSize: 13,
+                    color: T.muted,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  <i className="bi bi-info-circle-fill" style={{ color: T.accent, marginRight: 8 }}></i>
+                  Los cambios se guardan en la base de datos y se reflejan en la página de inicio <strong>/</strong>. El botón <strong>Restaurar</strong> vuelve al contenido por defecto.
+                </div>
               </div>
             </div>
           </div>
@@ -468,7 +497,7 @@ export default function B2BLandingEditor({ T, isMobile, showToast }) {
                 </span>
               </div>
               <span style={{ fontSize: 11, color: T.muted }}>
-                {iframeReady ? "Se actualiza en vivo" : "Cargando preview..."}
+                Se actualiza en vivo
               </span>
             </div>
             <div
@@ -482,8 +511,7 @@ export default function B2BLandingEditor({ T, isMobile, showToast }) {
             >
               <iframe
                 ref={iframeRef}
-                src="/?preview=1"
-                onLoad={() => setIframeReady(false)}
+                srcDoc={previewSrcDoc}
                 title="Vista previa B2B"
                 style={{
                   width: previewMode === "mobile" ? 390 : "100%",
@@ -499,6 +527,105 @@ export default function B2BLandingEditor({ T, isMobile, showToast }) {
       </div>
     </div>
   );
+}
+
+function getB2BPreviewDocument({ body, css, editable }) {
+  const previewScript = `
+    (() => {
+      const root = document.getElementById("b2b-preview-root");
+      if (!root) return;
+
+      const EDITABLE_SELECTOR = "h1,h2,h3,h4,h5,h6,p,span,a,button,li,strong,small,label,.marquee-item";
+
+      document.addEventListener("click", (event) => {
+        const link = event.target.closest("a");
+        if (link) event.preventDefault();
+      });
+
+      const setupEditable = () => {
+        if (!${editable ? "true" : "false"}) return;
+
+        const marqueeItems = Array.from(root.querySelectorAll('.marquee-item')).filter((el) => el.textContent && el.textContent.trim());
+        const textElements = Array.from(root.querySelectorAll(EDITABLE_SELECTOR)).filter((el) => {
+          if (el.classList.contains('marquee-item')) return false;
+          if (el.closest('.marquee-item')) return false;
+          if (!el.textContent || !el.textContent.trim()) return false;
+          return !el.querySelector('h1,h2,h3,h4,h5,h6,p,span,a,button,li,strong,small,label');
+        });
+        const elements = [...marqueeItems, ...textElements];
+
+        elements.forEach((el) => {
+          el.setAttribute("data-b2b-editable", "true");
+          el.setAttribute("contenteditable", "true");
+          el.addEventListener("blur", () => {
+            window.parent.postMessage(
+              { type: "B2B_PREVIEW_HTML_UPDATE", html: root.innerHTML },
+              "*"
+            );
+          });
+          el.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") {
+              event.preventDefault();
+              el.blur();
+            }
+            if (event.key === "Enter" && el.tagName !== "P" && el.tagName !== "LI") {
+              event.preventDefault();
+              el.blur();
+            }
+          });
+        });
+      };
+
+      setupEditable();
+    })();
+  `;
+
+  return `<!DOCTYPE html>
+  <html lang="es">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+      <style>
+        body { margin: 0; }
+        [data-b2b-editable="true"] {
+          cursor: text;
+          outline: none;
+          border-radius: 4px;
+          transition: background .2s ease, box-shadow .2s ease;
+        }
+        [data-b2b-editable="true"]:hover {
+          background: rgba(37, 99, 235, 0.10);
+        }
+        [data-b2b-editable="true"]:focus {
+          background: rgba(37, 99, 235, 0.14);
+          box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.35);
+        }
+      </style>
+      <style>${css}</style>
+    </head>
+    <body>
+      <div id="b2b-preview-root">${body}</div>
+      <script>${previewScript}</script>
+    </body>
+  </html>`;
+}
+
+function textareaStyle(T) {
+  return {
+    width: "100%",
+    minHeight: 360,
+    padding: 16,
+    background: T.bgCard,
+    border: `1px solid ${T.border}`,
+    borderRadius: 16,
+    color: T.text,
+    fontSize: 13,
+    fontFamily: "monospace",
+    lineHeight: 1.5,
+    outline: "none",
+    resize: "vertical",
+  };
 }
 
 function ViewportButton({ active, onClick, icon, label, T, hideLabel }) {
