@@ -98,7 +98,7 @@ export async function POST(request) {
         gender: gender || inferGender(name),
         footerText: String(footerText || "").slice(0, 500),
         metaPixelId: String(metaPixelId || "").slice(0, 50),
-        landingTheme: String(landingTheme || "").slice(0, 20),
+        landingTheme: String(landingTheme || "dark").slice(0, 20),
         companyId: resolvedCompanyId,
       },
     });

@@ -28,7 +28,7 @@ function getDefaultSettings(isAdmin = false) {
     sellerPhoto: "",
     sellerBio: "Como tu ejecutiva comercial especializada de Mundo, te ayudo a gestionar tu contrato de forma rápida y transparente.",
     sellerGender: "",
-    landingTheme: "light",
+    landingTheme: "dark",
     footerText: "Tu ejecutiva comercial autorizada de Mundo. Gestión ágil, directa y transparente de tus planes de internet fibra, televisión digital y telefonía móvil.",
     whatsappNumber: "",
     metaPixelId: "",

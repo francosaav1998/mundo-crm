@@ -12,6 +12,7 @@ import {
   CoverageControls,
   HeaderControls,
   FooterControls,
+  MarketingControls,
 } from "./landing/LandingControls";
 
 const SECTIONS = [
@@ -22,6 +23,7 @@ const SECTIONS = [
   { id: "coverage", label: "Cobertura", icon: "bi-geo-alt-fill" },
   { id: "header", label: "Header", icon: "bi-layout-text-window-reverse" },
   { id: "footer", label: "Footer", icon: "bi-layout-text-sidebar-reverse" },
+  { id: "marketing", label: "Pixel y Tema", icon: "bi-megaphone-fill" },
 ];
 
 export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
@@ -497,6 +499,14 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
                     updateArrayItem={(k, i, v) => updateArrayItem("footer", k, i, v)}
                     addArrayItem={(k, t) => addArrayItem("footer", k, t)}
                     removeArrayItem={(k, i) => removeArrayItem("footer", k, i)}
+                    T={T}
+                    isMobile={isMobile}
+                  />
+                )}
+                {activeSection === "marketing" && (
+                  <MarketingControls
+                    profile={profile}
+                    updateProfile={updateProfile}
                     T={T}
                     isMobile={isMobile}
                   />

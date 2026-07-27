@@ -32,9 +32,22 @@ const BENEFITS = [
 export default function BenefitsSection({ companyName = "Mundo", content = {} }) {
   const c = content || {};
   const benefits = Array.isArray(c.items) && c.items.length > 0 ? c.items : BENEFITS;
+  const backgroundImageUrl = String(c.backgroundImageUrl || "").trim();
+  const sectionStyle = backgroundImageUrl
+    ? {
+        backgroundImage: `linear-gradient(135deg, rgba(10, 14, 26, 0.86) 0%, rgba(10, 14, 26, 0.68) 100%), url("${backgroundImageUrl}")`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }
+    : undefined;
 
   return (
-    <section id="beneficios" className="benefits-section">
+    <section
+      id="beneficios"
+      className={`benefits-section${backgroundImageUrl ? " benefits-section--photo" : ""}`}
+      style={sectionStyle}
+    >
       <div className="container">
         <div className="section-header">
           <h2>

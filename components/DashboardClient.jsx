@@ -66,7 +66,7 @@ const VALID_MENU_IDS = ["dashboard", "leads", "emails", "whatsapp", "import", "u
 
 const SPLASH_DURATION = 1700; // ms — sincronizado con la barra de progreso del splash
 
-export default function DashboardClient({ initialLeads = [], initialTotal = 0, initialStats = null, username, isAdmin = false, sellerSlug = null, sellerInfo = null }) {
+export default function DashboardClient({ initialLeads = [], initialTotal = 0, initialStats = null, username, isAdmin = false, sellerSlug = null, sellerInfo = null, lockedToBilling = false }) {
   const { theme, toggle: toggleTheme } = useTheme();
   const T = NEON_THEME[theme];
 
@@ -82,6 +82,7 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
   }, []);
 
   const [activeMenu, setActiveMenu] = useState(() => {
+    if (lockedToBilling) return "billing";
     const tab = searchParams.get("tab");
     return VALID_MENU_IDS.includes(tab) ? tab : "dashboard";
   });
@@ -100,7 +101,7 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
     showToast,
   } = useSettings({ isAdmin });
 
-  const onboardingNeeded = !isAdmin && (!sellerInfo?.photo || !sellerInfo?.bio || !sellerInfo?.phone);
+  const onboardingNeeded = !isAdmin && !lockedToBilling && (!sellerInfo?.photo || !sellerInfo?.bio || !sellerInfo?.phone);
 
   const {
     leads,
@@ -123,9 +124,11 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
   } = useLeads(initialLeads, initialTotal);
 
   const handleMenuChange = useCallback((menuId) => {
+    // Cuenta pausada: solo se permite navegar a Facturación.
+    if (lockedToBilling && menuId !== "billing") return;
     setActiveMenu(menuId);
     if (isMobile) setSidebarOpen(false);
-  }, [isMobile]);
+  }, [isMobile, lockedToBilling]);
 
   const handleUpdateStatus = useCallback(async (id, status) => {
     setUpdating(id);
@@ -232,6 +235,7 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
         isAdmin={isAdmin}
         sellerSlug={sellerSlug}
         onboardingNeeded={onboardingNeeded}
+        lockedToBilling={lockedToBilling}
       >
         {/* Transición suave entre vistas (fade + slide) */}
         <AnimatePresence mode="wait">
@@ -353,6 +357,7 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
                   T={T}
                   isMobile={isMobile}
                   showToast={showToast}
+                  locked={lockedToBilling}
                 />
               )}
 

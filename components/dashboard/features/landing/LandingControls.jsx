@@ -514,8 +514,38 @@ function PlanCardEditor({ plan, idx, updatePlan, removePlan, updatePlanFeature, 
 }
 
 export function BenefitsControls({ content, updateContent, updateArrayItem, addArrayItem, removeArrayItem, T, isMobile = false }) {
+  const [uploadingBg, setUploadingBg] = useState(false);
+
+  const handleBackgroundUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setUploadingBg(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", "seller");
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Error al subir imagen");
+      updateContent({ backgroundImageUrl: data.url });
+    } catch (err) {
+      alert(err.message || "Error al subir imagen");
+    } finally {
+      setUploadingBg(false);
+      event.target.value = "";
+    }
+  };
+
   return (
     <>
+      <SectionBlock title="Imagen de fondo" T={T}>
+        <Field label="URL de la imagen" help="Personaliza el fondo de la sección de beneficios. Déjala vacía para usar el color por defecto." T={T}>
+          <Input type="text" T={T} value={content.backgroundImageUrl || ""} onChange={(e) => updateContent({ backgroundImageUrl: e.target.value })} placeholder="https://.../mi-imagen.jpg" />
+        </Field>
+        <Field label="Subir imagen" help={uploadingBg ? "Subiendo imagen..." : "También puedes subir una imagen desde tu computador."} T={T}>
+          <input type="file" accept="image/*" onChange={handleBackgroundUpload} disabled={uploadingBg} style={{ width: "100%", padding: 12, background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: 12, color: T.text }} />
+        </Field>
+      </SectionBlock>
       <SectionBlock title="Encabezado" T={T}>
         <Field label="Título" T={T}>
           <Input type="text" T={T} value={content.title || ""} onChange={(e) => updateContent({ title: e.target.value })} />
@@ -765,6 +795,95 @@ export function HeaderControls({ content, updateContent, updateArrayItem, addArr
       <SectionBlock title="Botón CTA" T={T}>
         <Field label="Texto del botón" T={T}>
           <Input type="text" T={T} value={content.cta || ""} onChange={(e) => updateContent({ cta: e.target.value })} />
+        </Field>
+      </SectionBlock>
+    </>
+  );
+}
+
+export function MarketingControls({ profile, updateProfile, T, isMobile = false }) {
+  const theme = profile?.landingTheme || "dark";
+  return (
+    <>
+      <SectionBlock title="Píxel de Meta (Facebook)" T={T}>
+        <Field
+          label="ID del píxel"
+          help="Lo encuentras en el Administrador de eventos de Meta. Solo números. Se instala automáticamente en tu landing y registra las visitas."
+          T={T}
+        >
+          <Input
+            type="text"
+            inputMode="numeric"
+            T={T}
+            value={profile?.metaPixelId || ""}
+            onChange={(e) => updateProfile({ metaPixelId: e.target.value.replace(/\D/g, "") })}
+            placeholder="Ej: 123456789012345"
+          />
+        </Field>
+        {profile?.metaPixelId ? (
+          <div
+            style={{
+              padding: 12,
+              borderRadius: 12,
+              background: "rgba(37, 211, 102, 0.10)",
+              border: "1px solid rgba(37, 211, 102, 0.25)",
+              color: T.muted,
+              fontSize: 13,
+              lineHeight: 1.5,
+            }}
+          >
+            <i className="bi bi-check-circle-fill" style={{ color: "#25D366", marginRight: 8 }}></i>
+            Píxel activo: <strong style={{ color: T.text }}>{profile.metaPixelId}</strong>. Se disparará un evento PageView en cada visita.
+          </div>
+        ) : (
+          <div
+            style={{
+              padding: 12,
+              borderRadius: 12,
+              background: `${T.accent}10`,
+              border: `1px solid ${T.accent}25`,
+              color: T.muted,
+              fontSize: 13,
+              lineHeight: 1.5,
+            }}
+          >
+            <i className="bi bi-info-circle-fill" style={{ color: T.accent, marginRight: 8 }}></i>
+            Sin píxel configurado. Pega tu ID para medir tus campañas de Meta Ads.
+          </div>
+        )}
+      </SectionBlock>
+      <SectionBlock title="Apariencia de la landing" T={T}>
+        <Field label="Modo de vista" help="El modo Noche es el recomendado: resalta la barra deslizante y los planes." T={T}>
+          <div style={{ display: "flex", gap: 10, flexDirection: isMobile ? "column" : "row" }}>
+            {[
+              { id: "light", label: "Día", icon: "bi-sun-fill" },
+              { id: "dark", label: "Noche", icon: "bi-moon-stars-fill" },
+            ].map((opt) => (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => updateProfile({ landingTheme: opt.id })}
+                style={{
+                  flex: 1,
+                  padding: "12px",
+                  borderRadius: 12,
+                  border: theme === opt.id ? `2px solid ${T.accent}` : `1px solid ${T.border}`,
+                  background: theme === opt.id ? `${T.accent}15` : "transparent",
+                  color: theme === opt.id ? T.accent : T.muted,
+                  cursor: "pointer",
+                  fontSize: 14,
+                  fontWeight: 700,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                }}
+              >
+                <i className={`bi ${opt.icon}`}></i>
+                {opt.label}
+              </button>
+            ))}
+          </div>
         </Field>
       </SectionBlock>
     </>

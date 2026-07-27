@@ -60,9 +60,13 @@ export default function DashboardLayout({
   isAdmin = false,
   sellerSlug = null,
   onboardingNeeded = false,
+  lockedToBilling = false,
 }) {
   const router = useRouter();
-  const MENU_ITEMS = getMenuItems(isAdmin).filter((item) => !item.adminOnly || isAdmin);
+  let MENU_ITEMS = getMenuItems(isAdmin).filter((item) => !item.adminOnly || isAdmin);
+  if (lockedToBilling) {
+    MENU_ITEMS = MENU_ITEMS.filter((item) => item.id === "billing");
+  }
 
   const logout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -83,8 +87,13 @@ export default function DashboardLayout({
         transition: "background 0.3s, color 0.3s",
       }}
     >
-      {/* EducMark Aurora Background */}
+      {/* EducMark Aurora Background + capa galáctica animada */}
       <div className="educmark-bg" />
+      <div className="galaxy-bg" aria-hidden="true">
+        <div className="galaxy-aurora" />
+        <div className="galaxy-stars-far" />
+        <div className="galaxy-stars" />
+      </div>
       <div className="educmark-progress" style={{ width: "100%" }} />
 
       {/* Mobile Sidebar Backdrop */}
@@ -218,7 +227,7 @@ export default function DashboardLayout({
               <i className={`bi ${sidebarOpen ? "bi-arrow-bar-left" : "bi-arrow-bar-right"}`} />
             </RippleButton>
           </Tooltip>
-          {sidebarOpen && (
+          {sidebarOpen && !lockedToBilling && (
             <a
               href={isAdmin ? "/" : sellerLandingUrl}
               target="_blank"
@@ -308,7 +317,7 @@ export default function DashboardLayout({
                 <i className="bi bi-list" />
               </RippleButton>
             </Tooltip>
-            {(isAdmin || sellerSlug) && (
+            {!lockedToBilling && (isAdmin || sellerSlug) && (
               <Tooltip content={isAdmin ? "Ver landing de ventas" : "Ver mi landing"} position="bottom">
                 <RippleButton
                   onClick={() => window.open(isAdmin ? "/" : sellerLandingUrl, "_blank", "noopener,noreferrer")}
@@ -403,6 +412,48 @@ export default function DashboardLayout({
             )}
           </div>
         </motion.header>
+
+        {/* Banner de cuenta pausada: solo facturación disponible */}
+        {lockedToBilling && (
+          <div
+            className="glass-card"
+            style={{
+              margin: isMobile ? "0 16px 16px" : "0 40px 24px",
+              border: "1px solid rgba(239, 68, 68, 0.35)",
+              padding: "18px 24px",
+              display: "flex",
+              alignItems: "center",
+              gap: "14px",
+              flexWrap: "wrap",
+            }}
+          >
+            <div
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: "14px",
+                background: "rgba(239, 68, 68, 0.14)",
+                border: "1px solid rgba(239, 68, 68, 0.30)",
+                color: "#EF4444",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 20,
+                flexShrink: 0,
+              }}
+            >
+              <i className="bi bi-pause-circle-fill"></i>
+            </div>
+            <div style={{ flex: 1, minWidth: 220 }}>
+              <h3 style={{ fontSize: "15px", fontWeight: 700, color: T.text, marginBottom: "4px", fontFamily: "var(--font-heading), 'Outfit', sans-serif" }}>
+                Tu cuenta está pausada
+              </h3>
+              <p style={{ fontSize: "13px", color: T.muted, fontWeight: 500, lineHeight: 1.5 }}>
+                Registra tu tarjeta abajo para reactivar tu landing automáticamente. Si crees que es un error, contacta al administrador.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Onboarding Banner */}
         {onboardingNeeded && !isAdmin && (

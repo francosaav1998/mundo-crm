@@ -1,14 +1,22 @@
 import B2BLandingPage from "@/components/B2BLandingPage";
-import { getB2BLandingContent } from "@/lib/b2b-landing.server";
-
-export const dynamic = "force-dynamic";
+import B2BPreviewBridge from "@/components/B2BPreviewBridge";
+import { getB2BContent } from "@/lib/b2b-landing.server";
 
 export const metadata = {
-  title: "Gestion Vendedores | CRM y landings para vender más",
-  description: "Gestion Vendedores: tu CRM comercial con landing, leads, seguimiento, WhatsApp masivo y prueba gratis.",
+  title: "Mundo CRM | Una plataforma para todos tus equipos comerciales",
+  description: "Gestiona prospectos, seguimientos y ventas de Mundo, VTR, Claro, WOM, Entel y Movistar desde una sola plataforma.",
 };
 
-export default async function Home() {
-  const { css, body } = await getB2BLandingContent();
-  return <B2BLandingPage css={css} body={body} />;
+// La portada lee el contenido editado por el admin en cada request.
+export const dynamic = "force-dynamic";
+
+export default async function Home({ searchParams }) {
+  const params = await searchParams;
+  const content = await getB2BContent();
+
+  if (params?.preview === "1") {
+    return <B2BPreviewBridge initialContent={content} />;
+  }
+
+  return <B2BLandingPage content={content} />;
 }

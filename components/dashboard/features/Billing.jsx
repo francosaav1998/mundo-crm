@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import RippleButton from "@/components/ui/RippleButton";
 import SectionHeader from "@/components/dashboard/ui/SectionHeader";
 
-export default function Billing({ T, isMobile, showToast }) {
+export default function Billing({ T, isMobile, showToast, locked = false }) {
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [subscription, setSubscription] = useState(null);
@@ -41,6 +41,15 @@ export default function Billing({ T, isMobile, showToast }) {
 
     return () => clearInterval(interval);
   }, [subscription?.status]);
+
+  // Cuenta pausada: cuando el pago se confirma, el seller se reactiva solo.
+  // Recargamos para que el dashboard vuelva a su estado normal.
+  useEffect(() => {
+    if (!locked || !subscription?.isActive) return undefined;
+    showToast("¡Suscripción activa! Reactivando tu cuenta...");
+    const timer = setTimeout(() => window.location.reload(), 1800);
+    return () => clearTimeout(timer);
+  }, [locked, subscription?.isActive, showToast]);
 
   async function handleSetupPayment() {
     if (subscription?.isTrial && subscription?.trialEndsAt) {

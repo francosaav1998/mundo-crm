@@ -23,7 +23,7 @@ export function useLandingEditor({ showToast }) {
     gender: "",
     footerText: "",
     metaPixelId: "",
-    landingTheme: "light",
+    landingTheme: "dark",
   });
 
   useEffect(() => {
@@ -52,7 +52,7 @@ export function useLandingEditor({ showToast }) {
             gender: s.gender || "",
             footerText: s.footerText || "",
             metaPixelId: s.metaPixelId || "",
-            landingTheme: s.landingTheme || "light",
+            landingTheme: s.landingTheme || "dark",
           });
         }
 
@@ -211,6 +211,8 @@ export function useLandingEditor({ showToast }) {
           bio: profile.bio,
           gender: profile.gender,
           footerText: profile.footerText,
+          metaPixelId: profile.metaPixelId,
+          landingTheme: profile.landingTheme,
         }),
       });
 
