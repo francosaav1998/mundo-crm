@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { uploadImage } from "@/lib/upload-image";
 
 export function Input({ T, style, ...props }) {
   const [focused, setFocused] = useState(false);
@@ -106,12 +107,7 @@ export function HeroControls({ content, updateContent, T, isMobile = false }) {
     if (!file) return;
     setUploadingBg(true);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("folder", "seller");
-      const res = await fetch("/api/upload", { method: "POST", body: formData });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Error al subir imagen");
+      const data = await uploadImage(file, "seller");
       const next = [...backgroundImages, data.url];
       if (!content.backgroundImageUrl) {
         updateContent({ backgroundImageUrl: data.url, backgroundImages: next });
@@ -603,12 +599,7 @@ export function BenefitsControls({ content, updateContent, updateArrayItem, addA
     if (!file) return;
     setUploadingBg(true);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("folder", "seller");
-      const res = await fetch("/api/upload", { method: "POST", body: formData });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Error al subir imagen");
+      const data = await uploadImage(file, "seller");
       updateContent({ backgroundImageUrl: data.url });
     } catch (err) {
       alert(err.message || "Error al subir imagen");

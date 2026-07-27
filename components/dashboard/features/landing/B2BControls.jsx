@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Input, Textarea, Field, SectionBlock } from "./LandingControls";
+import { uploadImage } from "@/lib/upload-image";
 
 function ImageUploadField({ value, onChange, T, label = "Subir imagen" }) {
   const [uploading, setUploading] = useState(false);
@@ -11,12 +12,7 @@ function ImageUploadField({ value, onChange, T, label = "Subir imagen" }) {
     if (!file) return;
     setUploading(true);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("folder", "b2b");
-      const res = await fetch("/api/upload", { method: "POST", body: formData });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Error al subir imagen");
+      const data = await uploadImage(file, "b2b");
       onChange(data.url);
     } catch (err) {
       alert(err.message || "Error al subir imagen");

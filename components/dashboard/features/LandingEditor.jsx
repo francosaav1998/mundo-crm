@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import RippleButton from "@/components/ui/RippleButton";
 import { useLandingEditor } from "../hooks/useLandingEditor";
 import { buildSellerLandingUrl } from "@/lib/urls";
+import { uploadImage } from "@/lib/upload-image";
 import {
   HeroControls,
   SellerControls,
@@ -70,12 +71,7 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
     if (!file) return;
     setUploadingPhoto(true);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("folder", "seller");
-      const res = await fetch("/api/upload", { method: "POST", body: formData });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Error al subir foto");
+      const data = await uploadImage(file, "seller");
       updateProfile({ photo: data.url });
       showToast("Foto actualizada");
     } catch (err) {
