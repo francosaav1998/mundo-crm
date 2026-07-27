@@ -96,6 +96,10 @@ export function Field({ label, help, T, children }) {
 
 export function HeroControls({ content, updateContent, T, isMobile = false }) {
   const [uploadingBg, setUploadingBg] = useState(false);
+  const backgroundImages = Array.isArray(content.backgroundImages) ? content.backgroundImages : [];
+  const allImages = content.backgroundImageUrl
+    ? [content.backgroundImageUrl, ...backgroundImages.filter((u) => u !== content.backgroundImageUrl)]
+    : backgroundImages;
 
   const handleBackgroundUpload = async (event) => {
     const file = event.target.files?.[0];
@@ -108,7 +112,12 @@ export function HeroControls({ content, updateContent, T, isMobile = false }) {
       const res = await fetch("/api/upload", { method: "POST", body: formData });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Error al subir imagen");
-      updateContent({ backgroundImageUrl: data.url });
+      const next = [...backgroundImages, data.url];
+      if (!content.backgroundImageUrl) {
+        updateContent({ backgroundImageUrl: data.url, backgroundImages: next });
+      } else {
+        updateContent({ backgroundImages: next });
+      }
     } catch (err) {
       alert(err.message || "Error al subir imagen");
     } finally {
@@ -117,14 +126,58 @@ export function HeroControls({ content, updateContent, T, isMobile = false }) {
     }
   };
 
+  const removeImage = (index) => {
+    const removed = allImages[index];
+    const next = allImages.filter((_, i) => i !== index);
+    const updates = { backgroundImages: next };
+    if (content.backgroundImageUrl === removed) {
+      updates.backgroundImageUrl = next[0] || "";
+    }
+    updateContent(updates);
+  };
+
   return (
     <>
-      <SectionBlock title="Imagen de fondo del hero" T={T}>
-        <Field label="URL de la imagen" help="Si la completas, reemplaza el fondo por defecto del hero." T={T}>
-          <Input type="text" T={T} value={content.backgroundImageUrl || ""} onChange={(e) => updateContent({ backgroundImageUrl: e.target.value })} placeholder="https://.../mi-imagen.jpg" />
+      <SectionBlock title="Diapositivas de fondo del hero" T={T}>
+        <Field label="Imágenes actuales" help="Puedes subir varias fotos para que roten de fondo en el hero." T={T}>
+          {allImages.length === 0 ? (
+            <div style={{ color: T.muted, fontSize: 13 }}>No hay imágenes. Sube la primera foto para activar el fondo.</div>
+          ) : (
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(3, 1fr)", gap: 10 }}>
+              {allImages.map((url, idx) => (
+                <div key={url + idx} style={{ position: "relative", borderRadius: 10, overflow: "hidden", border: `1px solid ${T.border}`, aspectRatio: "16/9", background: T.inputBg }}>
+                  <Image src={url} alt={`Fondo ${idx + 1}`} fill sizes="(max-width: 768px) 50vw, 150px" unoptimized style={{ objectFit: "cover" }} />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(idx)}
+                    title="Eliminar imagen"
+                    style={{
+                      position: "absolute",
+                      top: 6,
+                      right: 6,
+                      width: 26,
+                      height: 26,
+                      borderRadius: 6,
+                      background: "rgba(239, 68, 68, 0.9)",
+                      color: "#fff",
+                      border: "none",
+                      display: "grid",
+                      placeItems: "center",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <i className="bi bi-trash3-fill" style={{ fontSize: 12 }} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </Field>
-        <Field label="Subir imagen" help={uploadingBg ? "Subiendo imagen..." : "También puedes subir una imagen desde tu computador."} T={T}>
+        <Field label="Subir imagen" help={uploadingBg ? "Subiendo imagen..." : "Agrega más fotos al slideshow del hero."} T={T}>
           <input type="file" accept="image/*" onChange={handleBackgroundUpload} disabled={uploadingBg} style={{ width: "100%", padding: 12, background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: 12, color: T.text }} />
+        </Field>
+        <Field label="URL de imagen principal (legacy)" help="URL del primer fondo. Se mantiene por compatibilidad." T={T}>
+          <Input type="text" T={T} value={content.backgroundImageUrl || ""} onChange={(e) => updateContent({ backgroundImageUrl: e.target.value })} placeholder="https://.../mi-imagen.jpg" />
         </Field>
       </SectionBlock>
       <SectionBlock title="Badge / Etiqueta" T={T}>
@@ -178,7 +231,15 @@ export function SellerControls({ content, updateContent, profile, updateProfile,
           <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
             <div style={{ position: "relative", width: 56, height: 56, borderRadius: "50%", overflow: "hidden", border: `2px solid ${T.border}`, background: T.inputBg, flexShrink: 0 }}>
               {profile?.photo ? (
-                <Image src={profile.photo} alt="Vendedor" fill sizes="56px" style={{ objectFit: "cover" }} />
+                <Image
+                  src={profile.photo}
+                  alt="Vendedor"
+                  fill
+                  sizes="56px"
+                  unoptimized
+                  style={{ objectFit: "cover" }}
+                  onError={(e) => { e.currentTarget.style.display = "none"; }}
+                />
               ) : (
                 <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: T.muted }}>
                   <i className="bi bi-person" style={{ fontSize: 24 }}></i>
@@ -205,6 +266,27 @@ export function SellerControls({ content, updateContent, profile, updateProfile,
               {uploadingPhoto ? "Subiendo..." : "Subir foto"}
               <input type="file" accept="image/*" disabled={uploadingPhoto} onChange={onPhotoUpload} style={{ display: "none" }} />
             </label>
+            {profile?.photo && (
+              <button
+                type="button"
+                onClick={() => updateProfile({ photo: "" })}
+                title="Eliminar foto"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: 36,
+                  height: 36,
+                  borderRadius: 10,
+                  background: "rgba(239, 68, 68, 0.10)",
+                  border: "1px solid rgba(239, 68, 68, 0.25)",
+                  color: "#EF4444",
+                  cursor: "pointer",
+                }}
+              >
+                <i className="bi bi-trash3-fill" />
+              </button>
+            )}
             <Input type="text" T={T} value={profile?.photo || ""} onChange={(e) => updateProfile({ photo: e.target.value })} placeholder="O pega URL de imagen" style={{ flex: 1, minWidth: 160 }} />
           </div>
         </Field>

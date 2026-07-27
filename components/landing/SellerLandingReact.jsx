@@ -14,6 +14,7 @@ import SellerSection from "@/components/landing/SellerSection";
 import PlansSection from "@/components/landing/PlansSection";
 import CoverageSection from "@/components/landing/CoverageSection";
 import BenefitsSection from "@/components/landing/BenefitsSection";
+import BenefitsSlider from "@/components/landing/BenefitsSlider";
 import Footer from "@/components/landing/Footer";
 import WhatsAppFloat from "@/components/landing/WhatsAppFloat";
 import LeadModal from "@/components/landing/LeadModal";
@@ -354,6 +355,9 @@ export default function SellerLandingReact() {
             company={displayCompany}
             content={landingContent.seller}
           />
+        ))}
+        {wrapPreview("benefitsSlider", "Beneficios deslizantes", (
+          <BenefitsSlider content={landingContent.benefitsSlider} />
         ))}
         {wrapPreview("plans", "Planes", (
           <PlansSection plans={mergedPlans} onSelectPlan={handlePlanClick} company={displayCompany} content={landingContent.plans} />

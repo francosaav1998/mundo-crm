@@ -221,10 +221,10 @@ button, a, input, select, textarea {
 }
 
 .header-top {
-  background-color: var(--color-primary-dark);
+  background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
   font-size: var(--text-fluid-xs);
   color: var(--color-text-light);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .header-top-inner {
@@ -251,20 +251,26 @@ button, a, input, select, textarea {
   margin-right: 0.3rem;
 }
 
-/* Marquee de anuncios en header-top */
+.header-top a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.header-top a:hover {
+  text-decoration: underline;
+}
+
+/* Marquee de anuncios debajo del header */
 .marquee-bar {
   overflow: hidden;
-  background: rgba(0, 0, 0, 0.12);
-  padding: 0.55rem 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--color-primary);
+  padding: 0.65rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .site-header .marquee-bar {
-  background: rgba(255, 255, 255, 0.06);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  border-bottom-left-radius: 12px;
-  border-bottom-right-radius: 12px;
-  margin-top: 0.75rem;
+  background: var(--color-primary);
 }
 
 .marquee-list {
@@ -286,9 +292,9 @@ button, a, input, select, textarea {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  font-weight: 600;
+  font-weight: 700;
   white-space: nowrap;
-  color: var(--color-text-light);
+  color: #fff;
 }
 
 .marquee-item i {
@@ -309,6 +315,116 @@ button, a, input, select, textarea {
 
 @media (prefers-reduced-motion: reduce) {
   .marquee-list { animation: none; }
+}
+
+/* -- BENEFITS SLIDER (globos flotantes estilo landing estática) -- */
+.benefits-slider-section {
+  padding: 0;
+  overflow: hidden;
+  background: var(--color-bg-light, #F5F8FA);
+}
+
+.benefits-slider {
+  display: flex;
+  overflow: hidden;
+  position: relative;
+}
+
+.benefits-track {
+  display: flex;
+  flex-shrink: 0;
+  gap: 18px;
+  animation: benefits-scroll 32s linear infinite;
+  padding: 2rem 0;
+}
+
+.benefits-slider:hover .benefits-track {
+  animation-play-state: paused;
+}
+
+.benefit-slide {
+  flex: 0 0 170px;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 20px;
+  padding: 18px 14px;
+  text-align: center;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.25s ease;
+}
+
+.benefit-slide:hover {
+  transform: translateY(-4px);
+  border-color: rgba(0, 116, 142, 0.35);
+}
+
+.benefit-slide-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: rgba(0, 116, 142, 0.12);
+  display: grid;
+  place-items: center;
+  font-size: 1.25rem;
+  color: var(--color-primary);
+  margin: 0 auto 12px;
+}
+
+.benefit-slide-title {
+  font-family: var(--font-heading), 'Outfit', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 800;
+  margin-bottom: 4px;
+  color: var(--color-text-dark);
+}
+
+.benefit-slide-desc {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  line-height: 1.35;
+  margin: 0;
+}
+
+@keyframes benefits-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@media (max-width: 768px) {
+  .benefit-slide { flex: 0 0 150px; padding: 16px 12px; }
+  .benefit-slide-icon { width: 42px; height: 42px; font-size: 1.1rem; }
+  .benefit-slide-title { font-size: 0.85rem; }
+  .benefit-slide-desc { font-size: 0.72rem; }
+  .benefits-track { gap: 14px; animation-duration: 26s; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .benefits-track { animation: none; }
+}
+
+[data-landing-theme="dark"] .benefits-slider-section {
+  background: #0A0E1A;
+}
+
+[data-landing-theme="dark"] .benefit-slide {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-landing-theme="dark"] .benefit-slide:hover {
+  border-color: rgba(0, 116, 142, 0.5);
+}
+
+[data-landing-theme="dark"] .benefit-slide-icon {
+  background: rgba(0, 116, 142, 0.2);
+  color: #4DD0E1;
+}
+
+[data-landing-theme="dark"] .benefit-slide-title {
+  color: #E8EDF5;
+}
+
+[data-landing-theme="dark"] .benefit-slide-desc {
+  color: #8899B5;
 }
 
 .main-nav {
@@ -380,8 +496,29 @@ button, a, input, select, textarea {
   padding: var(--space-fluid-lg) 0;
 }
 
+.hero-backgrounds {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.hero-background-slide {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0;
+  transition: opacity 1.2s ease-in-out;
+}
+
+.hero-background-slide.active {
+  opacity: 1;
+}
+
 .hero::before {
   display: none;
+  z-index: 1;
 }
 
 .hero .container {
@@ -390,7 +527,7 @@ button, a, input, select, textarea {
   gap: clamp(1.5rem, 1rem + 2vw, 2.5rem);
   align-items: center;
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 
 .hero-content h1 {
@@ -1291,9 +1428,16 @@ button, a, input, select, textarea {
 
 /* -- LANDING THEME TOGGLE (modo oscuro, manteniendo branding original) -- */
 [data-landing-theme="dark"] .site-header,
-[data-landing-theme="dark"] .header-top,
 [data-landing-theme="dark"] .site-footer {
   background-color: #0D1525;
+}
+
+[data-landing-theme="dark"] .header-top {
+  background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+}
+
+[data-landing-theme="dark"] .marquee-bar {
+  background: var(--color-primary);
 }
 [data-landing-theme="dark"] .seller-section,
 [data-landing-theme="dark"] .benefits-section,
@@ -1652,7 +1796,7 @@ button, a, input, select, textarea {
   content: "";
   position: absolute;
   inset: 0;
-  z-index: 0;
+  z-index: 1;
   pointer-events: none;
   background-image:
     radial-gradient(1.2px 1.2px at 30px 40px, rgba(255, 255, 255, 0.5), transparent 60%),

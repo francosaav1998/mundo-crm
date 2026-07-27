@@ -82,6 +82,8 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
       showToast(err.message || "Error al subir foto");
     } finally {
       setUploadingPhoto(false);
+      // Permite volver a seleccionar el mismo archivo
+      e.target.value = "";
     }
   }, [updateProfile, showToast]);
 

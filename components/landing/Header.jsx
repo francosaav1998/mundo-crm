@@ -106,9 +106,11 @@ export default function Header({ menuOpen, setMenuOpen, onScrollTo, sellerLabels
               <i className={menuOpen ? "bi bi-x-lg" : "bi bi-list"}></i>
             </button>
           </nav>
-          <MarqueeBar items={marqueeItems} />
         </div>
       </header>
+      <div className="marquee-bar">
+        <MarqueeBar items={marqueeItems} />
+      </div>
     </>
   );
 }

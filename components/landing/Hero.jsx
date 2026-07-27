@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import EditableText from "./EditableText";
 
 export default function Hero({
@@ -14,17 +15,38 @@ export default function Hero({
   const companyName = company?.name || "Mundo";
   const c = content || {};
   const backgroundImageUrl = String(c.backgroundImageUrl || "").trim();
-  const sectionStyle = backgroundImageUrl
-    ? {
-        backgroundImage: `linear-gradient(135deg, rgba(15, 23, 42, 0.82) 0%, rgba(15, 23, 42, 0.55) 100%), url("${backgroundImageUrl}")`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      }
-    : undefined;
+  const backgroundImages = Array.isArray(c.backgroundImages)
+    ? c.backgroundImages.filter((url) => typeof url === "string" && url.trim() !== "")
+    : [];
+  const allBackgroundImages = backgroundImageUrl
+    ? [backgroundImageUrl, ...backgroundImages]
+    : backgroundImages;
+
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    if (allBackgroundImages.length <= 1) return;
+    const interval = setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % allBackgroundImages.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [allBackgroundImages.length]);
 
   return (
-    <section id="inicio" className="hero" style={sectionStyle}>
+    <section id="inicio" className="hero">
+      {allBackgroundImages.length > 0 && (
+        <div className="hero-backgrounds" aria-hidden="true">
+          {allBackgroundImages.map((url, idx) => (
+            <div
+              key={url + idx}
+              className={`hero-background-slide ${idx === activeIndex ? "active" : ""}`}
+              style={{
+                backgroundImage: `linear-gradient(135deg, rgba(15, 23, 42, 0.82) 0%, rgba(15, 23, 42, 0.55) 100%), url("${url}")`,
+              }}
+            />
+          ))}
+        </div>
+      )}
       <div className="container">
         <div className="hero-content">
           <span className="badge-promo">

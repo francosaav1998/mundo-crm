@@ -6,13 +6,13 @@ import { getDefaultBio } from "@/lib/company";
 import EditableText from "./EditableText";
 
 const FALLBACK_AVATAR =
-  "data:image/svg+xml;base64," +
-  Buffer.from(
+  "data:image/svg+xml;utf8," +
+  encodeURIComponent(
     `<svg xmlns="http://www.w3.org/2000/svg" width="320" height="320" viewBox="0 0 320 320">
       <rect width="320" height="320" fill="#00748E"/>
       <text x="50%" y="50%" font-size="120" fill="#FFFFFF" font-family="Montserrat,sans-serif" font-weight="800" text-anchor="middle" dominant-baseline="central">M</text>
     </svg>`
-  ).toString("base64");
+  );
 
 export default function SellerSection({
   sellerPhotoUrl,
@@ -37,7 +37,7 @@ export default function SellerSection({
       <div className="container">
         <div className="seller-card">
           <div className="seller-avatar-wrapper">
-            <Image src={photo} alt={SELLER_CONFIG.name} fill sizes="320px" style={{ objectFit: "cover" }} />
+            <Image src={photo} alt={SELLER_CONFIG.name} fill sizes="320px" unoptimized style={{ objectFit: "cover" }} />
             <span className="seller-badge">{sellerLabels.advisorCapitalized || "Asesor/a"} {companyName}</span>
           </div>
           <div className="seller-info">
