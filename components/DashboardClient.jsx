@@ -67,7 +67,7 @@ const VALID_MENU_IDS = ["dashboard", "leads", "emails", "whatsapp", "import", "u
 const SPLASH_DURATION = 1700; // ms — sincronizado con la barra de progreso del splash
 
 export default function DashboardClient({ initialLeads = [], initialTotal = 0, initialStats = null, username, isAdmin = false, sellerSlug = null, sellerInfo = null, lockedToBilling = false }) {
-  const { theme, toggle: toggleTheme } = useTheme();
+  const { theme, setTheme, toggle: toggleTheme } = useTheme();
   const T = NEON_THEME[theme];
 
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -329,6 +329,9 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
                   onUpdateSettings={updateSettings}
                   onSaveSettings={handleSaveSettings}
                   T={T}
+                  theme={theme}
+                  setTheme={setTheme}
+                  toggleTheme={toggleTheme}
                   isMobile={isMobile}
                   showToast={showToast}
                   isAdmin={isAdmin}
