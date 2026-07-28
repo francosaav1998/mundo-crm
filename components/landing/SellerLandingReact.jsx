@@ -97,8 +97,17 @@ export default function SellerLandingReact() {
         }
         setSeller(data);
         setCompany(data.company);
-
         const companySlug = data.company?.slug;
+
+        // Favicon dinámico según la compañía
+        const favicon = document.querySelector('link[rel="icon"]');
+        if (favicon && companySlug && companySlug !== "mundo") {
+          const logoExt = { wom: "png", vtr: "webp", claro: "png", movistar: "png", entel: "jpg" };
+          const ext = logoExt[companySlug] || "png";
+          favicon.href = `/company-logos/${companySlug}.${ext}`;
+        } else if (favicon) {
+          favicon.href = "https://www.tumundo.cl/wp-content/uploads/2022/12/isotipo.png";
+        }
 
         updateSellerConfig({
           name: data.name,

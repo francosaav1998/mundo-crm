@@ -25,14 +25,8 @@ export default async function SellerLandingPage({ params, searchParams }) {
     return <SellerLandingReact />;
   }
 
-  const companySlug = seller.company?.slug || "mundo";
-
-  // Para las compañías con landing estática profesional, redirigimos a ella.
-  // El slug se pasa como query param para que seller-dynamic.js cargue los datos.
-  if (!isPreview && STATIC_LANDINGS.includes(companySlug)) {
-    redirect(`/landings/${companySlug}.html?slug=${encodeURIComponent(slug)}`);
-  }
-
-  // Preview del editor o compañías sin landing estática (ej. Mundo) usan la landing React.
+  // Siempre se usa la landing React para mantener la URL limpia /p/[slug].
+  // Las compañías como WOM, Entel, etc. se renderizan con su branding y planes
+  // gracias a que SellerLandingReact los carga dinámicamente.
   return <SellerLandingReact />;
 }
