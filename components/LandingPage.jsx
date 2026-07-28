@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { SELLER_CONFIG, updateSellerConfig, inferGender, getSellerLabels } from "@/lib/seller";
+import { SELLER_CONFIG, updateSellerConfig, inferGender, getSellerLabels, getDefaultBio, getDefaultFooterText } from "@/lib/seller";
 import { getLandingContent } from "@/lib/landing";
 import MetaPixel from "./landing/MetaPixel";
 import Header from "./landing/Header";
@@ -29,12 +29,8 @@ export default function LandingPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalPlan, setModalPlan] = useState("");
   const [sellerPhotoUrl, setSellerPhotoUrl] = useState("");
-  const [sellerBioText, setSellerBioText] = useState(
-    "Como tu ejecutiva comercial especializada de Mundo, te ayudo a gestionar tu contrato de forma rápida y transparente. Olvídate de largas esperas en call centers. Analizo la cobertura de tu sector en minutos y agendo tu instalación en tiempo récord."
-  );
-  const [footerText, setFooterText] = useState(
-    "Tu ejecutiva comercial autorizada de Mundo. Gestión ágil, directa y transparente de tus planes de internet fibra, televisión digital y telefonía móvil."
-  );
+  const [sellerBioText, setSellerBioText] = useState(getDefaultBio("", "Mundo"));
+  const [footerText, setFooterText] = useState(getDefaultFooterText("", "Mundo"));
   const [sellerName, setSellerName] = useState(SELLER_CONFIG.name);
   const [sellerGender, setSellerGender] = useState("");
   const [metaPixelId, setMetaPixelId] = useState("");
@@ -55,7 +51,12 @@ export default function LandingPage() {
         });
 
         if (settings.seller_name) setSellerName(settings.seller_name);
-        if (settings.seller_gender !== undefined) setSellerGender(settings.seller_gender);
+        if (settings.seller_gender !== undefined) {
+          setSellerGender(settings.seller_gender);
+          // Actualizar textos por defecto con el género cargado si no hay bio/footer personalizados
+          if (!settings.seller_bio) setSellerBioText(getDefaultBio(settings.seller_gender, "Mundo"));
+          if (!settings.footer_text) setFooterText(getDefaultFooterText(settings.seller_gender, "Mundo"));
+        }
         if (settings.seller_bio) setSellerBioText(settings.seller_bio);
         if (settings.seller_photo) setSellerPhotoUrl(settings.seller_photo);
         if (settings.footer_text !== undefined) setFooterText(settings.footer_text);

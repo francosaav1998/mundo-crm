@@ -586,7 +586,7 @@ function RegistroPageInner() {
               <textarea
                 value={form.bio}
                 onChange={(e) => update("bio", e.target.value)}
-                placeholder="Como tu ejecutiva comercial especializada, te ayudo a gestionar tu contrato..."
+                placeholder="Ej: Como tu ejecutivo/a comercial, te ayudo a gestionar tu contrato..."
                 rows={3}
                  style={{ ...inputStyle, resize: "none", lineHeight: "1.5" }}
                  onFocus={(e) => { e.target.style.borderColor = T.accent; e.target.style.boxShadow = T.glowGold; }}

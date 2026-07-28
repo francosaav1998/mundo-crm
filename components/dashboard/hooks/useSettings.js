@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { normalizeWhatsAppNumber } from "@/lib/seller";
+import { normalizeWhatsAppNumber, getDefaultBio, getDefaultFooterText } from "@/lib/seller";
 
 const LOCAL_KEYS = ["seller_msg"];
 
@@ -26,10 +26,10 @@ function getDefaultSettings(isAdmin = false) {
       ? "Hola, vi el CRM Vendedor Mundo y quiero activar mi prueba gratis de 7 días."
       : "Hola, vi tu página web y me gustaría recibir asesoría sobre los planes de Internet y TV Hogar de Mundo.",
     sellerPhoto: "",
-    sellerBio: "Como tu ejecutiva comercial especializada de Mundo, te ayudo a gestionar tu contrato de forma rápida y transparente.",
+    sellerBio: "",
     sellerGender: "",
     landingTheme: "dark",
-    footerText: "Tu ejecutiva comercial autorizada de Mundo. Gestión ágil, directa y transparente de tus planes de internet fibra, televisión digital y telefonía móvil.",
+    footerText: "",
     whatsappNumber: "",
     metaPixelId: "",
   };
@@ -37,14 +37,16 @@ function getDefaultSettings(isAdmin = false) {
 
 function sellerToSettings(seller) {
   if (!seller) return {};
+  const gender = seller.gender || "";
+  const companyName = seller.company?.name || "Mundo";
   return {
     sellerName: seller.name || DEFAULT_SETTINGS.sellerName,
     sellerPhone: seller.phone || DEFAULT_SETTINGS.sellerPhone,
     sellerPhoto: seller.photo || DEFAULT_SETTINGS.sellerPhoto,
-    sellerBio: seller.bio || DEFAULT_SETTINGS.sellerBio,
-    sellerGender: seller.gender || "",
+    sellerBio: seller.bio || getDefaultBio(gender, companyName),
+    sellerGender: gender,
     landingTheme: seller.landingTheme || DEFAULT_SETTINGS.landingTheme,
-    footerText: seller.footerText || DEFAULT_SETTINGS.footerText,
+    footerText: seller.footerText || getDefaultFooterText(gender, companyName),
     whatsappNumber: normalizeWhatsAppNumber(seller.phone || ""),
     metaPixelId: seller.metaPixelId || DEFAULT_SETTINGS.metaPixelId,
     sellerMsg: seller.defaultMessage || DEFAULT_SETTINGS.sellerMsg,
