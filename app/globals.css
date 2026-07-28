@@ -2234,33 +2234,28 @@ a:focus-visible {
   outline-offset: 2px;
 }
 
-/* ══════════════════════════════════════════════════════════════
-   SCROLLBARS ESTILIZADOS — sobrios, delgados, consistentes con el tema
-   ══════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════
+   SCROLLBAR — delgado, consistente con el tema
+   ═══════════════════════════════════════════════════ */
 
 :root {
   --sb-track: rgba(255, 255, 255, 0.04);
   --sb-thumb: rgba(255, 255, 255, 0.12);
-  --sb-thumb-hover: rgba(255, 255, 255, 0.22);
-  --sb-width: 6px;
 }
 
 [data-theme="light"] {
   --sb-track: rgba(0, 0, 0, 0.04);
   --sb-thumb: rgba(0, 0, 0, 0.12);
-  --sb-thumb-hover: rgba(0, 0, 0, 0.22);
 }
 
-/* ── Raíz (scrollbar principal de la página) ── */
 html {
   scrollbar-width: thin;
   scrollbar-color: var(--sb-thumb) var(--sb-track);
 }
 
-/* ── Webkit (Chrome, Safari, Edge) ── */
 html::-webkit-scrollbar {
-  width: var(--sb-width);
-  height: var(--sb-width);
+  width: 6px;
+  height: 6px;
 }
 
 html::-webkit-scrollbar-track {
@@ -2270,22 +2265,16 @@ html::-webkit-scrollbar-track {
 html::-webkit-scrollbar-thumb {
   background: var(--sb-thumb);
   border-radius: 999px;
-  transition: background 0.2s ease;
 }
 
-html::-webkit-scrollbar-thumb:hover {
-  background: var(--sb-thumb-hover);
-}
-
-/* ── Todos los demás contenedores ── */
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--sb-thumb) var(--sb-track);
 }
 
 ::-webkit-scrollbar {
-  width: var(--sb-width);
-  height: var(--sb-width);
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -2295,11 +2284,6 @@ html::-webkit-scrollbar-thumb:hover {
 ::-webkit-scrollbar-thumb {
   background: var(--sb-thumb);
   border-radius: 999px;
-  transition: background 0.2s ease;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--sb-thumb-hover);
 }
 
 /* ── Accesibilidad: respeta usuarios con movimiento reducido ── */
