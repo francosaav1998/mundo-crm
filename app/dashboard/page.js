@@ -29,6 +29,11 @@ export default async function DashboardPage() {
       include: { company: true },
     });
 
+    // Si el usuario vino por OAuth y no ha completado su perfil, mandarlo a registro
+    if (!seller.phone || !seller.companyId) {
+      redirect("/registro?oauth=true");
+    }
+
     if (!seller?.active) {
       // Cuenta pausada: en vez de una pantalla sin salida, dejamos entrar al
       // dashboard en modo bloqueado con acceso SOLO a Facturación, para que el
