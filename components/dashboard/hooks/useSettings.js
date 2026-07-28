@@ -46,6 +46,7 @@ function sellerToSettings(seller) {
     sellerBio: seller.bio || getDefaultBio(gender, companyName),
     sellerGender: gender,
     landingTheme: seller.landingTheme || DEFAULT_SETTINGS.landingTheme,
+    dashboardTheme: seller.dashboardTheme || DEFAULT_SETTINGS.dashboardTheme,
     footerText: seller.footerText || getDefaultFooterText(gender, companyName),
     whatsappNumber: normalizeWhatsAppNumber(seller.phone || ""),
     metaPixelId: seller.metaPixelId || DEFAULT_SETTINGS.metaPixelId,
@@ -61,6 +62,7 @@ function settingsToSellerPayload(settings) {
     bio: settings.sellerBio,
     gender: settings.sellerGender,
     landingTheme: settings.landingTheme,
+    dashboardTheme: settings.dashboardTheme || "dark",
     footerText: settings.footerText,
     metaPixelId: settings.metaPixelId.trim(),
     defaultMessage: settings.sellerMsg,
@@ -152,6 +154,7 @@ export function useSettings({ isAdmin = false } = {}) {
     localStorage.setItem("landing_theme", settingsToSave.landingTheme);
     localStorage.setItem("footer_text", settingsToSave.footerText);
     localStorage.setItem("meta_pixel_id", settingsToSave.metaPixelId);
+    localStorage.setItem("dashboard_theme", settingsToSave.dashboardTheme || "dark");
     document.documentElement.setAttribute("data-landing-theme", settingsToSave.landingTheme);
   }, []);
 

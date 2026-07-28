@@ -113,9 +113,10 @@ model Seller {
   bgVideoUrl   String   @default("")
   footerText   String   @default("")
   metaPixelId  String   @default("")
-  landingTheme   String             @default("")
-  landingContent Json?
-  defaultMessage String?
+  landingTheme    String             @default("")
+  dashboardTheme  String             @default("")
+  landingContent  Json?
+  defaultMessage  String?
   active         Boolean            @default(true)
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt

@@ -173,6 +173,8 @@ const STATEMENTS = [
    FROM "Seller" s
    LEFT JOIN "Subscription" sub ON sub."sellerId" = s."id"
    WHERE sub."id" IS NULL`,
+
+  `ALTER TABLE "Seller" ADD COLUMN IF NOT EXISTS "dashboardTheme" TEXT NOT NULL DEFAULT ''`,
 ];
 
 async function main() {
