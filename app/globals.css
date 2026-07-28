@@ -2239,13 +2239,14 @@ a:focus-visible {
    ═══════════════════════════════════════════════════ */
 
 :root {
-  --sb-track: rgba(255, 255, 255, 0.04);
-  --sb-thumb: rgba(255, 255, 255, 0.12);
-}
-
-[data-theme="light"] {
   --sb-track: rgba(0, 0, 0, 0.04);
   --sb-thumb: rgba(0, 0, 0, 0.12);
+}
+
+[data-theme="dark"],
+[data-landing-theme="dark"] {
+  --sb-track: rgba(255, 255, 255, 0.04);
+  --sb-thumb: rgba(255, 255, 255, 0.12);
 }
 
 html {
