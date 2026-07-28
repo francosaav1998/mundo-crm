@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { NEON_THEME } from "@/lib/dashboard/constants";
@@ -17,7 +17,52 @@ function normalizeWhatsApp(number) {
 }
 
 export default function RegistroPage() {
+  return (
+    <Suspense fallback={<RegistroFallback />}>
+      <RegistroPageInner />
+    </Suspense>
+  );
+}
+
+function RegistroFallback() {
   const T = NEON_THEME.dark;
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        background: T.bgGradient,
+        color: T.text,
+        fontFamily: "var(--font-body), system-ui, sans-serif",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "24px",
+      }}
+    >
+      <div style={{ textAlign: "center" }}>
+        <div
+          style={{
+            width: "48px",
+            height: "48px",
+            border: "3px solid " + T.border,
+            borderTop: "3px solid " + T.accent,
+            borderRadius: "50%",
+            margin: "0 auto 16px",
+            animation: "spin 1s linear infinite",
+          }}
+        />
+        <p style={{ color: T.muted, fontSize: "14px" }}>Cargando...</p>
+      </div>
+    </div>
+  );
+}
+
+function RegistroPageInner() {
+  const T = NEON_THEME.dark;
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const supabase = createClient();
+
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -35,9 +80,16 @@ export default function RegistroPage() {
   const [oauthLoading, setOauthLoading] = useState(false);
   const [oauthUser, setOauthUser] = useState(null);
   const [loadingOauthData, setLoadingOauthData] = useState(false);
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const supabase = createClient();
+
+  // Redirigir al dashboard cuando el registro se completa
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => {
+        router.push("/dashboard");
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [success, router]);
 
   const update = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
 
@@ -136,7 +188,12 @@ export default function RegistroPage() {
           throw new Error(data.error || "Error al guardar perfil");
         }
         // Sincronizar compañía — pasar company como query param para que findOrCreateSellerForUser la asigne
-        await fetch(`/api/me/seller?company=${encodeURIComponent(form.company)}`);
+        const companyRes = await fetch(`/api/me/seller?company=${encodeURIComponent(form.company)}`);
+        if (!companyRes.ok) {
+          const companyData = await companyRes.json().catch(() => ({}));
+          throw new Error(companyData.error || "Error al asignar compañía");
+        }
+        setSuccess(true);
       } else {
         // Usuario nuevo — registro completo
         if (form.password.length < 6) {
@@ -168,6 +225,8 @@ export default function RegistroPage() {
         });
 
         if (signInError) throw signInError;
+
+        setSuccess(true);
       }
     } catch (err) {
       setError(err.message || "Error al registrarse");
