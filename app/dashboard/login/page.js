@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
-import { getAppOrigin } from "@/lib/urls";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -12,11 +11,10 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [oauthLoading, setOauthLoading] = useState(false);
-  const supabase = createClient();
-  const appOrigin = getAppOrigin();
+  const supabase = useMemo(() => createClient(), []);
 
   const hardRedirect = (path) => {
-    const target = `${appOrigin || window.location.origin}${path}`;
+    const target = `${window.location.origin}${path}`;
     window.location.assign(target);
   };
 
@@ -149,7 +147,7 @@ export default function LoginPage() {
               try {
                 const { error: err } = await supabase.auth.signInWithOAuth({
                   provider: "google",
-                  options: { redirectTo: `${appOrigin || window.location.origin}/auth/callback?from=login` },
+           options: { redirectTo: `${window.location.origin}/auth/callback?from=login` },
                 });
                 if (err) setError(err.message);
               } catch (e) {

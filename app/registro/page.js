@@ -1,10 +1,9 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { NEON_THEME } from "@/lib/dashboard/constants";
-import { getAppOrigin } from "@/lib/urls";
 
 export const dynamic = "force-dynamic";
 
@@ -61,7 +60,7 @@ function RegistroFallback() {
 function RegistroPageInner() {
   const T = NEON_THEME.dark;
   const searchParams = useSearchParams();
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   const [form, setForm] = useState({
     name: "",
@@ -81,12 +80,10 @@ function RegistroPageInner() {
   const [oauthUser, setOauthUser] = useState(null);
   const [loadingOauthData, setLoadingOauthData] = useState(false);
 
-  const appOrigin = getAppOrigin();
-
   const hardRedirect = useCallback((path) => {
-    const target = `${appOrigin || window.location.origin}${path}`;
+    const target = `${window.location.origin}${path}`;
     window.location.assign(target);
-  }, [appOrigin]);
+  }, []);
 
   // Redirigir al dashboard cuando el registro se completa
   useEffect(() => {
@@ -148,7 +145,7 @@ function RegistroPageInner() {
     try {
         const { error: err } = await supabase.auth.signInWithOAuth({
           provider,
-          options: { redirectTo: `${appOrigin || window.location.origin}/auth/callback` },
+          options: { redirectTo: `${window.location.origin}/auth/callback` },
         });
       if (err) setError(err.message);
     } catch (e) {
