@@ -331,6 +331,7 @@ export default function RegistroPage() {
                 style={{
                   ...inputStyle,
                   appearance: "none",
+                  colorScheme: "dark",
                   backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2364748B' viewBox='0 0 16 16'%3E%3Cpath d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E")`,
                   backgroundRepeat: "no-repeat",
                   backgroundPosition: "right 1rem center",
@@ -339,11 +340,11 @@ export default function RegistroPage() {
                  onFocus={(e) => { e.target.style.borderColor = T.accent; e.target.style.boxShadow = T.glowGold; }}
                  onBlur={(e) => { e.target.style.borderColor = T.border; e.target.style.boxShadow = "none"; }}
                >
-                <option value="" disabled>
+                <option value="" disabled style={{ background: "#0B0F14", color: "#FFFFFF" }}>
                   Selecciona tu compañía
                 </option>
                 {companies.map((c) => (
-                  <option key={c.slug} value={c.slug}>
+                  <option key={c.slug} value={c.slug} style={{ background: "#0B0F14", color: "#FFFFFF" }}>
                     {c.name}
                   </option>
                 ))}

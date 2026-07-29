@@ -112,35 +112,37 @@ const LeadTable = memo(function LeadTable({ leads, onUpdateStatus, onDeleteLead,
                   sent={sentIds.includes(lead.id)}
                   onSent={() => markSent(lead.id)}
                 />
-                <button
-                  onClick={() => {
-                    if (confirm(`¿Eliminar definitivamente el lead de ${lead.name}?`)) {
-                      onDeleteLead?.(lead.id);
-                    }
-                  }}
-                  style={{
-                    border: "none",
-                    background: "rgba(239, 68, 68, 0.10)",
-                    color: "#EF4444",
-                    padding: isMobile ? "10px 12px" : "8px 10px",
-                    borderRadius: 10,
-                    cursor: "pointer",
-                    fontSize: 12,
-                    fontWeight: 800,
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 6,
-                    borderWidth: 1,
-                    borderStyle: "solid",
-                    borderColor: "rgba(239, 68, 68, 0.25)",
-                  }}
-                  title="Eliminar lead"
-                  aria-label="Eliminar lead"
-                >
-                  <i className="bi bi-trash3-fill" />
-                  {!isMobile && "Eliminar"}
-                </button>
+                {!isAdmin && (
+                  <button
+                    onClick={() => {
+                      if (confirm(`¿Eliminar definitivamente el lead de ${lead.name}?`)) {
+                        onDeleteLead?.(lead.id);
+                      }
+                    }}
+                    style={{
+                      border: "none",
+                      background: "rgba(239, 68, 68, 0.10)",
+                      color: "#EF4444",
+                      padding: isMobile ? "10px 12px" : "8px 10px",
+                      borderRadius: 10,
+                      cursor: "pointer",
+                      fontSize: 12,
+                      fontWeight: 800,
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 6,
+                      borderWidth: 1,
+                      borderStyle: "solid",
+                      borderColor: "rgba(239, 68, 68, 0.25)",
+                    }}
+                    title="Eliminar lead"
+                    aria-label="Eliminar lead"
+                  >
+                    <i className="bi bi-trash3-fill" />
+                    {!isMobile && "Eliminar"}
+                  </button>
+                )}
               </div>
             );
 

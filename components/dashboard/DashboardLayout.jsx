@@ -373,6 +373,30 @@ export default function DashboardLayout({
               </RippleButton>
             </Tooltip>
 
+            {isMobile && (
+              <Tooltip content="Cerrar sesión" position="bottom">
+                <RippleButton
+                  onClick={logout}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 6,
+                    width: 40,
+                    height: 40,
+                    borderRadius: "12px",
+                    border: "1px solid rgba(239, 68, 68, 0.25)",
+                    background: "rgba(239, 68, 68, 0.08)",
+                    color: "#EF4444",
+                    fontSize: 18,
+                  }}
+                  aria-label="Cerrar sesión"
+                >
+                  <i className="bi bi-box-arrow-left" />
+                </RippleButton>
+              </Tooltip>
+            )}
+
             {!isMobile && <span style={{ fontSize: "12px", color: T.headerMuted, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>Filtrar Fecha:</span>}
             <div style={{ display: "flex", background: "rgba(255,255,255,0.04)", padding: "4px", borderRadius: "12px", border: `1px solid ${T.border}`, overflowX: "auto", maxWidth: "100%" }}>
               {DATE_FILTERS.map((opt) => (

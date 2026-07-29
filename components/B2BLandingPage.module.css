@@ -3,3 +3,6 @@
 @media(max-width:900px){.header{grid-template-columns:1fr auto;width:calc(100% - 32px)}.header nav{display:none}.hero{width:calc(100% - 32px);grid-template-columns:1fr;padding-top:36px}.visual{width:calc(100% - 14px);margin:auto}.photo{height:min(600px,72vw);min-height:430px}.lead{left:-10px}.companies{grid-template-columns:1fr}.companyTitle{padding:28px 24px;border-right:0;border-bottom:1px solid #dce3eb}.grid{grid-template-columns:1fr}.grid article{min-height:260px}.benefits,.cta,.footer{width:calc(100% - 32px)}.footer{grid-template-columns:1fr;gap:18px;padding:44px 0}}
 @media(max-width:560px){.header{height:78px}.brand small{display:none}.login{padding:10px 12px}.hero{min-height:0;gap:52px;padding-bottom:62px}.copy h1{font-size:clamp(3rem,14vw,4.2rem)}.actions{flex-direction:column}.primary,.secondary{width:100%}.photo{min-height:390px;border-width:7px}.lead{top:24px;min-width:205px}.colorRail{inset:-14px -14px 28px 30%}.benefits{padding:84px 0}.cta{padding:48px 26px}}
 @media(prefers-reduced-motion:reduce){.track,.bars i{animation:none}.viewport{overflow-x:auto}}
+.editable{display:inline;outline:none;cursor:text;border-radius:4px;padding:0 4px;margin:0 -4px;transition:background .15s}
+.editable:hover{background:rgba(0,168,196,.12)}
+.editable:focus{background:rgba(253,213,41,.18);box-shadow:0 0 0 2px rgba(253,213,41,.35)}

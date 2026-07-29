@@ -84,13 +84,52 @@ export default function B2BLandingEditor({ T, isMobile, showToast }) {
     }
   }, []);
 
-  // Escuchar el READY del iframe de vista previa.
+  // Escuchar el READY del iframe de vista previa y ediciones inline.
   useEffect(() => {
     const handleMessage = (event) => {
       if (event.origin !== window.location.origin) return;
       if (event.source !== iframeRef.current?.contentWindow) return;
-      if (event.data?.type === "B2B_PREVIEW_READY") {
+      const data = event.data;
+      if (!data || typeof data !== "object") return;
+
+      if (data.type === "B2B_PREVIEW_READY") {
         setIframeReady(true);
+      } else if (data.type === "B2B_PREVIEW_SECTION_SELECTED" && data.sectionId) {
+        setActiveSection(data.sectionId);
+      } else if (data.type === "B2B_PREVIEW_TEXT_EDIT" && data.payload?.path) {
+        const { path, value } = data.payload;
+        const parts = path.split(".");
+        setContent((prev) => {
+          const next = { ...prev };
+          let cursor = next;
+          for (let i = 0; i < parts.length - 1; i++) {
+            const key = parts[i];
+            const nextKey = parts[i + 1];
+            if (Array.isArray(cursor[key])) {
+              const idx = Number(nextKey);
+              if (!Number.isNaN(idx)) {
+                cursor[key] = cursor[key].map((item, index) =>
+                  index === idx ? (typeof item === "object" && item !== null ? { ...item } : item) : item
+                );
+                cursor = cursor[key][idx];
+                i++;
+                continue;
+              }
+              cursor[key] = [...cursor[key]];
+            } else if (cursor[key] && typeof cursor[key] === "object") {
+              cursor[key] = { ...cursor[key] };
+            } else {
+              cursor[key] = {};
+            }
+            cursor = cursor[key];
+          }
+          const lastKey = parts[parts.length - 1];
+          if (cursor && typeof cursor === "object") {
+            cursor[lastKey] = value;
+          }
+          return next;
+        });
+        setDirty(true);
       }
     };
     window.addEventListener("message", handleMessage);
@@ -400,7 +439,7 @@ export default function B2BLandingEditor({ T, isMobile, showToast }) {
                 }}
               >
                 <i className="bi bi-info-circle-fill" style={{ color: T.accent, marginRight: 8 }}></i>
-                Edita los campos de cada sección. La vista previa se actualiza en vivo y al guardar se publica en la página de inicio <strong>/</strong>.
+                Edita los campos de cada sección o hacé clic directamente sobre cualquier texto en la vista previa. Los cambios se reflejan en vivo y al guardar se publican en la página de inicio <strong>/</strong>.
               </div>
               <div
                 style={{

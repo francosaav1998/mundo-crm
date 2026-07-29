@@ -33,5 +33,5 @@ export default function B2BPreviewBridge({ initialContent }) {
     };
   }, []);
 
-  return <B2BLandingPage content={content} />;
+  return <B2BLandingPage content={content} isPreview />;
 }

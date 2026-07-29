@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import RippleButton from "@/components/ui/RippleButton";
 import SectionHeader from "@/components/dashboard/ui/SectionHeader";
+import { getAppOrigin } from "@/lib/urls";
 
 export default function Billing({ T, isMobile, showToast, locked = false }) {
   const [loading, setLoading] = useState(true);
@@ -66,7 +67,7 @@ export default function Billing({ T, isMobile, showToast, locked = false }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          backUrl: `${window.location.origin}/dashboard?tab=billing`,
+          backUrl: `${getAppOrigin() || window.location.origin}/dashboard?tab=billing`,
         }),
       });
       const data = await res.json();

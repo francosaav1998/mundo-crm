@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import SectionHeader from "@/components/dashboard/ui/SectionHeader";
+import { getAppOrigin, buildSellerLandingUrl } from "@/lib/urls";
 
 export default function LandingManager({ T, isMobile, showToast }) {
   const [loading, setLoading] = useState(true);
@@ -278,8 +279,8 @@ export default function LandingManager({ T, isMobile, showToast }) {
                   </div>
 
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    <a
-                      href={`/p/${seller.slug}`}
+                      <a
+                      href={buildSellerLandingUrl(seller.slug)}
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{
@@ -300,7 +301,7 @@ export default function LandingManager({ T, isMobile, showToast }) {
                     </a>
                     <button
                       onClick={() => {
-                        navigator.clipboard.writeText(`${window.location.origin}/p/${seller.slug}`);
+                        navigator.clipboard.writeText(buildSellerLandingUrl(seller.slug, { origin: getAppOrigin() }));
                         showToast("Link copiado al portapapeles");
                       }}
                       style={{

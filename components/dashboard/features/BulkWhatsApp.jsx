@@ -5,6 +5,7 @@ import SectionHeader from "@/components/dashboard/ui/SectionHeader";
 import { renderTemplate } from "@/lib/dashboard/utils";
 import { getWhatsAppUrl, openLink } from "@/lib/messaging";
 import { STATUSES, STATUS_CONFIG } from "@/lib/dashboard/constants";
+import { getAppOrigin } from "@/lib/urls";
 
 const VARS = [
   { tag: "{{nombre}}", label: "Nombre" },
@@ -132,7 +133,7 @@ export default function BulkWhatsApp({ leads, T, isMobile, showToast, defaultMes
   const [newTemplateName, setNewTemplateName] = useState("");
   const [showAddTemplate, setShowAddTemplate] = useState(false);
 
-  const signupUrl = typeof window !== "undefined" ? `${window.location.origin}/registro` : "";
+  const signupUrl = `${getAppOrigin() || (typeof window !== "undefined" ? window.location.origin : "")}/registro`;
   const enrichLead = (lead) => (lead ? { ...lead, link: signupUrl } : lead);
 
   useEffect(() => {

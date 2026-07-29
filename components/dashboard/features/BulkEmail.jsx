@@ -9,6 +9,7 @@ import {
   getOutlookComposeUrl,
   openLink,
 } from "@/lib/messaging";
+import { getAppOrigin } from "@/lib/urls";
 
 const VARS = [
   { tag: "{{nombre}}", label: "Nombre" },
@@ -129,7 +130,7 @@ export default function BulkEmail({ leads, T, isMobile, sellerName, showToast, i
   const [newTemplateName, setNewTemplateName] = useState("");
   const [showAddTemplate, setShowAddTemplate] = useState(false);
 
-  const signupUrl = typeof window !== "undefined" ? `${window.location.origin}/registro` : "";
+  const signupUrl = `${getAppOrigin() || (typeof window !== "undefined" ? window.location.origin : "")}/registro`;
   const enrichLead = (lead) => (lead ? { ...lead, link: signupUrl } : lead);
 
   useEffect(() => {
