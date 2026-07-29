@@ -95,22 +95,28 @@ function RegistroPageInner() {
 
   // Si viene de OAuth, precargar datos del usuario
   useEffect(() => {
-    if (searchParams.get("oauth") === "true") {
-      setLoadingOauthData(true);
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session?.user) {
-          const meta = session.user.user_metadata || {};
-          setOauthUser(session.user);
-          setForm((prev) => ({
-            ...prev,
-            name: meta.full_name || meta.name || prev.name,
-            email: session.user.email || prev.email,
-          }));
-        }
-        setLoadingOauthData(false);
-      });
-    }
-  }, [searchParams]);
+    if (searchParams.get("oauth") !== "true") return;
+
+    let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLoadingOauthData(true);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (cancelled) return;
+      if (session?.user) {
+        const meta = session.user.user_metadata || {};
+        setOauthUser(session.user);
+        setForm((prev) => ({
+          ...prev,
+          name: meta.full_name || meta.name || prev.name,
+          email: session.user.email || prev.email,
+        }));
+      }
+      setLoadingOauthData(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [searchParams, supabase.auth]);
 
   useEffect(() => {
     async function loadCompanies() {
