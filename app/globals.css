@@ -324,6 +324,11 @@ button, a, input, select, textarea {
   background: var(--color-bg-light, #F5F8FA);
 }
 
+.benefits-slider-section--photo {
+  background-position: center;
+  background-size: cover;
+}
+
 .benefits-slider {
   display: flex;
   overflow: hidden;
@@ -929,6 +934,17 @@ button, a, input, select, textarea {
   width: 100%;
 }
 
+.plan-cta .btn {
+  background-color: var(--color-accent);
+  color: var(--color-text-light);
+  box-shadow: 0 4px 14px rgba(255, 128, 0, 0.4);
+}
+
+.plan-cta .btn:hover {
+  background-color: var(--color-accent-hover);
+  box-shadow: 0 6px 20px rgba(255, 128, 0, 0.55);
+}
+
 /* COBERTURA */
 .coverage-section {
   padding: var(--space-fluid-xl) 0;
@@ -1375,6 +1391,7 @@ button, a, input, select, textarea {
 }
 
 @media (max-width: 768px) {
+  .container { padding: 0 1rem; }
   html { scroll-padding-top: 70px; }
   .nav-links {
     display: none;
@@ -1400,11 +1417,56 @@ button, a, input, select, textarea {
     grid-template-columns: 1fr;
     gap: 2rem;
     text-align: center;
-    padding: 2rem;
+    padding: 1.35rem;
   }
   .seller-avatar-wrapper { max-width: 220px; margin: 0 auto; }
+  .seller-badge {
+    max-width: calc(100% - 20px);
+    white-space: normal;
+    text-align: center;
+    line-height: 1.2;
+  }
   .seller-info p { margin-left: auto; margin-right: auto; }
-  .seller-stats { max-width: 500px; margin: 0 auto 2rem auto; }
+  .seller-stats {
+    max-width: 500px;
+    margin: 0 auto 1.25rem auto;
+    padding: 1rem;
+    gap: 1rem;
+  }
+  .section-header { margin-bottom: 1rem; }
+  .planes-tabs {
+    justify-content: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding-inline: 0.1rem;
+  }
+  .tab-btn {
+    padding: 0.7rem 1rem;
+    font-size: 0.85rem;
+  }
+  .planes-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .plan-card {
+    border-radius: 20px;
+    padding: 1.2rem;
+  }
+  .plan-card:hover { transform: none; }
+  .plan-header { margin-bottom: 1rem; }
+  .plan-features {
+    margin-top: 1rem;
+    margin-bottom: 1.25rem;
+    padding-top: 1rem;
+  }
+  .plan-features li {
+    gap: 0.6rem;
+    margin-bottom: 0.8rem;
+  }
+  .plan-cta .btn {
+    min-height: 52px;
+    font-size: 0.92rem;
+  }
   .footer-layout {
     grid-template-columns: 1fr;
     gap: 2.5rem;
@@ -1423,6 +1485,16 @@ button, a, input, select, textarea {
 }
 
 @media (max-width: 480px) {
+  .seller-section,
+  .planes-section,
+  .coverage-section,
+  .benefits-section {
+    padding: 3rem 0;
+  }
+  .seller-avatar-wrapper { max-width: 180px; }
+  .section-header h2 { line-height: 1.1; }
+  .section-header p { font-size: 0.95rem; }
+  .plan-price { line-height: 1.05; }
   .seller-stats { grid-template-columns: 1fr; gap: 1rem; }
 }
 

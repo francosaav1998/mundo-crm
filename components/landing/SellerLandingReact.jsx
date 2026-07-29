@@ -83,7 +83,7 @@ export default function SellerLandingReact() {
   useEffect(() => {
     async function loadSeller() {
       try {
-        const res = await fetch(`/api/sellers?slug=${encodeURIComponent(slug)}`);
+        const res = await fetch(`/api/sellers?slug=${encodeURIComponent(slug)}`, { cache: "no-store" });
         if (!res.ok) {
           if (res.status === 404) setError("Ejecutiva no encontrada");
           else setError("Error al cargar");
@@ -119,7 +119,7 @@ export default function SellerLandingReact() {
 
         // Cargar planes de la compañía
         if (companySlug) {
-          const plansRes = await fetch(`/api/plans?companySlug=${encodeURIComponent(companySlug)}`);
+          const plansRes = await fetch(`/api/plans?companySlug=${encodeURIComponent(companySlug)}`, { cache: "no-store" });
           if (plansRes.ok) {
             const plansData = await plansRes.json();
             setPlans(plansData);

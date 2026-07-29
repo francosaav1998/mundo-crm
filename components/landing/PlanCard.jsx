@@ -41,7 +41,7 @@ export default function PlanCard({ plan, planIndex = 0, onSelect }) {
       <div className="plan-cta">
         <button
           onClick={() => onSelect(plan.value)}
-          className={`btn w-100 ${plan.featured ? "btn-primary" : ""}`}
+          className="btn btn-primary w-100"
         >
           <i className="bi bi-send-fill"></i>{" "}
           <EditableText path={`${p}.cta`}>{cta}</EditableText>

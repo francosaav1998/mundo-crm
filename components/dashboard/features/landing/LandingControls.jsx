@@ -216,6 +216,113 @@ export function HeroControls({ content, updateContent, T, isMobile = false }) {
   );
 }
 
+export function BenefitsSliderControls({ content, updateContent, updateArrayItem, addArrayItem, removeArrayItem, T, isMobile = false }) {
+  const [uploadingBg, setUploadingBg] = useState(false);
+
+  const handleBackgroundUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setUploadingBg(true);
+    try {
+      const data = await uploadImage(file, "seller");
+      updateContent({ backgroundImageUrl: data.url });
+    } catch (err) {
+      alert(err.message || "Error al subir imagen");
+    } finally {
+      setUploadingBg(false);
+      event.target.value = "";
+    }
+  };
+
+  return (
+    <>
+      <SectionBlock title="Fondo de la franja" T={T}>
+        <Field label="URL de la imagen" help="Se aplica detrás de las diapositivas de beneficios. Déjala vacía para usar el fondo normal." T={T}>
+          <Input type="text" T={T} value={content.backgroundImageUrl || ""} onChange={(e) => updateContent({ backgroundImageUrl: e.target.value })} placeholder="https://.../mi-imagen.jpg" />
+        </Field>
+        <Field label="Subir imagen" help={uploadingBg ? "Subiendo imagen..." : "También puedes subir una imagen desde tu computador."} T={T}>
+          <input type="file" accept="image/*" onChange={handleBackgroundUpload} disabled={uploadingBg} style={{ width: "100%", padding: 12, background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: 12, color: T.text }} />
+        </Field>
+      </SectionBlock>
+      <SectionBlock title="Diapositivas" T={T}>
+        {(content.items || []).map((item, idx) => (
+          <div
+            key={idx}
+            style={{
+              marginBottom: 14,
+              padding: 16,
+              borderRadius: 14,
+              background: T.bgCard,
+              border: `1px solid ${T.border}`,
+            }}
+          >
+            <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: 12, marginBottom: 10 }}>
+              <Input
+                type="text"
+                T={T}
+                value={item.icon}
+                onChange={(e) => updateArrayItem("items", idx, { icon: e.target.value })}
+                style={{ width: isMobile ? "100%" : 100 }}
+                placeholder="bi-stars"
+              />
+              <Input
+                type="text"
+                T={T}
+                value={item.title}
+                onChange={(e) => updateArrayItem("items", idx, { title: e.target.value })}
+                style={{ flex: 1 }}
+                placeholder="Título de la diapositiva"
+              />
+            </div>
+            <Textarea
+              T={T}
+              value={item.description}
+              onChange={(e) => updateArrayItem("items", idx, { description: e.target.value })}
+              style={{ minHeight: 60 }}
+              rows={2}
+              placeholder="Descripción"
+            />
+            <button
+              onClick={() => removeArrayItem("items", idx)}
+              style={{
+                marginTop: 10,
+                padding: "8px 12px",
+                borderRadius: 8,
+                fontSize: 12,
+                color: "#EF4444",
+                background: "rgba(239,68,68,0.08)",
+                border: "1px solid rgba(239,68,68,0.18)",
+                cursor: "pointer",
+                fontWeight: 700,
+              }}
+            >
+              <i className="bi bi-trash3-fill"></i> Eliminar
+            </button>
+          </div>
+        ))}
+        <button
+          onClick={() => addArrayItem("items", { icon: "bi-stars", title: "Nueva diapositiva", description: "Descripción de la diapositiva." })}
+          style={{
+            padding: "10px 16px",
+            borderRadius: 10,
+            fontSize: 13,
+            fontWeight: 700,
+            color: T.accent,
+            background: `${T.accent}10`,
+            border: `1px solid ${T.accent}30`,
+            cursor: "pointer",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+          }}
+        >
+          <i className="bi bi-plus-lg"></i> Agregar diapositiva
+        </button>
+      </SectionBlock>
+    </>
+  );
+}
+
 export function SellerControls({ content, updateContent, profile, updateProfile, onPhotoUpload, uploadingPhoto, T, isMobile = false }) {
   return (
     <>
@@ -223,7 +330,7 @@ export function SellerControls({ content, updateContent, profile, updateProfile,
         <Field label="Nombre" help="Aparece en la sección y en el footer." T={T}>
           <Input type="text" T={T} value={profile?.name || ""} onChange={(e) => updateProfile({ name: e.target.value })} />
         </Field>
-        <Field label="Foto" T={T}>
+        <Field label="Foto" help="Puedes subirla, pegar una URL o eliminarla si te arrepientes." T={T}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
             <div style={{ position: "relative", width: 56, height: 56, borderRadius: "50%", overflow: "hidden", border: `2px solid ${T.border}`, background: T.inputBg, flexShrink: 0 }}>
               {profile?.photo ? (
@@ -271,16 +378,20 @@ export function SellerControls({ content, updateContent, profile, updateProfile,
                   display: "inline-flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  width: 36,
-                  height: 36,
+                  gap: 6,
+                  padding: "10px 14px",
+                  minHeight: 36,
                   borderRadius: 10,
                   background: "rgba(239, 68, 68, 0.10)",
                   border: "1px solid rgba(239, 68, 68, 0.25)",
                   color: "#EF4444",
                   cursor: "pointer",
+                  fontSize: 13,
+                  fontWeight: 700,
+                  whiteSpace: "nowrap",
                 }}
               >
-                <i className="bi bi-trash3-fill" />
+                <i className="bi bi-trash3-fill" /> Eliminar foto
               </button>
             )}
             <Input type="text" T={T} value={profile?.photo || ""} onChange={(e) => updateProfile({ photo: e.target.value })} placeholder="O pega URL de imagen" style={{ flex: 1, minWidth: 160 }} />
