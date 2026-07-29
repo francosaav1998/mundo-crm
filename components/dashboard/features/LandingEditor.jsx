@@ -8,6 +8,7 @@ import { uploadImage } from "@/lib/upload-image";
 import {
   HeroControls,
   SellerControls,
+  BenefitsSliderControls,
   PlansControls,
   BenefitsControls,
   CoverageControls,
@@ -19,6 +20,7 @@ import {
 const SECTIONS = [
   { id: "hero", label: "Hero", icon: "bi-house-door-fill" },
   { id: "seller", label: "Vendedor", icon: "bi-person-badge-fill" },
+  { id: "benefitsSlider", label: "Diapositivas", icon: "bi-images" },
   { id: "plans", label: "Planes", icon: "bi-wifi-fill" },
   { id: "benefits", label: "Beneficios", icon: "bi-stars" },
   { id: "coverage", label: "Cobertura", icon: "bi-geo-alt-fill" },
@@ -82,6 +84,203 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
       e.target.value = "";
     }
   }, [updateProfile, showToast]);
+
+  const renderSectionTabs = () => (
+    <div
+      style={{
+        display: "flex",
+        gap: 6,
+        overflowX: "auto",
+        padding: isMobile ? "10px 12px" : "12px 14px",
+        borderBottom: `1px solid ${T.border}`,
+        background: `${T.accent}04`,
+      }}
+    >
+      {SECTIONS.map((section) => (
+        <button
+          key={section.id}
+          onClick={() => setActiveSection(section.id)}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            padding: "8px 12px",
+            borderRadius: 10,
+            border: "none",
+            background: activeSection === section.id ? T.accent : T.bgCard,
+            color: activeSection === section.id ? "#fff" : T.muted,
+            fontSize: 12,
+            fontWeight: 700,
+            cursor: "pointer",
+            whiteSpace: "nowrap",
+            transition: "all 0.15s",
+          }}
+        >
+          <i className={`bi ${section.icon}`}></i>
+          {section.label}
+        </button>
+      ))}
+    </div>
+  );
+
+  const renderSectionControls = () => (
+    <>
+      {!activeSection && (
+        <div style={{ color: T.muted, fontSize: 14, textAlign: "center", padding: 30 }}>
+          Selecciona una sección para editar manualmente.
+        </div>
+      )}
+      {activeSection === "hero" && (
+        <HeroControls content={content.hero} updateContent={(u) => updateContent("hero", u)} T={T} isMobile={isMobile} />
+      )}
+      {activeSection === "seller" && (
+        <SellerControls
+          content={content.seller}
+          updateContent={(u) => updateContent("seller", u)}
+          profile={profile}
+          updateProfile={updateProfile}
+          onPhotoUpload={handlePhotoUpload}
+          uploadingPhoto={uploadingPhoto}
+          T={T}
+          isMobile={isMobile}
+        />
+      )}
+      {activeSection === "benefitsSlider" && (
+        <BenefitsSliderControls
+          content={content.benefitsSlider}
+          updateContent={(u) => updateContent("benefitsSlider", u)}
+          updateArrayItem={(k, i, v) => updateArrayItem("benefitsSlider", k, i, v)}
+          addArrayItem={(k, t) => addArrayItem("benefitsSlider", k, t)}
+          removeArrayItem={(k, i) => removeArrayItem("benefitsSlider", k, i)}
+          T={T}
+          isMobile={isMobile}
+        />
+      )}
+      {activeSection === "plans" && (
+        <PlansControls
+          content={content.plans}
+          updateContent={(u) => updateContent("plans", u)}
+          plans={plans}
+          updatePlan={updatePlan}
+          addPlan={addPlan}
+          removePlan={removePlan}
+          updatePlanFeature={updatePlanFeature}
+          addPlanFeature={addPlanFeature}
+          removePlanFeature={removePlanFeature}
+          T={T}
+          isMobile={isMobile}
+        />
+      )}
+      {activeSection === "benefits" && (
+        <BenefitsControls
+          content={content.benefits}
+          updateContent={(u) => updateContent("benefits", u)}
+          updateArrayItem={(k, i, v) => updateArrayItem("benefits", k, i, v)}
+          addArrayItem={(k, t) => addArrayItem("benefits", k, t)}
+          removeArrayItem={(k, i) => removeArrayItem("benefits", k, i)}
+          T={T}
+          isMobile={isMobile}
+        />
+      )}
+      {activeSection === "coverage" && (
+        <CoverageControls
+          content={content.coverage}
+          updateContent={(u) => updateContent("coverage", u)}
+          updateArrayItem={(k, i, v) => updateArrayItem("coverage", k, i, v)}
+          addArrayItem={(k, t) => addArrayItem("coverage", k, t)}
+          removeArrayItem={(k, i) => removeArrayItem("coverage", k, i)}
+          T={T}
+          isMobile={isMobile}
+        />
+      )}
+      {activeSection === "header" && (
+        <HeaderControls
+          content={content.header}
+          updateContent={(u) => updateContent("header", u)}
+          updateArrayItem={(k, i, v) => updateArrayItem("header", k, i, v)}
+          addArrayItem={(k, t) => addArrayItem("header", k, t)}
+          removeArrayItem={(k, i) => removeArrayItem("header", k, i)}
+          T={T}
+          isMobile={isMobile}
+        />
+      )}
+      {activeSection === "footer" && (
+        <FooterControls
+          content={content.footer}
+          updateContent={(u) => updateContent("footer", u)}
+          updateArrayItem={(k, i, v) => updateArrayItem("footer", k, i, v)}
+          addArrayItem={(k, t) => addArrayItem("footer", k, t)}
+          removeArrayItem={(k, i) => removeArrayItem("footer", k, i)}
+          T={T}
+          isMobile={isMobile}
+        />
+      )}
+      {activeSection === "marketing" && (
+        <MarketingControls
+          profile={profile}
+          updateProfile={updateProfile}
+          T={T}
+          isMobile={isMobile}
+        />
+      )}
+    </>
+  );
+
+  const renderManualEditor = () => (
+    <div
+      style={{
+        width: isMobile ? "100%" : 420,
+        minWidth: isMobile ? 0 : 420,
+        flexShrink: 0,
+        display: "flex",
+        flexDirection: "column",
+        background: T.bgCard,
+        border: `1px solid ${T.border}`,
+        borderRadius: 20,
+        overflow: "hidden",
+        boxShadow: "0 20px 50px rgba(0,0,0,0.15)",
+        height: isMobile ? "auto" : "100%",
+        maxHeight: isMobile ? "46vh" : "100%",
+      }}
+    >
+      {renderSectionTabs()}
+
+      <div
+        style={{
+          flex: 1,
+          overflowY: "auto",
+          padding: "16px",
+        }}
+      >
+        <div
+          style={{
+            background: `${T.accent}10`,
+            border: `1px solid ${T.accent}25`,
+            borderRadius: 12,
+            padding: 14,
+            marginBottom: 16,
+            fontSize: 13,
+            color: T.muted,
+            lineHeight: 1.5,
+          }}
+        >
+          <i className="bi bi-info-circle-fill" style={{ color: T.accent, marginRight: 8 }}></i>
+          También podés editar directamente desde la vista previa: hacé clic sobre cualquier texto, cambialo y los cambios se reflejan automáticamente.
+        </div>
+        <div
+          style={{
+            background: T.inputBg,
+            border: `1px solid ${T.border}`,
+            borderRadius: 18,
+            padding: "16px",
+            minHeight: "100%",
+          }}
+        >
+          {renderSectionControls()}
+        </div>
+      </div>
+    </div>
+  );
 
   const applyPreviewEdit = useCallback((path, value) => {
     const parts = path.split(".");
@@ -336,183 +535,7 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
           minHeight: 0,
         }}
       >
-        {/* Sidebar - editor manual (solo escritorio) */}
-        {!isMobile && (
-          <div
-            style={{
-              width: 420,
-              minWidth: 420,
-              flexShrink: 0,
-              display: "flex",
-              flexDirection: "column",
-              background: T.bgCard,
-              border: `1px solid ${T.border}`,
-              borderRadius: 20,
-              overflow: "hidden",
-              boxShadow: "0 20px 50px rgba(0,0,0,0.15)",
-              height: "100%",
-            }}
-          >
-            {/* Section tabs */}
-            <div
-              style={{
-                display: "flex",
-                gap: 6,
-                overflowX: "auto",
-                padding: "12px 14px",
-                borderBottom: `1px solid ${T.border}`,
-                background: `${T.accent}04`,
-              }}
-            >
-              {SECTIONS.map((section) => (
-                <button
-                  key={section.id}
-                  onClick={() => setActiveSection(section.id)}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 6,
-                    padding: "8px 12px",
-                    borderRadius: 10,
-                    border: "none",
-                    background: activeSection === section.id ? T.accent : T.bgCard,
-                    color: activeSection === section.id ? "#fff" : T.muted,
-                    fontSize: 12,
-                    fontWeight: 700,
-                    cursor: "pointer",
-                    whiteSpace: "nowrap",
-                    transition: "all 0.15s",
-                  }}
-                >
-                  <i className={`bi ${section.icon}`}></i>
-                  {section.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Content */}
-            <div
-              style={{
-                flex: 1,
-                overflowY: "auto",
-                padding: "16px",
-              }}
-            >
-              <div
-                style={{
-                  background: `${T.accent}10`,
-                  border: `1px solid ${T.accent}25`,
-                  borderRadius: 12,
-                  padding: 14,
-                  marginBottom: 16,
-                  fontSize: 13,
-                  color: T.muted,
-                  lineHeight: 1.5,
-                }}
-              >
-                <i className="bi bi-info-circle-fill" style={{ color: T.accent, marginRight: 8 }}></i>
-                También podés editar directamente desde la vista previa: hacé clic sobre cualquier texto, cambialo y los cambios se reflejan automáticamente.
-              </div>
-              <div
-                style={{
-                  background: T.inputBg,
-                  border: `1px solid ${T.border}`,
-                  borderRadius: 18,
-                  padding: "16px",
-                  minHeight: "100%",
-                }}
-              >
-                {!activeSection && (
-                  <div style={{ color: T.muted, fontSize: 14, textAlign: "center", padding: 30 }}>
-                    Selecciona una sección para editar manualmente.
-                  </div>
-                )}
-                {activeSection === "hero" && (
-                  <HeroControls content={content.hero} updateContent={(u) => updateContent("hero", u)} T={T} isMobile={isMobile} />
-                )}
-                {activeSection === "seller" && (
-                  <SellerControls
-                    content={content.seller}
-                    updateContent={(u) => updateContent("seller", u)}
-                    profile={profile}
-                    updateProfile={updateProfile}
-                    onPhotoUpload={handlePhotoUpload}
-                    uploadingPhoto={uploadingPhoto}
-                    T={T}
-                    isMobile={isMobile}
-                  />
-                )}
-                {activeSection === "plans" && (
-                  <PlansControls
-                    content={content.plans}
-                    updateContent={(u) => updateContent("plans", u)}
-                    plans={plans}
-                    updatePlan={updatePlan}
-                    addPlan={addPlan}
-                    removePlan={removePlan}
-                    updatePlanFeature={updatePlanFeature}
-                    addPlanFeature={addPlanFeature}
-                    removePlanFeature={removePlanFeature}
-                    T={T}
-                    isMobile={isMobile}
-                  />
-                )}
-                {activeSection === "benefits" && (
-                  <BenefitsControls
-                    content={content.benefits}
-                    updateContent={(u) => updateContent("benefits", u)}
-                    updateArrayItem={(k, i, v) => updateArrayItem("benefits", k, i, v)}
-                    addArrayItem={(k, t) => addArrayItem("benefits", k, t)}
-                    removeArrayItem={(k, i) => removeArrayItem("benefits", k, i)}
-                    T={T}
-                    isMobile={isMobile}
-                  />
-                )}
-                {activeSection === "coverage" && (
-                  <CoverageControls
-                    content={content.coverage}
-                    updateContent={(u) => updateContent("coverage", u)}
-                    updateArrayItem={(k, i, v) => updateArrayItem("coverage", k, i, v)}
-                    addArrayItem={(k, t) => addArrayItem("coverage", k, t)}
-                    removeArrayItem={(k, i) => removeArrayItem("coverage", k, i)}
-                    T={T}
-                    isMobile={isMobile}
-                  />
-                )}
-                {activeSection === "header" && (
-                  <HeaderControls
-                    content={content.header}
-                    updateContent={(u) => updateContent("header", u)}
-                    updateArrayItem={(k, i, v) => updateArrayItem("header", k, i, v)}
-                    addArrayItem={(k, t) => addArrayItem("header", k, t)}
-                    removeArrayItem={(k, i) => removeArrayItem("header", k, i)}
-                    T={T}
-                    isMobile={isMobile}
-                  />
-                )}
-                {activeSection === "footer" && (
-                  <FooterControls
-                    content={content.footer}
-                    updateContent={(u) => updateContent("footer", u)}
-                    updateArrayItem={(k, i, v) => updateArrayItem("footer", k, i, v)}
-                    addArrayItem={(k, t) => addArrayItem("footer", k, t)}
-                    removeArrayItem={(k, i) => removeArrayItem("footer", k, i)}
-                    T={T}
-                    isMobile={isMobile}
-                  />
-                )}
-                {activeSection === "marketing" && (
-                  <MarketingControls
-                    profile={profile}
-                    updateProfile={updateProfile}
-                    T={T}
-                    isMobile={isMobile}
-                  />
-                )}
-              </div>
-            </div>
-          </div>
-        )}
+        {renderManualEditor()}
 
         {/* Preview canvas */}
         <div
