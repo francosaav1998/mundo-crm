@@ -39,7 +39,17 @@ export async function proxy(request) {
     return NextResponse.redirect(new URL("/dashboard/login", request.url));
   }
 
-  const isPublicRootPath = pathname === "/";
+const isPublicRootPath = pathname === "/";
+  const obsoleteLandingPaths = new Set([
+    "/landings/GA9CU9o.html",
+    "/landings/cJKWAcQ.html",
+    "/landings/oOn6PS8.html",
+    "/landings/v1Lz_Yo.html",
+  ]);
+  if (obsoleteLandingPaths.has(pathname)) {
+    return NextResponse.redirect(new URL("/landings/ohxZn08.html?slug=demo-claro", request.url), 308);
+  }
+
   const isProtectedOrSystemPath =
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/api") ||
