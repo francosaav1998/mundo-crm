@@ -3,7 +3,7 @@
   const slug = params.get("slug") || window.location.pathname.split("/").pop();
   if (!slug || slug.endsWith(".html")) return;
 
-  fetch("/api/sellers?slug=" + encodeURIComponent(slug))
+  fetch("/api/sellers?slug=" + encodeURIComponent(slug), { cache: "no-store" })
     .then((r) => (r.ok ? r.json() : null))
     .then((seller) => {
       if (!seller) return;
@@ -28,7 +28,7 @@
           if (node.tagName === "A" && node.href && node.href.includes("wa.me")) {
             node.href = node.href.replace(/56951234567/g, phone);
           }
-          if (node.tagName === "IMG" && node.alt && node.alt.includes("Carlos") && photo) {
+          if (node.tagName === "IMG" && node.closest(".seller-avatar-wrapper") && photo) {
             node.src = photo;
           }
           Array.from(node.childNodes).forEach(walk);
