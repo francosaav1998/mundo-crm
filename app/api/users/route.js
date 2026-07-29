@@ -96,6 +96,7 @@ export async function GET(request) {
       where: {
         OR: [
           { userId: { in: userIds } },
+          { userId: { not: null } },
           ...(emails.length ? [{ email: { in: emails } }] : []),
         ],
       },
@@ -141,6 +142,40 @@ export async function GET(request) {
           : { ...sub, active: true, leadsCount: 0, landingUrl: null },
       };
     });
+
+    const existingKeys = new Set(
+      simplified.map((u) => `${u.id || ""}::${String(u.email || "").toLowerCase()}`)
+    );
+
+    for (const seller of sellers) {
+      const sellerEmail = String(seller.email || "").toLowerCase();
+      const key = `${seller.userId || ""}::${sellerEmail}`;
+      if (existingKeys.has(key)) continue;
+      if (sellerEmail === adminEmail.toLowerCase()) continue;
+
+      const sub = getSubscriptionStatus(seller.subscription, seller.createdAt);
+      simplified.push({
+        id: seller.userId || seller.id,
+        email: seller.email || null,
+        role: "user",
+        createdAt: seller.createdAt,
+        lastSignInAt: null,
+        seller: {
+          id: seller.id,
+          name: seller.name,
+          slug: seller.slug,
+          phone: seller.phone,
+          company: seller.company?.name || null,
+          companySlug: seller.company?.slug || null,
+          active: seller.active,
+          billingActive: sub.isActive || (sub.isTrial && !sub.trialExpired),
+          createdAt: seller.createdAt,
+          leadsCount: seller._count?.leads || 0,
+          landingUrl: buildSellerLandingUrl(seller.slug, { origin: getAppOrigin() }),
+          ...sub,
+        },
+      });
+    }
 
     return NextResponse.json(simplified);
   } catch (error) {
