@@ -11,7 +11,14 @@
   fetch(url)
     .then((r) => (r.ok ? r.json() : null))
     .then((seller) => {
-      if (!seller) return;
+      if (!seller) {
+        // ID inválido → 404
+        document.body.innerHTML = '';
+        document.title = '404 - No encontrado';
+        document.body.style.cssText = 'display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0B0F14;color:#f0f0f5;font-family:sans-serif;font-size:18px;';
+        document.body.textContent = 'Página no encontrada';
+        return;
+      }
 
       const phone = (seller.phone || "").replace(/\D/g, "");
       const name = seller.name || "Ejecutivo";
