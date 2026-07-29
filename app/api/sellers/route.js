@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { normalizeWhatsAppNumber, inferGender, slugify } from "@/lib/seller";
 import { getSafeSellerSlug } from "@/lib/seller-slugs";
 import { buildDemoSeller, getDemoCompanySlug } from "@/lib/demo-seller";
-import { OFFICIAL_DEMO_COMPANIES } from "@/lib/demo-landings";
+import { OFFICIAL_DEMO_COMPANIES, getOfficialDemoCompanySlug } from "@/lib/demo-landings";
 
 export const dynamic = "force-dynamic";
 
@@ -57,12 +57,16 @@ export async function GET(request) {
       },
     });
     const companies = await prisma.company.findMany({ where: { active: true } });
-    const sellerSlugs = new Set(sellers.map((seller) => seller.slug));
+    const visibleSellers = sellers.filter((seller) => {
+      if (!seller.slug.startsWith("demo-")) return true;
+      return Boolean(getOfficialDemoCompanySlug(seller.slug));
+    });
+    const sellerSlugs = new Set(visibleSellers.map((seller) => seller.slug));
     const demos = companies
       .filter((company) => OFFICIAL_DEMO_COMPANIES.includes(company.slug))
       .map((company) => buildDemoSeller(`demo-${company.slug}`, company))
       .filter((demo) => !sellerSlugs.has(demo.slug));
-    return NextResponse.json([...sellers, ...demos]);
+    return NextResponse.json([...visibleSellers, ...demos]);
   } catch (error) {
     const status = error.message === "Unauthorized" ? 401 : error.message === "Forbidden" ? 403 : 500;
     return NextResponse.json({ error: error.message }, { status });
