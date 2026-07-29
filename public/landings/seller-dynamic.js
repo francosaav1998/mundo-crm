@@ -8,7 +8,7 @@
     ? "/api/sellers?id=" + encodeURIComponent(id)
     : "/api/sellers?slug=" + encodeURIComponent(slug);
 
-  fetch(url)
+  fetch(url, { cache: "no-store" })
     .then((r) => (r.ok ? r.json() : null))
     .then((seller) => {
       if (!seller) {
@@ -40,7 +40,7 @@
           if (node.tagName === "A" && node.href && node.href.includes("wa.me")) {
             node.href = node.href.replace(/56951234567/g, phone);
           }
-          if (node.tagName === "IMG" && node.alt && node.alt.includes("Carlos") && photo) {
+          if (node.tagName === "IMG" && node.closest(".seller-avatar-wrapper") && photo) {
             node.src = photo;
           }
           Array.from(node.childNodes).forEach(walk);

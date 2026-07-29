@@ -203,7 +203,7 @@ export default function LandingManager({ T, isMobile, showToast }) {
                 </span>
               </div>
               <a
-                href={`/p/${group.sellers[0]?.slug || ""}`}
+                href={group.sellers[0]?.slug ? buildSellerLandingUrl(group.sellers[0].slug) : "/"}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
@@ -242,10 +242,11 @@ export default function LandingManager({ T, isMobile, showToast }) {
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0 }}>
                     <div
-                      style={{
+                     style={{
                         width: 44,
                         height: 44,
                         borderRadius: 12,
+                        position: "relative",
                         background: seller.photo ? "transparent" : "rgba(148,163,184,0.15)",
                         display: "flex",
                         alignItems: "center",
@@ -273,7 +274,7 @@ export default function LandingManager({ T, isMobile, showToast }) {
                         {seller.email || "Sin email"} · {seller._count?.leads ?? 0} leads
                       </div>
                       <div style={{ fontSize: "11px", color: T.accent, marginTop: 4, fontWeight: 700 }}>
-                        /p/{seller.slug}
+                        {buildSellerLandingUrl(seller.slug, { origin: getAppOrigin() })}
                       </div>
                     </div>
                   </div>
