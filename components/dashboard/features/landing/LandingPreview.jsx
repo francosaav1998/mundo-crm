@@ -10,12 +10,14 @@ import SellerSection from "@/components/landing/SellerSection";
 import PlansSection from "@/components/landing/PlansSection";
 import CoverageSection from "@/components/landing/CoverageSection";
 import BenefitsSection from "@/components/landing/BenefitsSection";
+import BenefitsSlider from "@/components/landing/BenefitsSlider";
 import Footer from "@/components/landing/Footer";
 
 export const PREVIEW_SECTIONS = [
   { id: "header", label: "Header" },
   { id: "hero", label: "Hero" },
   { id: "seller", label: "Vendedor" },
+  { id: "benefitsSlider", label: "Diapositivas" },
   { id: "plans", label: "Planes" },
   { id: "coverage", label: "Cobertura" },
   { id: "benefits", label: "Beneficios" },
@@ -268,6 +270,17 @@ export default function LandingPreview({
                   company={company}
                   content={content.seller}
                 />
+              </SectionFrame>
+
+              <SectionFrame
+                id="benefitsSlider"
+                label="Diapositivas"
+                active={activeSection === "benefitsSlider"}
+                hovered={hoveredSection === "benefitsSlider"}
+                onHover={setHoveredSection}
+                onClick={handleSectionClick}
+              >
+                <BenefitsSlider content={content.benefitsSlider} />
               </SectionFrame>
 
               <SectionFrame
