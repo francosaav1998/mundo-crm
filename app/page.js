@@ -1,22 +1,24 @@
-import B2BLandingPage from "@/components/B2BLandingPage";
-import B2BPreviewBridge from "@/components/B2BPreviewBridge";
-import { getB2BContent } from "@/lib/b2b-landing.server";
+import { getB2BLandingContent, B2B_LANDING_CSS_KEY } from "@/lib/b2b-landing.server";
+import { DEFAULT_B2B_LANDING_CSS, DEFAULT_B2B_LANDING_BODY } from "@/lib/b2b-landing";
 
 export const metadata = {
   title: "Mundo CRM | Una plataforma para todos tus equipos comerciales",
   description: "Gestiona prospectos, seguimientos y ventas de Mundo, VTR, Claro, WOM, Entel y Movistar desde una sola plataforma.",
 };
 
-// La portada lee el contenido editado por el admin en cada request.
+// La portada B2B se renderiza desde el contenido guardado en la base de datos
+// (key: b2b-landing-body) para que el admin pueda editarla desde el dashboard.
 export const dynamic = "force-dynamic";
 
-export default async function Home({ searchParams }) {
-  const params = await searchParams;
-  const content = await getB2BContent();
+export default async function Home() {
+  const { css, body } = await getB2BLandingContent();
+  const landingCss = css || DEFAULT_B2B_LANDING_CSS;
+  const landingBody = body || DEFAULT_B2B_LANDING_BODY;
 
-  if (params?.preview === "1") {
-    return <B2BPreviewBridge initialContent={content} />;
-  }
-
-  return <B2BLandingPage content={content} />;
+  return (
+    <>
+      <style key={B2B_LANDING_CSS_KEY} dangerouslySetInnerHTML={{ __html: landingCss }} />
+      <div dangerouslySetInnerHTML={{ __html: landingBody }} />
+    </>
+  );
 }
