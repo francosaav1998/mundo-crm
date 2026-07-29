@@ -875,7 +875,7 @@ export function HeaderControls({ content, updateContent, updateArrayItem, addArr
 }
 
 export function MarketingControls({ profile, updateProfile, T, isMobile = false }) {
-  const theme = profile?.landingTheme || "dark";
+  const theme = profile?.landingTheme || "light";
   return (
     <>
       <SectionBlock title="Píxel de Meta (Facebook)" T={T}>

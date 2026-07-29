@@ -115,8 +115,7 @@ export default function SellerLandingReact() {
           defaultMessage: data.defaultMessage || undefined,
         });
 
-        // Tema oscuro por defecto: si el vendedor nunca eligió tema, se usa "dark".
-        document.documentElement.setAttribute("data-landing-theme", data.landingTheme || "dark");
+        document.documentElement.setAttribute("data-landing-theme", data.landingTheme || "light");
 
         // Cargar planes de la compañía
         if (companySlug) {

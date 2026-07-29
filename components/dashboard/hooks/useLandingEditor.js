@@ -23,7 +23,7 @@ export function useLandingEditor({ showToast }) {
     gender: "",
     footerText: "",
     metaPixelId: "",
-    landingTheme: "dark",
+    landingTheme: "light",
   });
 
   useEffect(() => {
@@ -52,7 +52,7 @@ export function useLandingEditor({ showToast }) {
             gender: s.gender || "",
             footerText: s.footerText || "",
             metaPixelId: s.metaPixelId || "",
-            landingTheme: s.landingTheme || "dark",
+            landingTheme: s.landingTheme || "light",
           });
         }
 

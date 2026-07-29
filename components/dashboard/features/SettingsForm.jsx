@@ -144,7 +144,10 @@ export default function SettingsForm({
               <button
                 key={t}
                 type="button"
-                onClick={() => setTheme(t)}
+                onClick={() => {
+                  setTheme(t);
+                  onUpdateSettings({ dashboardTheme: t });
+                }}
                 style={{
                   flex: 1,
                   padding: "12px",

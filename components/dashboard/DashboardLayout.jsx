@@ -1,9 +1,8 @@
 "use client";
 
-import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { memo } from "react";
 import { motion } from "framer-motion";
-import { useMemo, memo } from "react";
+import { useRouter } from "next/navigation";
 import RippleButton from "@/components/ui/RippleButton";
 import Tooltip from "@/components/ui/Tooltip";
 import { buildSellerLandingUrl } from "@/lib/urls";
@@ -21,6 +20,15 @@ const BASE_MENU_ITEMS = [
   { id: "settings", icon: "bi-gear-fill", label: "Configuraciones" },
 ];
 
+const DATE_FILTERS = [
+  { id: "todos", label: "Todo" },
+  { id: "hoy", label: "Hoy" },
+  { id: "ayer", label: "Ayer" },
+  { id: "semana", label: "Semana" },
+  { id: "mes", label: "Mes" },
+  { id: "custom", label: "Otro" },
+];
+
 function getMenuItems(isAdmin) {
   if (!isAdmin) return BASE_MENU_ITEMS.filter((item) => !item.adminOnly);
   return BASE_MENU_ITEMS.filter((item) => !item.sellerOnly).map((item) => {
@@ -30,14 +38,11 @@ function getMenuItems(isAdmin) {
   });
 }
 
-const DATE_FILTERS = [
-  { id: "todos", label: "Todo" },
-  { id: "hoy", label: "Hoy" },
-  { id: "ayer", label: "Ayer" },
-  { id: "semana", label: "Semana" },
-  { id: "mes", label: "Mes" },
-  { id: "custom", label: "Otro" },
-];
+function getPageDescription({ isAdmin, lockedToBilling }) {
+  if (lockedToBilling) return "Activa tu suscripción para volver a operar con normalidad.";
+  if (isAdmin) return "Operación, clientes y pipeline comercial desde una sola vista.";
+  return "Tus leads, mensajes, landing y seguimiento en una interfaz más simple.";
+}
 
 export default function DashboardLayout({
   children,
@@ -63,9 +68,9 @@ export default function DashboardLayout({
   lockedToBilling = false,
 }) {
   const router = useRouter();
-  let MENU_ITEMS = getMenuItems(isAdmin).filter((item) => !item.adminOnly || isAdmin);
+  let menuItems = getMenuItems(isAdmin).filter((item) => !item.adminOnly || isAdmin);
   if (lockedToBilling) {
-    MENU_ITEMS = MENU_ITEMS.filter((item) => item.id === "billing");
+    menuItems = menuItems.filter((item) => item.id === "billing");
   }
 
   const logout = async () => {
@@ -74,129 +79,140 @@ export default function DashboardLayout({
   };
 
   const sellerLandingUrl = sellerSlug ? buildSellerLandingUrl(sellerSlug) : "/";
+  const pageDescription = getPageDescription({ isAdmin, lockedToBilling });
 
   return (
     <div
       style={{
         display: "flex",
-        height: "100vh",
-        overflow: "hidden",
+        minHeight: "100vh",
         background: T.bgGradient,
         color: T.text,
-        fontFamily: "var(--font-body), 'Plus Jakarta Sans', system-ui, sans-serif",
-        position: "relative",
-        transition: "background 0.3s, color 0.3s",
+        fontFamily: "var(--font-body), system-ui, sans-serif",
       }}
     >
-      {/* EducMark Aurora Background + capa galáctica animada */}
-      <div className="educmark-bg" />
-      <div className="galaxy-bg" aria-hidden="true">
-        <div className="galaxy-aurora" />
-        <div className="galaxy-stars-far" />
-        <div className="galaxy-stars" />
-      </div>
-      <div className="educmark-progress" style={{ width: "100%" }} />
-
-      {/* Mobile Sidebar Backdrop */}
-      {sidebarOpen && (
-        <div
-          className="dashboard-sidebar-backdrop"
-          onClick={() => setSidebarOpen(false)}
-        />
+      {sidebarOpen && isMobile && (
+        <div className="dashboard-sidebar-backdrop" onClick={() => setSidebarOpen(false)} />
       )}
 
-      {/* Sidebar */}
       <aside
         className={`dashboard-sidebar ${sidebarOpen ? "dashboard-sidebar-open" : ""}`}
         style={{
           background: T.sidebarBg,
-          backdropFilter: "blur(28px)",
-          WebkitBackdropFilter: "blur(28px)",
           borderRight: `1px solid ${T.border}`,
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
           display: "flex",
           flexDirection: "column",
-          flexShrink: 0,
-          transition: "width 0.25s cubic-bezier(0.4,0,0.2,1), transform 0.25s cubic-bezier(0.4,0,0.2,1)",
           overflow: "hidden",
-          top: 0,
-          left: 0,
-          zIndex: 10,
+          zIndex: 20,
         }}
       >
-        {/* Logo Section */}
         <div
           style={{
-            padding: "24px 20px",
+            padding: sidebarOpen ? "22px 20px 18px" : "22px 16px 18px",
+            borderBottom: `1px solid ${T.border}`,
             display: "flex",
             alignItems: "center",
             gap: 12,
-            borderBottom: `1px solid ${T.border}`,
-            minHeight: 80,
+            minHeight: 78,
           }}
         >
           <div
             style={{
+              width: 38,
+              height: 38,
+              borderRadius: 14,
+              background: `linear-gradient(135deg, ${T.accent} 0%, ${T.accent2} 100%)`,
+              color: "#fff",
               display: "flex",
               alignItems: "center",
-              gap: 10,
-              fontFamily: "var(--font-heading), 'Outfit', sans-serif",
-              fontWeight: 700,
-              fontSize: sidebarOpen ? 20 : 16,
-              color: T.text,
-              letterSpacing: "-0.02em",
-              whiteSpace: "nowrap",
+              justifyContent: "center",
+              flexShrink: 0,
+              boxShadow: T.glowGold,
             }}
           >
-            <motion.span
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.1, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: 10,
-                background: `linear-gradient(135deg, ${T.accent} 0%, ${T.secondary} 100%)`,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 14,
-                color: "#fff",
-                flexShrink: 0,
-              }}
-            >
-              <i className="bi bi-globe-americas" />
-            </motion.span>
-            {sidebarOpen && <motion.span initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15, duration: 0.3 }}>Mundo</motion.span>}
+            <i className="bi bi-grid-1x2-fill" />
           </div>
+          {sidebarOpen && (
+            <div style={{ minWidth: 0 }}>
+              <div
+                style={{
+                  fontFamily: "var(--font-heading), sans-serif",
+                  fontWeight: 700,
+                  fontSize: 17,
+                  letterSpacing: "-0.03em",
+                  color: T.sidebarText,
+                }}
+              >
+                GestionVendedores
+              </div>
+              <div
+                style={{
+                  fontSize: 11,
+                  color: T.sidebarMuted,
+                  marginTop: 2,
+                  letterSpacing: "0.06em",
+                  textTransform: "uppercase",
+                }}
+              >
+                CRM Workspace
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* User Info */}
         {sidebarOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.3 }}
+          <div
             style={{
-              padding: "16px 20px",
+              margin: "14px 14px 0",
+              padding: "16px 16px 14px",
+              borderRadius: 18,
               background: T.inputBg,
-              borderBottom: `1px solid ${T.border}`,
-              borderRadius: "16px",
-              margin: "12px 14px 0",
+              border: `1px solid ${T.border}`,
             }}
           >
-            <div style={{ fontSize: "10px", color: T.sidebarMuted, textTransform: "uppercase", letterSpacing: "0.2em", fontWeight: 600 }}>{isAdmin ? "Administrador" : "Asesor Comercial"}</div>
-            <div style={{ fontSize: "15px", fontWeight: 700, color: T.sidebarText, marginTop: 6, fontFamily: "var(--font-heading), 'Outfit', sans-serif" }}>{sellerName}</div>
-            {company && (
-              <div style={{ fontSize: "12px", color: T.accent, fontWeight: 600, marginTop: 4 }}>
-                {company.name}
-              </div>
-            )}
-          </motion.div>
+            <div
+              style={{
+                fontSize: 10,
+                color: T.sidebarMuted,
+                textTransform: "uppercase",
+                letterSpacing: "0.18em",
+                fontWeight: 600,
+              }}
+            >
+              {isAdmin ? "Administrador" : "Workspace personal"}
+            </div>
+            <div
+              style={{
+                fontFamily: "var(--font-heading), sans-serif",
+                fontSize: 16,
+                fontWeight: 700,
+                color: T.sidebarText,
+                marginTop: 8,
+                letterSpacing: "-0.02em",
+              }}
+            >
+              {sellerName}
+            </div>
+            <div style={{ fontSize: 12, color: T.sidebarMuted, marginTop: 4 }}>
+              {company?.name || username}
+            </div>
+          </div>
         )}
 
-        {/* Nav Links */}
-        <nav style={{ flex: 1, padding: "16px 12px", display: "flex", flexDirection: "column", gap: 4, overflowY: "auto", overflowX: "hidden", minHeight: 0 }}>
-          {MENU_ITEMS.map((item, index) => (
+        <nav
+          style={{
+            flex: 1,
+            padding: "16px 12px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 6,
+            overflowY: "auto",
+            minHeight: 0,
+          }}
+        >
+          {menuItems.map((item, index) => (
             <MenuItem
               key={item.id}
               item={item}
@@ -209,108 +225,115 @@ export default function DashboardLayout({
           ))}
         </nav>
 
-        {/* Footer Actions */}
-        <div style={{ padding: "16px", borderTop: `1px solid ${T.border}`, display: "flex", flexDirection: "column", gap: 8 }}>
-          <Tooltip content={sidebarOpen ? "Contraer menú" : "Expandir menú"} position="right">
-            <RippleButton
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              style={{
-                padding: "8px",
-                borderRadius: "10px",
-                background: "rgba(255,255,255,0.04)",
-                border: `1px solid ${T.border}`,
-                color: T.sidebarMuted,
-                fontSize: "12px",
-                width: "100%",
-              }}
-              aria-label={sidebarOpen ? "Contraer menú" : "Expandir menú"}
-            >
-              <i className={`bi ${sidebarOpen ? "bi-arrow-bar-left" : "bi-arrow-bar-right"}`} />
-            </RippleButton>
-          </Tooltip>
+        <div
+          style={{
+            padding: "14px 12px 16px",
+            borderTop: `1px solid ${T.border}`,
+            display: "flex",
+            flexDirection: "column",
+            gap: 8,
+          }}
+        >
           {sidebarOpen && !lockedToBilling && (
             <a
               href={isAdmin ? "/" : sellerLandingUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="micro-btn"
               style={{
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 10,
+                gap: 8,
                 width: "100%",
-                padding: "12px 16px",
-                borderRadius: "9999px",
-                background: `${T.accent}15`,
-                border: `1px solid ${T.accent}45`,
+                padding: "11px 14px",
+                borderRadius: 14,
+                background: `${T.accent}14`,
+                border: `1px solid ${T.accent}28`,
                 color: T.accent,
                 fontSize: 13,
                 fontWeight: 700,
                 textDecoration: "none",
-                backdropFilter: "blur(10px)",
               }}
             >
-              <i className="bi bi-globe-americas" />
-              {isAdmin ? "Ver Landing de Ventas" : "Ver mi landing"}
+              <i className="bi bi-eye-fill" />
+              {isAdmin ? "Ver landing principal" : "Ver mi landing"}
             </a>
           )}
-          <RippleButton
-            onClick={logout}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: sidebarOpen ? 10 : 0,
-              width: "100%",
-              padding: sidebarOpen ? "12px 16px" : "10px",
-              borderRadius: sidebarOpen ? "9999px" : "12px",
-              background: "rgba(239, 68, 68, 0.08)",
-              border: "1px solid rgba(239, 68, 68, 0.18)",
-              color: "#EF4444",
-              fontSize: 13,
-              fontWeight: 700,
-            }}
-          >
-            <i className="bi bi-box-arrow-left" />
-            {sidebarOpen && <span>Cerrar Sesión</span>}
-          </RippleButton>
-        </div>
-      </aside>
 
-      {/* Main Content */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, zIndex: 1, overflowY: "auto" }}>
-        {/* Top Header */}
-        <motion.header
-          initial={{ opacity: 0, y: -12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-          className="glass-header"
-          style={{
-            padding: isMobile ? "12px 16px" : "20px 40px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: 12,
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <Tooltip content="Abrir menú" position="bottom">
+          <div style={{ display: "flex", gap: 8 }}>
+            <RippleButton
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              style={{
+                flex: sidebarOpen ? "0 0 auto" : 1,
+                width: sidebarOpen ? 46 : "100%",
+                height: 42,
+                borderRadius: 14,
+                background: T.inputBg,
+                border: `1px solid ${T.border}`,
+                color: T.sidebarMuted,
+              }}
+              aria-label={sidebarOpen ? "Contraer menú" : "Expandir menú"}
+            >
+              <i className={`bi ${sidebarOpen ? "bi-layout-sidebar-inset" : "bi-layout-sidebar"}`} />
+            </RippleButton>
+
+            {sidebarOpen && (
               <RippleButton
-                className="dashboard-menu-btn"
-                onClick={() => setSidebarOpen(prev => !(prev ?? !isMobile))}
+                onClick={logout}
                 style={{
-                  background: "rgba(255,255,255,0.05)",
-                  border: `1px solid ${T.border}`,
-                  color: T.headerText,
-                  width: 40,
-                  height: 40,
-                  borderRadius: "12px",
+                  flex: 1,
+                  height: 42,
+                  borderRadius: 14,
+                  background: "rgba(239, 68, 68, 0.08)",
+                  border: "1px solid rgba(239, 68, 68, 0.18)",
+                  color: "#ef4444",
+                  fontSize: 13,
+                  fontWeight: 700,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: 20,
+                  gap: 8,
+                }}
+              >
+                <i className="bi bi-box-arrow-left" />
+                <span>Cerrar sesión</span>
+              </RippleButton>
+            )}
+          </div>
+        </div>
+      </aside>
+
+      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
+        <motion.header
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.28 }}
+          className="glass-header"
+          style={{
+            padding: isMobile ? "14px 16px" : "18px 28px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 14,
+            flexWrap: "wrap",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
+            <Tooltip content="Abrir menú" position="bottom">
+              <RippleButton
+                className="dashboard-menu-btn"
+                onClick={() => setSidebarOpen((prev) => !(prev ?? !isMobile))}
+                style={{
+                  width: 42,
+                  height: 42,
+                  borderRadius: 14,
+                  background: T.inputBg,
+                  border: `1px solid ${T.border}`,
+                  color: T.headerText,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 18,
                   flexShrink: 0,
                 }}
                 aria-label="Abrir menú"
@@ -318,106 +341,95 @@ export default function DashboardLayout({
                 <i className="bi bi-list" />
               </RippleButton>
             </Tooltip>
-            {!lockedToBilling && (isAdmin || sellerSlug) && (
-              <Tooltip content={isAdmin ? "Ver landing de ventas" : "Ver mi landing"} position="bottom">
-                <RippleButton
-                  onClick={() => window.open(isAdmin ? "/" : sellerLandingUrl, "_blank", "noopener,noreferrer")}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 6,
-                    padding: isMobile ? "8px 12px" : "10px 18px",
-                    borderRadius: "9999px",
-                    border: "none",
-                    background: `linear-gradient(135deg, ${T.accent} 0%, ${T.accent2} 100%)`,
-                    color: "#fff",
-                    fontSize: isMobile ? "12px" : "13px",
-                    fontWeight: 700,
-                    flexShrink: 0,
-                  }}
-                >
-                  <i className="bi bi-eye-fill" />
-                  {!isMobile && <span>{isAdmin ? "Ver landing" : "Ver mi landing"}</span>}
-                </RippleButton>
-              </Tooltip>
-            )}
-            <div>
-              <h1 style={{ fontSize: isMobile ? "18px" : "26px", fontWeight: 700, color: T.headerText, fontFamily: "var(--font-heading), 'Outfit', sans-serif", letterSpacing: "-0.02em" }}>{pageTitle}</h1>
-                {!isMobile && (
-                <p style={{ fontSize: "13px", color: T.headerMuted, marginTop: 4, fontWeight: 500 }}>
-                  {isAdmin ? "Gestión de vendedores y pipeline de la plataforma." : "Administración y control de cobertura digital en tiempo real."}
+
+            <div style={{ minWidth: 0 }}>
+              <div
+                style={{
+                  fontSize: 11,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.18em",
+                  color: T.headerMuted,
+                  fontWeight: 600,
+                  marginBottom: 4,
+                }}
+              >
+                {isAdmin ? "Panel administrativo" : "Workspace comercial"}
+              </div>
+              <h1
+                style={{
+                  fontSize: isMobile ? 22 : 30,
+                  lineHeight: 1.05,
+                  fontWeight: 700,
+                  color: T.headerText,
+                  fontFamily: "var(--font-heading), sans-serif",
+                  letterSpacing: "-0.04em",
+                }}
+              >
+                {pageTitle}
+              </h1>
+              {!isMobile && (
+                <p style={{ marginTop: 6, fontSize: 13, color: T.headerMuted, maxWidth: 620 }}>
+                  {pageDescription}
                 </p>
               )}
             </div>
           </div>
 
-          {/* Date filter + Theme Toggle */}
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-            <Tooltip content={theme === "dark" ? "Cambiar a modo claro" : "Cambiar a modo oscuro"} position="bottom">
-              <RippleButton
-                onClick={toggleTheme}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 6,
-                  padding: "8px 14px",
-                  borderRadius: "9999px",
-                  border: `1px solid ${T.border}`,
-                  background: "rgba(255,255,255,0.04)",
-                  color: T.headerText,
-                  fontSize: "13px",
-                  fontWeight: 600,
-                }}
-              >
-                <i className={`bi ${theme === "dark" ? "bi-sun-fill" : "bi-moon-fill"}`}></i>
-                <span>{theme === "dark" ? "Día" : "Noche"}</span>
-              </RippleButton>
-            </Tooltip>
-
-            {isMobile && (
-              <Tooltip content="Cerrar sesión" position="bottom">
-                <RippleButton
-                  onClick={logout}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 6,
-                    width: 40,
-                    height: 40,
-                    borderRadius: "12px",
-                    border: "1px solid rgba(239, 68, 68, 0.25)",
-                    background: "rgba(239, 68, 68, 0.08)",
-                    color: "#EF4444",
-                    fontSize: 18,
-                  }}
-                  aria-label="Cerrar sesión"
-                >
-                  <i className="bi bi-box-arrow-left" />
-                </RippleButton>
-              </Tooltip>
+            {!lockedToBilling && (isAdmin || sellerSlug) && (
+              <ActionChip
+                onClick={() => window.open(isAdmin ? "/" : sellerLandingUrl, "_blank", "noopener,noreferrer")}
+                label={isMobile ? "Landing" : isAdmin ? "Ver landing" : "Ver mi landing"}
+                icon="bi-eye-fill"
+                T={T}
+                accent
+              />
             )}
 
-            {!isMobile && <span style={{ fontSize: "12px", color: T.headerMuted, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>Filtrar Fecha:</span>}
-            <div style={{ display: "flex", background: "rgba(255,255,255,0.04)", padding: "4px", borderRadius: "12px", border: `1px solid ${T.border}`, overflowX: "auto", maxWidth: "100%" }}>
-              {DATE_FILTERS.map((opt) => (
-                <RippleButton
-                  key={opt.id}
-                  onClick={() => setDateFilter(opt.id)}
-                  style={{
-                    padding: "6px 12px",
-                    borderRadius: "10px",
-                    border: "none",
-                    background: dateFilter === opt.id ? `${T.accent}20` : "transparent",
-                    color: dateFilter === opt.id ? T.accent : T.headerMuted,
-                    fontSize: "12px",
-                    fontWeight: 600,
-                  }}
-                >
-                  {opt.label}
-                </RippleButton>
-              ))}
-            </div>
+            <ActionChip
+              onClick={toggleTheme}
+              label={isMobile ? "Tema" : theme === "dark" ? "Modo claro" : "Modo oscuro"}
+              icon={theme === "dark" ? "bi-sun-fill" : "bi-moon-fill"}
+              T={T}
+            />
+
+            {isMobile && (
+              <ActionChip onClick={logout} label="Salir" icon="bi-box-arrow-left" T={T} danger />
+            )}
+
+            {!isMobile && (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 4,
+                  padding: 4,
+                  borderRadius: 16,
+                  background: T.inputBg,
+                  border: `1px solid ${T.border}`,
+                  overflowX: "auto",
+                  maxWidth: "100%",
+                }}
+              >
+                {DATE_FILTERS.map((opt) => (
+                  <RippleButton
+                    key={opt.id}
+                    onClick={() => setDateFilter(opt.id)}
+                    style={{
+                      padding: "8px 12px",
+                      borderRadius: 12,
+                      border: "none",
+                      background: dateFilter === opt.id ? `${T.accent}18` : "transparent",
+                      color: dateFilter === opt.id ? T.accent : T.headerMuted,
+                      fontSize: 12,
+                      fontWeight: 600,
+                    }}
+                  >
+                    {opt.label}
+                  </RippleButton>
+                ))}
+              </div>
+            )}
 
             {dateFilter === "custom" && (
               <input
@@ -425,12 +437,13 @@ export default function DashboardLayout({
                 value={customDate}
                 onChange={(e) => setCustomDate(e.target.value)}
                 style={{
+                  height: 40,
                   background: T.inputBg,
-                  border: `1px solid ${T.accent}40`,
+                  border: `1px solid ${T.border}`,
                   color: T.text,
-                  padding: "8px 12px",
-                  borderRadius: "12px",
-                  fontSize: "13px",
+                  padding: "0 12px",
+                  borderRadius: 12,
+                  fontSize: 13,
                   outline: "none",
                 }}
               />
@@ -438,132 +451,56 @@ export default function DashboardLayout({
           </div>
         </motion.header>
 
-        {/* Banner de cuenta pausada: solo facturación disponible */}
         {lockedToBilling && (
-          <div
-            className="glass-card"
-            style={{
-              margin: isMobile ? "0 16px 16px" : "0 40px 24px",
-              border: "1px solid rgba(239, 68, 68, 0.35)",
-              padding: "18px 24px",
-              display: "flex",
-              alignItems: "center",
-              gap: "14px",
-              flexWrap: "wrap",
-            }}
-          >
-            <div
-              style={{
-                width: 44,
-                height: 44,
-                borderRadius: "14px",
-                background: "rgba(239, 68, 68, 0.14)",
-                border: "1px solid rgba(239, 68, 68, 0.30)",
-                color: "#EF4444",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 20,
-                flexShrink: 0,
-              }}
-            >
-              <i className="bi bi-pause-circle-fill"></i>
-            </div>
-            <div style={{ flex: 1, minWidth: 220 }}>
-              <h3 style={{ fontSize: "15px", fontWeight: 700, color: T.text, marginBottom: "4px", fontFamily: "var(--font-heading), 'Outfit', sans-serif" }}>
-                Tu cuenta está pausada
-              </h3>
-              <p style={{ fontSize: "13px", color: T.muted, fontWeight: 500, lineHeight: 1.5 }}>
-                Registra tu tarjeta abajo para reactivar tu landing automáticamente. Si crees que es un error, contacta al administrador.
-              </p>
-            </div>
-          </div>
+          <InlineBanner
+            T={T}
+            tone="danger"
+            title="Tu cuenta está pausada"
+            text="Registra tu tarjeta para reactivar tu landing automáticamente y volver a operar con normalidad."
+            icon="bi-pause-circle-fill"
+            isMobile={isMobile}
+          />
         )}
 
-        {/* Onboarding Banner */}
         {onboardingNeeded && !isAdmin && (
-          <div
-            className="glass-card"
-            style={{
-              margin: isMobile ? "0 16px 16px" : "0 40px 24px",
-              border: `1px solid ${T.accent}35`,
-              padding: "20px 24px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: "16px",
-              flexWrap: "wrap",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-              <div
-                style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: "14px",
-                  background: `${T.accent}20`,
-                  border: `1px solid ${T.accent}40`,
-                  color: T.accent,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 22,
-                  flexShrink: 0,
-                }}
-              >
-                <i className="bi bi-rocket-takeoff-fill"></i>
+          <InlineBanner
+            T={T}
+            tone="accent"
+            title="Tu workspace está casi listo"
+            text="Sube tu foto, ajusta tu landing y verifica tu WhatsApp para empezar con una presentación más profesional."
+            icon="bi-rocket-takeoff-fill"
+            isMobile={isMobile}
+            actions={
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                {sellerSlug && (
+                  <ActionChip
+                    onClick={() => window.open(sellerLandingUrl, "_blank", "noopener,noreferrer")}
+                    label="Ver mi landing"
+                    icon="bi-eye-fill"
+                    T={T}
+                  />
+                )}
+                <ActionChip
+                  onClick={() => onMenuChange("settings")}
+                  label="Configurar ahora"
+                  icon="bi-gear-fill"
+                  T={T}
+                  accent
+                />
               </div>
-              <div>
-                <h3 style={{ fontSize: "16px", fontWeight: 700, color: T.text, marginBottom: "4px", fontFamily: "var(--font-heading), 'Outfit', sans-serif" }}>
-                  ¡Bienvenida! Tu landing está casi lista
-                </h3>
-                <p style={{ fontSize: "13px", color: T.muted, fontWeight: 500 }}>
-                  Personaliza tu foto, bio y verifica tu WhatsApp para que los clientes te encuentren.
-                </p>
-              </div>
-            </div>
-            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-              {sellerSlug && (
-                <RippleButton
-                  onClick={() => window.open(sellerLandingUrl, "_blank", "noopener,noreferrer")}
-                  style={{
-                    padding: "10px 18px",
-                    borderRadius: "9999px",
-                    border: `1px solid ${T.border}`,
-                    background: "rgba(255,255,255,0.04)",
-                    color: T.text,
-                    fontSize: "13px",
-                    fontWeight: 600,
-                  }}
-                >
-                  <i className="bi bi-eye-fill"></i> Ver mi landing
-                </RippleButton>
-              )}
-              <RippleButton
-                onClick={() => onMenuChange("settings")}
-                style={{
-                  padding: "10px 20px",
-                  borderRadius: "9999px",
-                  border: `1px solid ${T.accent}50`,
-                  background: `${T.accent}15`,
-                  color: T.accent,
-                  fontSize: "13px",
-                  fontWeight: 700,
-                  backdropFilter: "blur(10px)",
-                }}
-              >
-                <i className="bi bi-gear-fill"></i> Configurar ahora
-              </RippleButton>
-            </div>
-          </div>
+            }
+          />
         )}
 
-        {/* Page Content */}
         <motion.main
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.3, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
-          style={{ padding: isMobile ? "16px" : "40px" }}
+          transition={{ duration: 0.25, delay: 0.04 }}
+          style={{
+            padding: isMobile ? 16 : 28,
+            overflowY: "auto",
+            flex: 1,
+          }}
         >
           {children}
         </motion.main>
@@ -572,31 +509,135 @@ export default function DashboardLayout({
   );
 }
 
+function ActionChip({ onClick, label, icon, T, accent = false, danger = false }) {
+  const color = danger ? "#ef4444" : accent ? T.accent : T.headerText;
+  const background = danger ? "rgba(239, 68, 68, 0.08)" : accent ? `${T.accent}14` : T.inputBg;
+  const border = danger ? "1px solid rgba(239, 68, 68, 0.18)" : accent ? `1px solid ${T.accent}28` : `1px solid ${T.border}`;
+
+  return (
+    <RippleButton
+      onClick={onClick}
+      style={{
+        height: 40,
+        padding: "0 14px",
+        borderRadius: 14,
+        border,
+        background,
+        color,
+        fontSize: 13,
+        fontWeight: 600,
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
+      }}
+    >
+      <i className={`bi ${icon}`} />
+      <span>{label}</span>
+    </RippleButton>
+  );
+}
+
+function InlineBanner({ T, tone, title, text, icon, isMobile, actions = null }) {
+  const accent = tone === "danger" ? "#ef4444" : T.accent;
+  const border = tone === "danger" ? "rgba(239, 68, 68, 0.28)" : `${T.accent}32`;
+  const bg = tone === "danger" ? "rgba(239, 68, 68, 0.08)" : `${T.accent}10`;
+
+  return (
+    <div
+      style={{
+        margin: isMobile ? "0 16px 16px" : "0 28px 20px",
+        padding: isMobile ? "16px" : "18px 20px",
+        borderRadius: 18,
+        border: `1px solid ${border}`,
+        background: bg,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 16,
+        flexWrap: "wrap",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 14, flex: 1, minWidth: 220 }}>
+        <div
+          style={{
+            width: 44,
+            height: 44,
+            borderRadius: 14,
+            background: `${accent}18`,
+            border: `1px solid ${accent}28`,
+            color: accent,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 20,
+            flexShrink: 0,
+          }}
+        >
+          <i className={`bi ${icon}`} />
+        </div>
+        <div>
+          <h3
+            style={{
+              fontSize: 16,
+              fontWeight: 700,
+              color: T.text,
+              fontFamily: "var(--font-heading), sans-serif",
+              letterSpacing: "-0.02em",
+              marginBottom: 4,
+            }}
+          >
+            {title}
+          </h3>
+          <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.55 }}>{text}</p>
+        </div>
+      </div>
+      {actions}
+    </div>
+  );
+}
+
 const MenuItem = memo(function MenuItem({ item, index, active, sidebarOpen, onClick, T }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, x: -12 }}
+    <motion.button
+      type="button"
+      initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: 0.15 + index * 0.04, duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ delay: 0.04 + index * 0.03, duration: 0.24 }}
       onClick={onClick}
       style={{
         display: "flex",
         alignItems: "center",
         gap: 12,
-        padding: "12px 16px",
-        borderRadius: "14px",
+        width: "100%",
+        padding: sidebarOpen ? "11px 12px" : "11px 0",
+        borderRadius: 14,
         cursor: "pointer",
-        background: active ? `${T.accent}15` : "transparent",
+        background: active ? `${T.accent}14` : "transparent",
         color: active ? T.accent : T.sidebarMuted,
-        border: active ? `1px solid ${T.accent}35` : "1px solid transparent",
-        transition: "all 0.2s",
-        whiteSpace: "nowrap",
+        border: active ? `1px solid ${T.accent}28` : "1px solid transparent",
+        transition: "all 0.18s ease",
         fontWeight: 600,
         fontSize: 13,
+        textAlign: "left",
       }}
     >
-      <i className={`bi ${item.icon}`} style={{ fontSize: 16, color: active ? T.accent : "inherit" }} />
-      {sidebarOpen && <span>{item.label}</span>}
-    </motion.div>
+      <span
+        style={{
+          width: 42,
+          minWidth: 42,
+          height: 42,
+          borderRadius: 12,
+          background: active ? `${T.accent}12` : "transparent",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: active ? T.accent : "inherit",
+          fontSize: 16,
+        }}
+      >
+        <i className={`bi ${item.icon}`} />
+      </span>
+      {sidebarOpen && <span style={{ minWidth: 0 }}>{item.label}</span>}
+    </motion.button>
   );
 });

@@ -18,20 +18,35 @@ const STORAGE_KEYS = [
   "crm_email_use_smtp",
 ];
 
+const DEFAULT_SETTINGS = {
+  sellerName: "Ejecutiva Mundo",
+  sellerPhone: "",
+  sellerMsg: "Hola, vi tu página web y me gustaría recibir asesoría sobre los planes de Internet y TV Hogar de Mundo.",
+  sellerPhoto: "",
+  sellerBio: "",
+  sellerGender: "",
+  landingTheme: "light",
+  dashboardTheme: "dark",
+  footerText: "",
+  whatsappNumber: "",
+  metaPixelId: "",
+};
+
 function getDefaultSettings(isAdmin = false) {
   return {
-    sellerName: "Ejecutiva Mundo",
-    sellerPhone: "",
+    sellerName: DEFAULT_SETTINGS.sellerName,
+    sellerPhone: DEFAULT_SETTINGS.sellerPhone,
     sellerMsg: isAdmin
       ? "Hola, vi el CRM Vendedor Mundo y quiero activar mi prueba gratis de 7 días."
-      : "Hola, vi tu página web y me gustaría recibir asesoría sobre los planes de Internet y TV Hogar de Mundo.",
-    sellerPhoto: "",
-    sellerBio: "",
-    sellerGender: "",
-    landingTheme: "dark",
-    footerText: "",
-    whatsappNumber: "",
-    metaPixelId: "",
+      : DEFAULT_SETTINGS.sellerMsg,
+    sellerPhoto: DEFAULT_SETTINGS.sellerPhoto,
+    sellerBio: DEFAULT_SETTINGS.sellerBio,
+    sellerGender: DEFAULT_SETTINGS.sellerGender,
+    landingTheme: DEFAULT_SETTINGS.landingTheme,
+    dashboardTheme: DEFAULT_SETTINGS.dashboardTheme,
+    footerText: DEFAULT_SETTINGS.footerText,
+    whatsappNumber: DEFAULT_SETTINGS.whatsappNumber,
+    metaPixelId: DEFAULT_SETTINGS.metaPixelId,
   };
 }
 
@@ -95,6 +110,7 @@ export function useSettings({ isAdmin = false } = {}) {
       sellerPhoto: localStorage.getItem("seller_photo") || defaults.sellerPhoto,
       sellerBio: localStorage.getItem("seller_bio") || defaults.sellerBio,
       landingTheme: localStorage.getItem("landing_theme") || defaults.landingTheme,
+      dashboardTheme: localStorage.getItem("dashboard_theme") || defaults.dashboardTheme,
       footerText: localStorage.getItem("footer_text") !== null ? localStorage.getItem("footer_text") : defaults.footerText,
       whatsappNumber: normalizeWhatsAppNumber(localStorage.getItem("whatsapp_number") || defaults.whatsappNumber),
       metaPixelId: localStorage.getItem("meta_pixel_id") || defaults.metaPixelId,
@@ -155,7 +171,7 @@ export function useSettings({ isAdmin = false } = {}) {
     localStorage.setItem("footer_text", settingsToSave.footerText);
     localStorage.setItem("meta_pixel_id", settingsToSave.metaPixelId);
     localStorage.setItem("dashboard_theme", settingsToSave.dashboardTheme || "dark");
-    document.documentElement.setAttribute("data-landing-theme", settingsToSave.landingTheme);
+    document.documentElement.setAttribute("data-landing-theme", settingsToSave.landingTheme || "light");
   }, []);
 
   const saveSettings = useCallback(async (settingsToSave) => {

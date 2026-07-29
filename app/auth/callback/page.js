@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -11,13 +11,21 @@ export default function AuthCallback() {
   const router = useRouter();
   const supabase = createClient();
 
+  const hardRedirect = useCallback((path) => {
+    if (typeof window !== "undefined") {
+      window.location.replace(path);
+      return;
+    }
+    router.replace(path);
+  }, [router]);
+
   useEffect(() => {
     async function handleCallback() {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error || !session) {
           setStatus("Error: no se pudo obtener la sesión");
-          setTimeout(() => router.push("/registro"), 2000);
+          setTimeout(() => hardRedirect("/dashboard"), 1200);
           return;
         }
 
@@ -29,7 +37,7 @@ export default function AuthCallback() {
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
           setStatus("Error al preparar perfil: " + (data.error || ""));
-          setTimeout(() => router.push("/registro"), 3000);
+          setTimeout(() => hardRedirect("/dashboard"), 1200);
           return;
         }
 
@@ -42,18 +50,18 @@ export default function AuthCallback() {
 
         if (isOAuthUser && needsProfile) {
           setStatus("Completa tus datos...");
-          router.push("/registro?oauth=true");
+          hardRedirect("/registro?oauth=true");
         } else {
           setStatus("Redirigiendo al dashboard...");
-          router.push("/dashboard");
+          hardRedirect("/dashboard");
         }
       } catch (e) {
         setStatus("Error: " + e.message);
-        setTimeout(() => router.push("/registro"), 3000);
+        setTimeout(() => hardRedirect("/dashboard"), 1200);
       }
     }
     handleCallback();
-  }, [router, supabase]);
+  }, [hardRedirect, supabase]);
 
   return (
     <div
