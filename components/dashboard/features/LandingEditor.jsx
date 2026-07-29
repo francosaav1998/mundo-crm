@@ -58,6 +58,7 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
 
   const [iframeReady, setIframeReady] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [mobilePanel, setMobilePanel] = useState("preview");
   const iframeRef = useRef(null);
 
   const sellerSlug = sellerInfo?.slug || "";
@@ -239,8 +240,8 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
         borderRadius: 20,
         overflow: "hidden",
         boxShadow: "0 20px 50px rgba(0,0,0,0.15)",
-        height: isMobile ? "auto" : "100%",
-        maxHeight: isMobile ? "46vh" : "100%",
+        height: isMobile ? "calc(100vh - 170px)" : "100%",
+        maxHeight: isMobile ? "calc(100vh - 170px)" : "100%",
       }}
     >
       {renderSectionTabs()}
@@ -473,6 +474,29 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
             />
           </div>
 
+          {isMobile && (
+            <button
+              type="button"
+              onClick={() => setMobilePanel((current) => current === "preview" ? "editor" : "preview")}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "9px 12px",
+                borderRadius: 10,
+                border: `1px solid ${T.accent}40`,
+                background: `${T.accent}12`,
+                color: T.accent,
+                fontSize: 12,
+                fontWeight: 800,
+                cursor: "pointer",
+              }}
+            >
+              <i className={`bi ${mobilePanel === "preview" ? "bi-pencil-square" : "bi-phone"}`}></i>
+              {mobilePanel === "preview" ? "Editar" : "Ver landing"}
+            </button>
+          )}
+
           {sellerSlug && (
             <a
               href={publishedUrl}
@@ -535,14 +559,15 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
           minHeight: 0,
         }}
       >
-        {renderManualEditor()}
+        {(!isMobile || mobilePanel === "editor") && renderManualEditor()}
 
         {/* Preview canvas */}
-        <div
+        {(!isMobile || mobilePanel === "preview") && <div
           style={{
             flex: 1,
             minWidth: 0,
-            height: "100%",
+            height: isMobile ? "calc(100vh - 170px)" : "100%",
+            minHeight: isMobile ? 520 : 0,
             display: "flex",
             flexDirection: "column",
             background: "rgba(0,0,0,0.22)",
@@ -602,7 +627,7 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
               </div>
             )}
           </div>
-        </div>
+        </div>}
       </div>
     </div>
   );

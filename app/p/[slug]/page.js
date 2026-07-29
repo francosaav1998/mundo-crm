@@ -2,21 +2,10 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import SellerLandingReact from "@/components/landing/SellerLandingReact";
 
-// Mapeo de compañía → hash del archivo HTML (para no exponer la compañía en la URL)
-const LANDING_HASHES = {
-  claro: "ohxZn08",
-  entel: "GA9CU9o",
-  movistar: "cJKWAcQ",
-  vtr: "oOn6PS8",
-  wom: "v1Lz_Yo",
-};
-
 export const dynamic = "force-dynamic";
 
-export default async function SellerLandingPage({ params, searchParams }) {
+export default async function SellerLandingPage({ params }) {
   const { slug } = await params;
-  const { preview } = await searchParams;
-  const isPreview = preview === "1";
 
   const seller = await prisma.seller.findUnique({
     where: { slug },
@@ -32,14 +21,7 @@ export default async function SellerLandingPage({ params, searchParams }) {
     return <SellerLandingReact />;
   }
 
-  const companySlug = seller.company?.slug || "mundo";
-
-  // Redirigir a landing estática con nombre de archivo hasheado
-  const hash = LANDING_HASHES[companySlug];
-  if (!isPreview && hash) {
-    redirect(`/landings/${hash}.html?id=${encodeURIComponent(seller.id)}`);
-  }
-
-  // Preview del editor o compañías sin landing estática (ej. Mundo) usan la landing React.
+  // Todas las compañías usan la landing React actual para compartir el mismo
+  // editor, slider de diapositivas y personalización por vendedor.
   return <SellerLandingReact />;
 }

@@ -95,6 +95,32 @@ export function Field({ label, help, T, children }) {
   );
 }
 
+function FilePicker({ onChange, disabled, uploading, T }) {
+  return (
+    <label
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
+        width: "100%",
+        padding: "12px 14px",
+        background: T.bgCard,
+        border: `1px solid ${T.border}`,
+        borderRadius: 12,
+        color: T.text,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.65 : 1,
+        fontSize: 13,
+        fontWeight: 700,
+      }}
+    >
+      <i className={`bi ${uploading ? "bi-arrow-repeat" : "bi-upload"}`}></i>
+      {uploading ? "Subiendo imagen..." : "Seleccionar imagen"}
+      <input type="file" accept="image/*" onChange={onChange} disabled={disabled} style={{ display: "none" }} />
+    </label>
+  );
+}
+
 export function HeroControls({ content, updateContent, T, isMobile = false }) {
   const [uploadingBg, setUploadingBg] = useState(false);
   const backgroundImages = Array.isArray(content.backgroundImages) ? content.backgroundImages : [];
@@ -169,8 +195,8 @@ export function HeroControls({ content, updateContent, T, isMobile = false }) {
             </div>
           )}
         </Field>
-        <Field label="Subir imagen" help={uploadingBg ? "Subiendo imagen..." : "Agrega más fotos al slideshow del hero."} T={T}>
-          <input type="file" accept="image/*" onChange={handleBackgroundUpload} disabled={uploadingBg} style={{ width: "100%", padding: 12, background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: 12, color: T.text }} />
+        <Field label="Subir imagen" help="Agrega más fotos al slideshow del hero." T={T}>
+          <FilePicker onChange={handleBackgroundUpload} disabled={uploadingBg} uploading={uploadingBg} T={T} />
         </Field>
         <Field label="URL de imagen principal (legacy)" help="URL del primer fondo. Se mantiene por compatibilidad." T={T}>
           <Input type="text" T={T} value={content.backgroundImageUrl || ""} onChange={(e) => updateContent({ backgroundImageUrl: e.target.value })} placeholder="https://.../mi-imagen.jpg" />
@@ -240,8 +266,8 @@ export function BenefitsSliderControls({ content, updateContent, updateArrayItem
         <Field label="URL de la imagen" help="Se aplica detrás de las diapositivas de beneficios. Déjala vacía para usar el fondo normal." T={T}>
           <Input type="text" T={T} value={content.backgroundImageUrl || ""} onChange={(e) => updateContent({ backgroundImageUrl: e.target.value })} placeholder="https://.../mi-imagen.jpg" />
         </Field>
-        <Field label="Subir imagen" help={uploadingBg ? "Subiendo imagen..." : "También puedes subir una imagen desde tu computador."} T={T}>
-          <input type="file" accept="image/*" onChange={handleBackgroundUpload} disabled={uploadingBg} style={{ width: "100%", padding: 12, background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: 12, color: T.text }} />
+        <Field label="Subir imagen" help="También puedes subir una imagen desde tu computador." T={T}>
+          <FilePicker onChange={handleBackgroundUpload} disabled={uploadingBg} uploading={uploadingBg} T={T} />
         </Field>
       </SectionBlock>
       <SectionBlock title="Diapositivas" T={T}>
