@@ -1,15 +1,8 @@
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import SellerLandingReact from "@/components/landing/SellerLandingReact";
+import { getOfficialDemoHash } from "@/lib/demo-landings";
 import { buildDemoSeller, getDemoCompanySlug } from "@/lib/demo-seller";
-
-const LANDING_HASHES = {
-  claro: "ohxZn08",
-  entel: "GA9CU9o",
-  movistar: "cJKWAcQ",
-  vtr: "oOn6PS8",
-  wom: "v1Lz_Yo",
-};
 
 export const dynamic = "force-dynamic";
 
@@ -40,8 +33,7 @@ export default async function SellerLandingPage({ params, searchParams }) {
     return <SellerLandingReact />;
   }
 
-  const companySlug = seller.company?.slug || "mundo";
-  const hash = LANDING_HASHES[companySlug];
+  const hash = getOfficialDemoHash(seller.company?.slug);
   const query = seller.id
     ? `id=${encodeURIComponent(seller.id)}`
     : `slug=${encodeURIComponent(slug)}`;
