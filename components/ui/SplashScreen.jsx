@@ -29,7 +29,7 @@ function buildParticles(count) {
   });
 }
 
-export default function SplashScreen({ appName = "Mundo CRM", subtitle = "Panel de ventas" }) {
+export default function SplashScreen({ appName = "GestionVendedores.com", subtitle = "Workspace comercial" }) {
   const particles = useMemo(() => buildParticles(22), []);
 
   return (
@@ -77,7 +77,7 @@ export default function SplashScreen({ appName = "Mundo CRM", subtitle = "Panel 
               width: "100%",
               height: "100%",
               borderRadius: 24,
-              background: "linear-gradient(135deg, #d4a574 0%, #8080ff 100%)",
+               background: "linear-gradient(135deg, #4f8cff 0%, #72a6ff 100%)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -142,7 +142,7 @@ export default function SplashScreen({ appName = "Mundo CRM", subtitle = "Panel 
             fontWeight: 600,
           }}
         >
-          <span className="btn-spinner" style={{ color: "#d4a574" }} />
+           <span className="btn-spinner" style={{ color: "#72a6ff" }} />
           Preparando tu espacio de trabajo…
         </motion.div>
       </div>

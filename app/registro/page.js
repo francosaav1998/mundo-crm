@@ -1,9 +1,10 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { NEON_THEME } from "@/lib/dashboard/constants";
+import { getAppOrigin } from "@/lib/urls";
 
 export const dynamic = "force-dynamic";
 
@@ -59,7 +60,6 @@ function RegistroFallback() {
 
 function RegistroPageInner() {
   const T = NEON_THEME.dark;
-  const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = createClient();
 
@@ -81,15 +81,22 @@ function RegistroPageInner() {
   const [oauthUser, setOauthUser] = useState(null);
   const [loadingOauthData, setLoadingOauthData] = useState(false);
 
+  const appOrigin = getAppOrigin();
+
+  const hardRedirect = useCallback((path) => {
+    const target = `${appOrigin || window.location.origin}${path}`;
+    window.location.assign(target);
+  }, [appOrigin]);
+
   // Redirigir al dashboard cuando el registro se completa
   useEffect(() => {
     if (success) {
       const timer = setTimeout(() => {
-        router.push("/dashboard");
+        hardRedirect("/dashboard");
       }, 2000);
       return () => clearTimeout(timer);
     }
-  }, [success, router]);
+  }, [hardRedirect, success]);
 
   const update = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
 
@@ -139,10 +146,10 @@ function RegistroPageInner() {
     setOauthLoading(true);
     setError("");
     try {
-      const { error: err } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: { redirectTo: `${window.location.origin}/auth/callback` },
-      });
+        const { error: err } = await supabase.auth.signInWithOAuth({
+          provider,
+          options: { redirectTo: `${appOrigin || window.location.origin}/auth/callback` },
+        });
       if (err) setError(err.message);
     } catch (e) {
       setError(e.message);
@@ -282,8 +289,8 @@ function RegistroPageInner() {
           position: "fixed",
           inset: 0,
           backgroundImage: `
-            radial-gradient(circle at 10% 20%, rgba(212, 165, 116, 0.12) 0%, transparent 35%),
-            radial-gradient(circle at 90% 80%, rgba(128, 128, 255, 0.10) 0%, transparent 40%)
+             radial-gradient(circle at 10% 20%, rgba(79, 140, 255, 0.16) 0%, transparent 35%),
+             radial-gradient(circle at 90% 80%, rgba(114, 166, 255, 0.12) 0%, transparent 40%)
           `,
           pointerEvents: "none",
           zIndex: 0,
@@ -306,10 +313,10 @@ function RegistroPageInner() {
               boxShadow: T.glowGold,
             }}
           >
-            <span style={{ color: T.accent, fontWeight: 900, fontSize: "26px" }}>M</span>
+               <span style={{ color: T.accent, fontWeight: 900, fontSize: "20px", letterSpacing: "-0.08em" }}>GV</span>
           </div>
           <h1 style={{ fontSize: "24px", fontWeight: 800, letterSpacing: "-0.02em" }}>
-            Únete a Gestion Vendedores
+             Únete a GestionVendedores.com
           </h1>
           <p style={{ color: T.muted, fontSize: "13px", marginTop: "6px" }}>
             Completa tus datos y obtén tu landing personalizada
@@ -491,7 +498,7 @@ function RegistroPageInner() {
               />
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: oauthUser ? "1fr" : "1fr 1fr", gap: "16px" }}>
+             <div style={{ display: "grid", gridTemplateColumns: oauthUser ? "1fr" : "repeat(auto-fit, minmax(180px, 1fr))", gap: "16px" }}>
               <div>
                 <label style={labelStyle}>Email *</label>
                 <input
@@ -524,7 +531,7 @@ function RegistroPageInner() {
               )}
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "16px" }}>
               <div>
                  <label style={{ ...labelStyle, color: T.accent }}>WhatsApp *</label>
                 <input
@@ -646,7 +653,9 @@ function RegistroPageInner() {
           <div style={{ marginTop: "20px", paddingTop: "16px", borderTop: `1px solid ${T.border}`, textAlign: "center" }}>
             <p style={{ fontSize: "13px", color: T.muted, marginBottom: "6px" }}>¿Ya tienes cuenta?</p>
             <button
-              onClick={() => router.push("/dashboard/login")}
+              onClick={() => {
+                hardRedirect("/dashboard/login");
+              }}
               style={{
                 fontSize: "14px",
                 fontWeight: 700,

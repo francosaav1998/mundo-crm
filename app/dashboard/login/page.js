@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
+import { getAppOrigin } from "@/lib/urls";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -12,8 +12,13 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [oauthLoading, setOauthLoading] = useState(false);
-  const router = useRouter();
   const supabase = createClient();
+  const appOrigin = getAppOrigin();
+
+  const hardRedirect = (path) => {
+    const target = `${appOrigin || window.location.origin}${path}`;
+    window.location.assign(target);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,8 +34,7 @@ export default function LoginPage() {
       if (!res.ok) {
         setError(data.error || "Error al iniciar sesión");
       } else {
-        router.push("/dashboard");
-        router.refresh();
+        hardRedirect("/dashboard");
       }
     } catch {
       setError("Error de conexión");
@@ -63,9 +67,9 @@ export default function LoginPage() {
           position: "fixed",
           inset: 0,
           backgroundImage: `
-            radial-gradient(ellipse 80% 50% at 50% -10%, rgba(212, 165, 116, 0.14), transparent 60%),
-            radial-gradient(circle at 120% 20%, rgba(128, 128, 255, 0.1), transparent 45%),
-            radial-gradient(circle at -10% 80%, rgba(212, 165, 116, 0.08), transparent 40%)
+            radial-gradient(ellipse 80% 50% at 50% -10%, rgba(79, 140, 255, 0.18), transparent 60%),
+            radial-gradient(circle at 120% 20%, rgba(114, 166, 255, 0.12), transparent 45%),
+            radial-gradient(circle at -10% 80%, rgba(37, 99, 235, 0.1), transparent 40%)
           `,
           pointerEvents: "none",
           zIndex: 0,
@@ -87,7 +91,7 @@ export default function LoginPage() {
             style={{
               width: "64px",
               height: "64px",
-              background: "linear-gradient(135deg, #d4a574 0%, #8080ff 100%)",
+               background: "linear-gradient(135deg, #4f8cff 0%, #72a6ff 100%)",
               borderRadius: "18px",
               display: "flex",
               alignItems: "center",
@@ -98,7 +102,7 @@ export default function LoginPage() {
           >
             <i className="bi bi-globe-americas" style={{ color: "#fff", fontSize: "28px" }} />
           </motion.div>
-          <h1 style={{ fontSize: "28px", fontWeight: 700, color: "#FFFFFF", letterSpacing: "-0.02em", fontFamily: "var(--font-heading), 'Outfit', sans-serif" }}>CRM Mundo</h1>
+           <h1 style={{ fontSize: "clamp(24px, 7vw, 28px)", fontWeight: 700, color: "#FFFFFF", letterSpacing: "-0.02em", fontFamily: "var(--font-heading), 'Outfit', sans-serif" }}>GestionVendedores.com</h1>
           <p style={{ color: "rgba(240, 240, 245, 0.65)", fontSize: "14px", marginTop: "6px", fontWeight: 500 }}>Acceso ejecutivos de ventas</p>
         </motion.div>
 
@@ -145,7 +149,7 @@ export default function LoginPage() {
               try {
                 const { error: err } = await supabase.auth.signInWithOAuth({
                   provider: "google",
-                  options: { redirectTo: `${window.location.origin}/auth/callback?from=login` },
+                  options: { redirectTo: `${appOrigin || window.location.origin}/auth/callback?from=login` },
                 });
                 if (err) setError(err.message);
               } catch (e) {
@@ -173,8 +177,8 @@ export default function LoginPage() {
             }}
             onMouseEnter={(e) => {
               if (!oauthLoading && !loading) {
-                e.target.style.borderColor = "rgba(212, 165, 116, 0.5)";
-                e.target.style.boxShadow = "0 0 0 3px rgba(212, 165, 116, 0.12)";
+                   e.target.style.borderColor = "rgba(79, 140, 255, 0.6)";
+                   e.target.style.boxShadow = "0 0 0 3px rgba(79, 140, 255, 0.14)";
               }
             }}
             onMouseLeave={(e) => {
@@ -209,7 +213,7 @@ export default function LoginPage() {
                 Usuario
               </label>
               <div style={{ position: "relative" }}>
-                <i className="bi bi-person-fill" style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "#d4a574" }} />
+                 <i className="bi bi-person-fill" style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "#72a6ff" }} />
                 <input
                   type="text"
                   value={username}
@@ -227,8 +231,8 @@ export default function LoginPage() {
                     transition: "all 0.2s",
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = "rgba(212, 165, 116, 0.5)";
-                    e.target.style.boxShadow = "0 0 0 3px rgba(212, 165, 116, 0.12)";
+                   e.target.style.borderColor = "rgba(79, 140, 255, 0.6)";
+                   e.target.style.boxShadow = "0 0 0 3px rgba(79, 140, 255, 0.14)";
                   }}
                   onBlur={(e) => {
                     e.target.style.borderColor = "rgba(255, 255, 255, 0.08)";
@@ -245,7 +249,7 @@ export default function LoginPage() {
                 Contraseña
               </label>
               <div style={{ position: "relative" }}>
-                <i className="bi bi-lock-fill" style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "#d4a574" }} />
+                 <i className="bi bi-lock-fill" style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "#72a6ff" }} />
                 <input
                   type="password"
                   value={password}
@@ -281,7 +285,7 @@ export default function LoginPage() {
               disabled={loading}
               style={{
                 width: "100%",
-                background: "linear-gradient(135deg, #d4a574 0%, #b08a5f 100%)",
+                 background: "linear-gradient(135deg, #4f8cff 0%, #2563eb 100%)",
                 color: "#FFFFFF",
                 fontWeight: 700,
                 padding: "14px",
@@ -289,7 +293,7 @@ export default function LoginPage() {
                 border: "none",
                 cursor: "pointer",
                 fontSize: "14px",
-                boxShadow: "0 4px 20px rgba(212, 165, 116, 0.25)",
+                 boxShadow: "0 4px 20px rgba(79, 140, 255, 0.28)",
                 transition: "all 0.2s",
                 display: "flex",
                 alignItems: "center",
@@ -311,7 +315,7 @@ export default function LoginPage() {
               display: "block",
               transition: "color 0.2s",
             }}
-              onMouseEnter={(e) => e.currentTarget.style.color = "#d4a574"}
+               onMouseEnter={(e) => e.currentTarget.style.color = "#72a6ff"}
               onMouseLeave={(e) => e.currentTarget.style.color = "rgba(255, 255, 255, 0.5)"}>
               ¿Olvidaste tu contraseña?
             </Link>
@@ -326,7 +330,7 @@ export default function LoginPage() {
             <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.5)", marginBottom: "12px" }}>
               ¿Eres ejecutiva y no tienes cuenta?
             </p>
-            <Link href="/registro" style={{ fontSize: "14px", fontWeight: 600, color: "#d4a574", textDecoration: "none", display: "block", marginBottom: "12px" }}>
+             <Link href="/registro" style={{ fontSize: "14px", fontWeight: 600, color: "#72a6ff", textDecoration: "none", display: "block", marginBottom: "12px" }}>
               Regístrate aqui →
             </Link>
             <Link href="/" style={{ fontSize: "13px", fontWeight: 600, color: "rgba(255,255,255,0.5)", textDecoration: "none" }}>
