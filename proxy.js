@@ -1,6 +1,21 @@
 import { NextResponse } from "next/server";
 import { updateSession } from "@/lib/supabase/proxy";
-import { getSellerSubdomain } from "@/lib/urls";
+import { getRootDomain, getSellerSubdomain } from "@/lib/urls";
+import { getOfficialDemoCompanySlug, getOfficialDemoHash } from "@/lib/demo-landings";
+
+function buildRootUrl(request, pathname) {
+  const appOrigin = String(process.env.NEXT_PUBLIC_APP_URL || "").replace(/\/$/, "");
+  if (appOrigin) {
+    return new URL(pathname, `${appOrigin}/`);
+  }
+
+  const rootDomain = getRootDomain();
+  if (rootDomain) {
+    return new URL(`${request.nextUrl.protocol}//${rootDomain}${pathname}`);
+  }
+
+  return new URL(pathname, request.url);
+}
 
 export async function proxy(request) {
   const { response, user } = await updateSession(request);
@@ -32,6 +47,27 @@ export async function proxy(request) {
     pathname.startsWith("/auth") ||
     pathname.startsWith("/registro") ||
     pathname.startsWith("/p/");
+
+  // Los subdominios de vendedores deben servir solo la landing pública.
+  // Registro, auth y dashboard viven siempre en el dominio principal para
+  // evitar desalineaciones de sesión y redirecciones inconsistentes.
+  if (
+    sellerSubdomain &&
+    (pathname.startsWith("/dashboard") || pathname.startsWith("/registro") || pathname.startsWith("/auth"))
+  ) {
+    return NextResponse.redirect(buildRootUrl(request, pathname));
+  }
+
+  if (sellerSubdomain?.startsWith("demo-") && isPublicRootPath) {
+    const companySlug = getOfficialDemoCompanySlug(sellerSubdomain);
+    const landingHash = getOfficialDemoHash(companySlug);
+    if (landingHash) {
+      const rewriteUrl = request.nextUrl.clone();
+      rewriteUrl.pathname = `/landings/${landingHash}.html`;
+      rewriteUrl.searchParams.set("slug", sellerSubdomain);
+      return NextResponse.rewrite(rewriteUrl);
+    }
+  }
 
   if (sellerSubdomain && isPublicRootPath && !isProtectedOrSystemPath) {
     const rewriteUrl = request.nextUrl.clone();

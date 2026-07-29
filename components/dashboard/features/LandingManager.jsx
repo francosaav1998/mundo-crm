@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import SectionHeader from "@/components/dashboard/ui/SectionHeader";
 import { getAppOrigin, buildSellerLandingUrl } from "@/lib/urls";
+import { buildOfficialDemoUrl } from "@/lib/demo-landings";
 
 export default function LandingManager({ T, isMobile, showToast }) {
   const [loading, setLoading] = useState(true);
@@ -102,6 +103,9 @@ export default function LandingManager({ T, isMobile, showToast }) {
     fontSize: "14px",
     outline: "none",
   };
+
+  const getLandingUrl = (seller) =>
+    buildOfficialDemoUrl(seller?.slug, getAppOrigin()) || buildSellerLandingUrl(seller?.slug);
 
   if (loading) {
     return (
@@ -203,7 +207,7 @@ export default function LandingManager({ T, isMobile, showToast }) {
                 </span>
               </div>
               <a
-                href={group.sellers[0]?.slug ? buildSellerLandingUrl(group.sellers[0].slug) : "/"}
+                 href={group.sellers[0]?.slug ? getLandingUrl(group.sellers[0]) : "/"}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
@@ -274,14 +278,14 @@ export default function LandingManager({ T, isMobile, showToast }) {
                         {seller.email || "Sin email"} · {seller._count?.leads ?? 0} leads
                       </div>
                       <div style={{ fontSize: "11px", color: T.accent, marginTop: 4, fontWeight: 700 }}>
-                        {buildSellerLandingUrl(seller.slug, { origin: getAppOrigin() })}
+                         {getLandingUrl(seller)}
                       </div>
                     </div>
                   </div>
 
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                       <a
-                      href={buildSellerLandingUrl(seller.slug)}
+                       href={getLandingUrl(seller)}
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{
@@ -302,7 +306,7 @@ export default function LandingManager({ T, isMobile, showToast }) {
                     </a>
                     <button
                       onClick={() => {
-                        navigator.clipboard.writeText(buildSellerLandingUrl(seller.slug, { origin: getAppOrigin() }));
+                         navigator.clipboard.writeText(getLandingUrl(seller));
                         showToast("Link copiado al portapapeles");
                       }}
                       style={{

@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { normalizeWhatsAppNumber, inferGender, slugify } from "@/lib/seller";
 import { getSafeSellerSlug } from "@/lib/seller-slugs";
 import { buildDemoSeller, getDemoCompanySlug } from "@/lib/demo-seller";
+import { OFFICIAL_DEMO_COMPANIES } from "@/lib/demo-landings";
 
 export const dynamic = "force-dynamic";
 
@@ -44,6 +45,7 @@ export async function GET(request) {
     const companies = await prisma.company.findMany({ where: { active: true } });
     const sellerSlugs = new Set(sellers.map((seller) => seller.slug));
     const demos = companies
+      .filter((company) => OFFICIAL_DEMO_COMPANIES.includes(company.slug))
       .map((company) => buildDemoSeller(`demo-${company.slug}`, company))
       .filter((demo) => !sellerSlugs.has(demo.slug));
     return NextResponse.json([...sellers, ...demos]);
