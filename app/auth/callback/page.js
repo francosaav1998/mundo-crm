@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -9,19 +9,37 @@ export const dynamic = "force-dynamic";
 export default function AuthCallback() {
   const [status, setStatus] = useState("Autenticando...");
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = useMemo(
+    () => createClient({ auth: { detectSessionInUrl: false } }),
+    []
+  );
 
   const hardRedirect = useCallback((path) => {
+    const target = `${window.location.origin}${path}`;
     if (typeof window !== "undefined") {
-      window.location.replace(path);
+      window.location.replace(target);
       return;
     }
-    router.replace(path);
+    router.replace(target);
   }, [router]);
 
   useEffect(() => {
     async function handleCallback() {
       try {
+        const callbackParams = new URLSearchParams(window.location.search);
+        const oauthError = callbackParams.get("error_description") || callbackParams.get("error");
+        if (oauthError) {
+          setStatus("Google no pudo autenticar la cuenta");
+          setTimeout(() => hardRedirect("/dashboard/login?oauthError=" + encodeURIComponent(oauthError)), 1200);
+          return;
+        }
+
+        const code = callbackParams.get("code");
+        if (code) {
+          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+          if (exchangeError) throw exchangeError;
+        }
+
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error || !session) {
           setStatus("Error: no se pudo obtener la sesión");
@@ -67,7 +85,7 @@ export default function AuthCallback() {
     <div
       style={{
         minHeight: "100vh",
-        background: "linear-gradient(135deg, #005A6F 0%, #00748E 100%)",
+         background: "linear-gradient(135deg, #0b0f14 0%, #1b3157 100%)",
         color: "#F8FAFC",
         display: "flex",
         alignItems: "center",
@@ -82,7 +100,7 @@ export default function AuthCallback() {
           width: "48px",
           height: "48px",
           border: "4px solid rgba(255,255,255,0.2)",
-          borderTop: "4px solid #FDDC02",
+           borderTop: "4px solid #72a6ff",
           borderRadius: "50%",
           animation: "spin 1s linear infinite",
         }}
