@@ -8,7 +8,7 @@
     ? "/api/sellers?id=" + encodeURIComponent(id)
     : "/api/sellers?slug=" + encodeURIComponent(slug);
 
-  fetch(url)
+   fetch(url, { cache: "no-store" })
     .then((r) => (r.ok ? r.json() : null))
     .then((seller) => {
       if (!seller) {

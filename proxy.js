@@ -2,6 +2,14 @@ import { NextResponse } from "next/server";
 import { updateSession } from "@/lib/supabase/proxy";
 import { getSellerSubdomain } from "@/lib/urls";
 
+const DEMO_LANDING_HASHES = {
+  claro: "ohxZn08",
+  entel: "GA9CU9o",
+  movistar: "cJKWAcQ",
+  vtr: "oOn6PS8",
+  wom: "v1Lz_Yo",
+};
+
 export async function proxy(request) {
   const { response, user } = await updateSession(request);
   const { pathname } = request.nextUrl;
@@ -32,6 +40,17 @@ export async function proxy(request) {
     pathname.startsWith("/auth") ||
     pathname.startsWith("/registro") ||
     pathname.startsWith("/p/");
+
+  if (sellerSubdomain?.startsWith("demo-") && isPublicRootPath) {
+    const companySlug = sellerSubdomain.slice("demo-".length);
+    const landingHash = DEMO_LANDING_HASHES[companySlug];
+    if (landingHash) {
+      const rewriteUrl = request.nextUrl.clone();
+      rewriteUrl.pathname = `/landings/${landingHash}.html`;
+      rewriteUrl.searchParams.set("slug", sellerSubdomain);
+      return NextResponse.rewrite(rewriteUrl);
+    }
+  }
 
   if (sellerSubdomain && isPublicRootPath && !isProtectedOrSystemPath) {
     const rewriteUrl = request.nextUrl.clone();
