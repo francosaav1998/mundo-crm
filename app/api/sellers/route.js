@@ -2,18 +2,11 @@ import { NextResponse } from "next/server";
 import { getSession, isAdmin } from "@/lib/auth";
 import { rateLimit, getClientKey } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
-import { normalizeWhatsAppNumber, inferGender } from "@/lib/seller";
+import { normalizeWhatsAppNumber, inferGender, slugify } from "@/lib/seller";
+import { getSafeSellerSlug } from "@/lib/seller-slugs";
+import { buildDemoSeller, getDemoCompanySlug } from "@/lib/demo-seller";
 
-function slugify(text) {
-  return String(text)
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-zA-Z0-9\s-]/g, "")
-    .trim()
-    .replace(/\s+/g, "-")
-    .toLowerCase()
-    .slice(0, 60);
-}
+export const dynamic = "force-dynamic";
 
 export async function GET(request) {
   try {
@@ -21,7 +14,7 @@ export async function GET(request) {
     const slug = searchParams.get("slug");
 
     if (slug) {
-      const seller = await prisma.seller.findUnique({
+      let seller = await prisma.seller.findUnique({
         where: { slug },
         include: {
           company: true,
@@ -29,6 +22,13 @@ export async function GET(request) {
           _count: { select: { leads: true } },
         },
       });
+      if (!seller) {
+        const companySlug = getDemoCompanySlug(slug);
+        if (companySlug) {
+          const company = await prisma.company.findUnique({ where: { slug: companySlug } });
+          if (company) seller = buildDemoSeller(slug, company);
+        }
+      }
       if (!seller) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
       return NextResponse.json(seller);
     }
@@ -41,7 +41,12 @@ export async function GET(request) {
         _count: { select: { leads: true } },
       },
     });
-    return NextResponse.json(sellers);
+    const companies = await prisma.company.findMany({ where: { active: true } });
+    const sellerSlugs = new Set(sellers.map((seller) => seller.slug));
+    const demos = companies
+      .map((company) => buildDemoSeller(`demo-${company.slug}`, company))
+      .filter((demo) => !sellerSlugs.has(demo.slug));
+    return NextResponse.json([...sellers, ...demos]);
   } catch (error) {
     const status = error.message === "Unauthorized" ? 401 : error.message === "Forbidden" ? 403 : 500;
     return NextResponse.json({ error: error.message }, { status });
@@ -67,7 +72,7 @@ export async function POST(request) {
 
     if (!name) return NextResponse.json({ error: "El nombre es obligatorio" }, { status: 400 });
 
-    let slug = slugify(body.slug || name);
+    let slug = getSafeSellerSlug(slugify(body.slug || name));
 
     const existing = await prisma.seller.findUnique({ where: { slug } });
     if (existing) {
