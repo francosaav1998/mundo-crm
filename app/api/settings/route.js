@@ -13,6 +13,7 @@ const ALLOWED_KEYS = new Set([
   "footer_text",
   "whatsapp_number",
   "meta_pixel_id",
+  "dashboard_theme",
 ]);
 
 const MAX_KEY_LENGTH = 64;

@@ -79,7 +79,8 @@ export default function DashboardLayout({
     <div
       style={{
         display: "flex",
-        minHeight: "100vh",
+        height: "100vh",
+        overflow: "hidden",
         background: T.bgGradient,
         color: T.text,
         fontFamily: "var(--font-body), 'Plus Jakarta Sans', system-ui, sans-serif",
@@ -278,7 +279,7 @@ export default function DashboardLayout({
       </aside>
 
       {/* Main Content */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, zIndex: 1 }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, zIndex: 1, overflowY: "auto" }}>
         {/* Top Header */}
         <motion.header
           initial={{ opacity: 0, y: -12 }}

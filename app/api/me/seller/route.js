@@ -16,6 +16,7 @@ const SELLER_UPDATE_FIELDS = [
   "footerText",
   "metaPixelId",
   "landingTheme",
+  "dashboardTheme",
   "landingContent",
   "defaultMessage",
   // NOTA: "companyId" se asigna solo en el registro y nunca se puede cambiar.

@@ -12,6 +12,9 @@ export default function SettingsForm({
   onUpdateSettings,
   onSaveSettings,
   T,
+  theme,
+  setTheme,
+  toggleTheme,
   isMobile,
   showToast,
   isAdmin = false,
@@ -26,6 +29,13 @@ export default function SettingsForm({
       await onSaveSettings(settings);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleLandingThemeChange = (theme) => {
+    onUpdateSettings({ landingTheme: theme });
+    if (typeof window !== "undefined") {
+      document.documentElement.setAttribute("data-landing-theme", theme);
     }
   };
 
@@ -122,6 +132,41 @@ export default function SettingsForm({
         <p style={{ fontSize: "13px", color: T.muted, marginBottom: 30 }}>
           {isAdmin ? "Configura el mensaje de WhatsApp y el número público de la web." : "Edita tu perfil, mensaje de WhatsApp y la apariencia de tu landing desde un solo lugar."}
         </p>
+
+        {/* Tema del Dashboard */}
+        <div style={{ marginBottom: 24 }}>
+          <label style={{ display: "block", fontSize: "11px", fontWeight: 700, color: T.muted, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "8px" }}>
+            <i className="bi bi-display" style={{ marginRight: 6 }}></i>
+            Tema del Dashboard
+          </label>
+          <div style={{ display: "flex", gap: 10 }}>
+            {["light", "dark"].map((t) => (
+              <button
+                key={t}
+                type="button"
+                onClick={() => setTheme(t)}
+                style={{
+                  flex: 1,
+                  padding: "12px",
+                  borderRadius: 12,
+                  border: theme === t ? `2px solid ${T.accent}` : `1px solid ${T.border}`,
+                  background: theme === t ? `${T.accent}15` : "transparent",
+                  color: theme === t ? T.accent : T.muted,
+                  cursor: "pointer",
+                  fontSize: 14,
+                  fontWeight: 700,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                }}
+              >
+                <i className={`bi bi-${t === "light" ? "sun-fill" : "moon-stars-fill"}`}></i>
+                {t === "light" ? "Día" : "Noche"}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <form onSubmit={handleSave} style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
         {!isAdmin && (
@@ -257,7 +302,7 @@ export default function SettingsForm({
                 <button
                   key={theme}
                   type="button"
-                  onClick={() => onUpdateSettings({ landingTheme: theme })}
+                  onClick={() => handleLandingThemeChange(theme)}
                   style={{
                     flex: 1,
                     padding: "12px",

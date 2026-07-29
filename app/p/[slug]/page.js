@@ -16,5 +16,10 @@ export default async function SellerLandingPage({ params }) {
     redirect("/");
   }
 
+  if (seller.active === false) {
+    // Renderiza la landing React pausada (tiene su propia pantalla de inactivo).
+    return <SellerLandingReact />;
+  }
+
   return <SellerLandingReact />;
 }

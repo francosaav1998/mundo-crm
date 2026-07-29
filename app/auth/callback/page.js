@@ -34,10 +34,17 @@ export default function AuthCallback() {
         }
 
         const seller = await res.json();
-        if (seller?.slug) {
-          setStatus("Redirigiendo a tu landing...");
-          router.push(`/p/${seller.slug}`);
+
+        // Si el usuario viene de OAuth y le faltan datos → completar en el registro
+        const isOAuthUser = session.user.app_metadata?.provider === "google" ||
+                            session.user.app_metadata?.provider === "facebook";
+        const needsProfile = !seller.phone || !seller.companyId;
+
+        if (isOAuthUser && needsProfile) {
+          setStatus("Completa tus datos...");
+          router.push("/registro?oauth=true");
         } else {
+          setStatus("Redirigiendo al dashboard...");
           router.push("/dashboard");
         }
       } catch (e) {

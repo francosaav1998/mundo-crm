@@ -2234,6 +2234,59 @@ a:focus-visible {
   outline-offset: 2px;
 }
 
+/* ═══════════════════════════════════════════════════
+   SCROLLBAR — delgado, consistente con el tema
+   ═══════════════════════════════════════════════════ */
+
+:root {
+  --sb-track: transparent;
+  --sb-thumb: rgba(0, 0, 0, 0.20);
+}
+
+[data-theme="dark"],
+[data-landing-theme="dark"] {
+  --sb-track: transparent;
+  --sb-thumb: rgba(255, 255, 255, 0.18);
+}
+
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--sb-thumb) var(--sb-track);
+}
+
+html::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+html::-webkit-scrollbar-track {
+  background: var(--sb-track);
+}
+
+html::-webkit-scrollbar-thumb {
+  background: var(--sb-thumb);
+  border-radius: 999px;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--sb-thumb) var(--sb-track);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--sb-track);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--sb-thumb);
+  border-radius: 999px;
+}
+
 /* ── Accesibilidad: respeta usuarios con movimiento reducido ── */
 @media (prefers-reduced-motion: reduce) {
   .skeleton,

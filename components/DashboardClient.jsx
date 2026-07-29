@@ -67,7 +67,7 @@ const VALID_MENU_IDS = ["dashboard", "leads", "emails", "whatsapp", "import", "u
 const SPLASH_DURATION = 1700; // ms — sincronizado con la barra de progreso del splash
 
 export default function DashboardClient({ initialLeads = [], initialTotal = 0, initialStats = null, username, isAdmin = false, sellerSlug = null, sellerInfo = null, lockedToBilling = false }) {
-  const { theme, toggle: toggleTheme } = useTheme();
+  const { theme, setTheme, toggle: toggleTheme } = useTheme();
   const T = NEON_THEME[theme];
 
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -123,6 +123,24 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
     loading: leadsLoading,
   } = useLeads(initialLeads, initialTotal);
 
+  // Toggle tema que también persiste en DB
+  const handleToggleTheme = useCallback(() => {
+    const newTheme = theme === "dark" ? "light" : "dark";
+    setTheme(newTheme);
+    // Guardar en DB
+    if (isAdmin) {
+      fetch("/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dashboard_theme: newTheme }),
+      }).catch(() => {});
+    } else {
+      // Para sellers: guardar en DB via updateSettings
+      updateSettings({ dashboardTheme: newTheme });
+      saveSettings({ ...settings, dashboardTheme: newTheme }).catch(() => {});
+    }
+  }, [theme, setTheme, isAdmin, settings, updateSettings, saveSettings]);
+
   const handleMenuChange = useCallback((menuId) => {
     // Cuenta pausada: solo se permite navegar a Facturación.
     if (lockedToBilling && menuId !== "billing") return;
@@ -169,10 +187,22 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
 
   const handleSaveSettings = useCallback(async (settingsToSave) => {
     const ok = await saveSettings(settingsToSave);
-    if (ok && typeof window !== "undefined" && settingsToSave.landingTheme) {
-      document.documentElement.setAttribute("data-landing-theme", settingsToSave.landingTheme);
+    if (ok && typeof window !== "undefined") {
+      if (settingsToSave.landingTheme) {
+        document.documentElement.setAttribute("data-landing-theme", settingsToSave.landingTheme);
+      }
+      if (settingsToSave.dashboardTheme) {
+        setTheme(settingsToSave.dashboardTheme);
+      }
     }
-  }, [saveSettings]);
+  }, [saveSettings, setTheme]);
+
+  // Sincronizar tema del dashboard desde settings cargadas
+  useEffect(() => {
+    if (settings.dashboardTheme && settings.dashboardTheme !== theme) {
+      setTheme(settings.dashboardTheme);
+    }
+  }, [settings.dashboardTheme, theme, setTheme]);
 
   useEffect(() => {
     if (isAdmin) return undefined;
@@ -222,7 +252,7 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
         setSidebarOpen={setSidebarOpen}
         T={T}
         theme={theme}
-        toggleTheme={toggleTheme}
+        toggleTheme={handleToggleTheme}
         sellerName={sellerInfo?.name || username}
         username={username}
         company={sellerInfo?.company || null}
@@ -329,6 +359,9 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
                   onUpdateSettings={updateSettings}
                   onSaveSettings={handleSaveSettings}
                   T={T}
+                  theme={theme}
+                  setTheme={setTheme}
+                  toggleTheme={handleToggleTheme}
                   isMobile={isMobile}
                   showToast={showToast}
                   isAdmin={isAdmin}
