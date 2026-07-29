@@ -18,7 +18,21 @@ function slugify(text) {
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
     const slug = searchParams.get("slug");
+
+    if (id) {
+      const seller = await prisma.seller.findUnique({
+        where: { id },
+        include: {
+          company: true,
+          planOverrides: { include: { plan: true } },
+          _count: { select: { leads: true } },
+        },
+      });
+      if (!seller) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
+      return NextResponse.json(seller);
+    }
 
     if (slug) {
       const seller = await prisma.seller.findUnique({

@@ -1,9 +1,14 @@
 (function () {
   const params = new URLSearchParams(window.location.search);
-  const slug = params.get("slug") || window.location.pathname.split("/").pop();
-  if (!slug || slug.endsWith(".html")) return;
+  const id = params.get("id");
+  const slug = params.get("slug");
+  if ((!id && !slug) || window.location.pathname.split("/").pop() === "l.html") return;
 
-  fetch("/api/sellers?slug=" + encodeURIComponent(slug))
+  const url = id
+    ? "/api/sellers?id=" + encodeURIComponent(id)
+    : "/api/sellers?slug=" + encodeURIComponent(slug);
+
+  fetch(url)
     .then((r) => (r.ok ? r.json() : null))
     .then((seller) => {
       if (!seller) return;

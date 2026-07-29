@@ -2,7 +2,14 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import SellerLandingReact from "@/components/landing/SellerLandingReact";
 
-const STATIC_LANDINGS = ["movistar", "claro", "vtr", "wom", "entel"];
+// Mapeo de compañía → hash del archivo HTML (para no exponer la compañía en la URL)
+const LANDING_HASHES = {
+  claro: "ohxZn08",
+  entel: "GA9CU9o",
+  movistar: "cJKWAcQ",
+  vtr: "oOn6PS8",
+  wom: "v1Lz_Yo",
+};
 
 export const dynamic = "force-dynamic";
 
@@ -27,10 +34,10 @@ export default async function SellerLandingPage({ params, searchParams }) {
 
   const companySlug = seller.company?.slug || "mundo";
 
-  // Para las compañías con landing estática profesional, redirigimos a ella.
-  // El slug se pasa como query param para que seller-dynamic.js cargue los datos.
-  if (!isPreview && STATIC_LANDINGS.includes(companySlug)) {
-    redirect(`/landings/${companySlug}.html?slug=${encodeURIComponent(slug)}`);
+  // Redirigir a landing estática con nombre de archivo hasheado
+  const hash = LANDING_HASHES[companySlug];
+  if (!isPreview && hash) {
+    redirect(`/landings/${hash}.html?id=${encodeURIComponent(seller.id)}`);
   }
 
   // Preview del editor o compañías sin landing estática (ej. Mundo) usan la landing React.
