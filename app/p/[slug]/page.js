@@ -11,6 +11,11 @@ export default async function SellerLandingPage({ params, searchParams }) {
   const { preview } = await searchParams;
   const isPreview = preview === "1";
 
+  const demoHash = getOfficialDemoHash(getDemoCompanySlug(slug));
+  if (!isPreview && demoHash) {
+    redirect(`/landings/${demoHash}.html?slug=${encodeURIComponent(slug)}`);
+  }
+
   let seller = await prisma.seller.findUnique({
     where: { slug },
     include: { company: true },
