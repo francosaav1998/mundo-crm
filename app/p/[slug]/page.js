@@ -8,6 +8,10 @@ export const dynamic = "force-dynamic";
 export default async function SellerLandingPage({ params }) {
   const { slug } = await params;
 
+  if (slug === "demo-mundo") {
+    return <SellerLandingReact />;
+  }
+
   // Las demos antiguas quedan bloqueadas; Mundo conserva la landing de vendedor.
   if (getDemoCompanySlug(slug) && getDemoCompanySlug(slug) !== "mundo") {
     notFound();
