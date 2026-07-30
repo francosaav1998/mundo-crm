@@ -11,8 +11,8 @@ export default async function SellerLandingPage({ params, searchParams }) {
   const { preview } = await searchParams;
   const isPreview = preview === "1";
 
-  // Las demos oficiales solo se sirven desde sus landings clasicas.
-  if (getDemoCompanySlug(slug)) {
+  // Las demos antiguas quedan bloqueadas; Mundo conserva la landing de vendedor.
+  if (getDemoCompanySlug(slug) && getDemoCompanySlug(slug) !== "mundo") {
     notFound();
   }
 
