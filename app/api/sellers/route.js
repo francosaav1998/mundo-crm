@@ -57,6 +57,7 @@ export async function GET(request) {
       },
     });
     const companies = await prisma.company.findMany({ where: { active: true } });
+    // Only official demo slugs are exposed in the company landing manager.
     const visibleSellers = sellers.filter((seller) => {
       if (!seller.slug.startsWith("demo-")) return true;
       return Boolean(getOfficialDemoCompanySlug(seller.slug));
