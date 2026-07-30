@@ -2,21 +2,28 @@ import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import SellerLandingReact from "@/components/landing/SellerLandingReact";
 import { buildDemoSeller, getDemoCompanySlug } from "@/lib/demo-seller";
+import { getOfficialDemoPath, getOfficialDemoCompanySlug } from "@/lib/demo-landings";
 
 export const dynamic = "force-dynamic";
 
 export default async function SellerLandingPage({ params }) {
   const { slug } = await params;
 
+  // Las demos con HTML estático se redirigen a su archivo HTML
+  const demoCompanySlug = getOfficialDemoCompanySlug(slug);
+  if (demoCompanySlug && demoCompanySlug !== "mundo") {
+    const path = getOfficialDemoPath(demoCompanySlug);
+    if (path) {
+      redirect(`${path}?slug=${encodeURIComponent(slug)}`);
+    }
+  }
+
   if (slug === "demo-mundo") {
-    return <SellerLandingReact />;
+    // Redirige a la landing HTML de Mundo
+    redirect(`/landings/mundo-fibra.html?slug=${encodeURIComponent(slug)}`);
   }
 
-  // Las demos antiguas quedan bloqueadas; Mundo conserva la landing de vendedor.
-  if (getDemoCompanySlug(slug) && getDemoCompanySlug(slug) !== "mundo") {
-    notFound();
-  }
-
+  // Para vendedores reales registrados, también mostrar HTML si tienen plantilla asignada
   let seller = await prisma.seller.findUnique({
     where: { slug },
     include: { company: true },
