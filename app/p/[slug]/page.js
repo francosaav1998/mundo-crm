@@ -8,8 +8,8 @@ export const dynamic = "force-dynamic";
 export default async function SellerLandingPage({ params }) {
   const { slug } = await params;
 
-  // Las demos oficiales solo se sirven desde sus landings clasicas.
-  if (getDemoCompanySlug(slug)) {
+  // Las demos antiguas quedan bloqueadas; Mundo conserva la landing de vendedor.
+  if (getDemoCompanySlug(slug) && getDemoCompanySlug(slug) !== "mundo") {
     notFound();
   }
 
