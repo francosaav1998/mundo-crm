@@ -1,19 +1,16 @@
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import SellerLandingReact from "@/components/landing/SellerLandingReact";
-import { getOfficialDemoPath } from "@/lib/demo-landings";
 import { buildDemoSeller, getDemoCompanySlug } from "@/lib/demo-seller";
 
 export const dynamic = "force-dynamic";
 
-export default async function SellerLandingPage({ params, searchParams }) {
+export default async function SellerLandingPage({ params }) {
   const { slug } = await params;
-  const { preview } = await searchParams;
-  const isPreview = preview === "1";
 
-  const demoPath = getOfficialDemoPath(getDemoCompanySlug(slug));
-  if (!isPreview && demoPath) {
-    redirect(`${demoPath}?slug=${encodeURIComponent(slug)}`);
+  // Las demos oficiales solo se sirven desde sus landings clasicas.
+  if (getDemoCompanySlug(slug)) {
+    notFound();
   }
 
   let seller = await prisma.seller.findUnique({
