@@ -49,6 +49,12 @@ const nextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [{
+      source: "/landings/mundo.html",
+      destination: "/p/demo-mundo",
+    }];
+  },
   async headers() {
     return [
       {
@@ -78,13 +84,13 @@ const nextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://connect.facebook.net",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://connect.facebook.net https://challenges.cloudflare.com",
               "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com",
               "img-src 'self' data: https: https://www.facebook.com",
               "media-src 'self' https: data:",
               "font-src 'self' https: data:",
-              "connect-src 'self' https://*.supabase.co https://www.facebook.com",
-              "frame-src 'self'",
+              "connect-src 'self' https://*.supabase.co https://www.facebook.com https://challenges.cloudflare.com",
+              "frame-src 'self' https://challenges.cloudflare.com",
               "frame-ancestors 'self'",
               "object-src 'none'",
               "base-uri 'self'",
@@ -104,13 +110,13 @@ const nextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://connect.facebook.net",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://connect.facebook.net https://challenges.cloudflare.com",
               "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com",
               "img-src 'self' data: https: https://www.facebook.com",
               "media-src 'self' https: data:",
               "font-src 'self' https: data:",
-              "connect-src 'self' https://*.supabase.co https://www.facebook.com",
-              "frame-src 'self'",
+              "connect-src 'self' https://*.supabase.co https://www.facebook.com https://challenges.cloudflare.com",
+              "frame-src 'self' https://challenges.cloudflare.com",
               "frame-ancestors 'self'",
               "object-src 'none'",
               "base-uri 'self'",
