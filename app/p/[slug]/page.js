@@ -24,7 +24,20 @@ export default async function SellerLandingPage({ params, searchParams }) {
   if (!seller) {
     const companySlug = getDemoCompanySlug(slug);
     if (companySlug) {
-      const company = await prisma.company.findUnique({ where: { slug: companySlug } });
+      const company =
+        (await prisma.company.findUnique({ where: { slug: companySlug } })) ||
+        (companySlug === "mundo"
+          ? {
+              slug: "mundo",
+              name: "Mundo",
+              brandColor: "#00748E",
+              brandColorDark: "#005A6F",
+              secondaryColor: "#FDDC02",
+              accentColor: "#FF8000",
+              logoUrl: "https://www.tumundo.cl/wp-content/uploads/2022/12/logo-mundo-negative.svg",
+              websiteUrl: "https://www.tumundo.cl",
+            }
+          : null);
       if (company) seller = buildDemoSeller(slug, company);
     }
   }
