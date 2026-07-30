@@ -75,6 +75,12 @@ const isPublicRootPath = pathname === "/";
     return NextResponse.rewrite(rewriteUrl);
   }
 
+  if (pathname === "/landings/mundo.html") {
+    const rewriteUrl = request.nextUrl.clone();
+    rewriteUrl.pathname = "/p/demo-mundo";
+    return NextResponse.rewrite(rewriteUrl);
+  }
+
   return response;
 }
 
