@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import SellerLandingReact from "@/components/landing/SellerLandingReact";
-const OFFICIAL_LANDING_HASH = "ohxZn08";
+import { getOfficialDemoPath } from "@/lib/demo-landings";
 import { buildDemoSeller, getDemoCompanySlug } from "@/lib/demo-seller";
 
 export const dynamic = "force-dynamic";
@@ -11,8 +11,9 @@ export default async function SellerLandingPage({ params, searchParams }) {
   const { preview } = await searchParams;
   const isPreview = preview === "1";
 
-  if (!isPreview) {
-    redirect(`/landings/${OFFICIAL_LANDING_HASH}.html?slug=${encodeURIComponent(slug)}`);
+  const demoPath = getOfficialDemoPath(getDemoCompanySlug(slug));
+  if (!isPreview && demoPath) {
+    redirect(`${demoPath}?slug=${encodeURIComponent(slug)}`);
   }
 
   let seller = await prisma.seller.findUnique({

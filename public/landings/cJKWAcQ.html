@@ -1,0 +1,1009 @@
+﻿<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Contrata Fibra Óptica Movistar con Carlos Méndez. Planes de internet hogar y TV con instalación gratis y asesoría personalizada." />
+  <title>Tu Ejecutivo Movistar - Fibra Óptica, TV y Telefonía</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&family=Outfit:wght@500;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+  <script>
+    (function(){try{var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();
+  </script>
+  <style>
+    :root {
+      --bg: #06121a;
+      --bg-2: #0a1c29;
+      --surface: rgba(255,255,255,0.07);
+      --surface-hover: rgba(255, 255, 255, 0.12);
+      --border: rgba(255,255,255,0.1);
+      --text: #ffffff;
+      --text-muted: #c2d4e8;
+      --text-dim: #8aa3b8;
+      --primary: #019DF4;
+      --primary-dark: #0077C8;
+      --secondary: #0B2739;
+      --accent: #B82C66;
+      --accent-gradient: linear-gradient(135deg, #019DF4 0%, #0B2739 100%);
+      --font-display: 'Outfit', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      --radius-sm: 10px;
+      --radius-md: 16px;
+      --radius-lg: 24px;
+      --shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+      --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    [data-theme="light"] {
+      --bg: #f4f5f7;
+      --bg-2: #ffffff;
+      --surface: rgba(0, 0, 0, 0.04);
+      --surface-hover: rgba(0, 0, 0, 0.08);
+      --border: rgba(0, 0, 0, 0.12);
+      --text: #1a1a2e;
+      --text-muted: #4a4a5e;
+      --text-dim: #8a8a9a;
+      --shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+      --header-bg: rgba(255, 255, 255, 0.88);
+      --menu-bg: rgba(255, 255, 255, 0.98);
+      --hero-overlay-1: rgba(255,255,255,0.88);
+      --hero-overlay-2: rgba(255,255,255,0.72);
+      --hero-overlay-3: rgba(255,255,255,0.55);
+      --outline-border: rgba(0,0,0,0.5);
+      --outline-hover-bg: rgba(0,0,0,0.06);
+      --form-input-bg: rgba(0,0,0,0.04);
+    }
+
+    [data-theme="dark"] {
+      --header-bg: rgba(6,18,26, 0.92);
+      --menu-bg: rgba(6,18,26, 0.98);
+      --hero-overlay-1: rgba(6,18,26,0.92);
+      --hero-overlay-2: rgba(6,18,26,0.75);
+      --hero-overlay-3: rgba(6,18,26,0.55);
+      --outline-border: rgba(255,255,255,0.6);
+      --outline-hover-bg: rgba(255,255,255,0.1);
+      --form-input-bg: rgba(0,0,0,0.25);
+    }
+
+    .theme-toggle {
+      position: fixed; top: 14px; right: 16px; z-index: 101;
+      width: 42px; height: 42px; border-radius: 50%;
+      display: grid; place-items: center; font-size: 1.15rem;
+      background: var(--surface); border: 1px solid var(--border); color: var(--text);
+      backdrop-filter: blur(10px); transition: var(--transition);
+    }
+    .theme-toggle:hover { transform: scale(1.1); background: var(--surface-hover); }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0; font-family: var(--font-body); background: var(--bg); color: var(--text); line-height: 1.55; overflow-x: hidden;
+    }
+    h1, h2, h3, h4, h5, p { margin: 0; }
+    a { color: inherit; text-decoration: none; }
+    ul { list-style: none; padding: 0; margin: 0; }
+    img { max-width: 100%; display: block; }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+
+    .container { width: min(1160px, 92%); margin-inline: auto; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+    .header-top {
+      background: var(--accent-gradient);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 6px 0;
+    }
+    .header-top .container {
+      display: flex; flex-wrap: wrap; justify-content: space-between; gap: 5px 14px; align-items: center;
+    }
+    .header-top-info { display: flex; flex-wrap: wrap; gap: 12px; }
+    .header-top i { margin-right: 4px; }
+    .header-top a { color: #fff; text-decoration: none; }
+    .header-top a:hover { text-decoration: underline; }
+
+    .marquee-bar {
+      background: var(--primary);
+      color: #fff;
+      overflow: hidden;
+      position: relative;
+      padding: 8px 0;
+      display: flex;
+    }
+    .marquee-list {
+      display: flex; flex-shrink: 0; gap: 30px;
+      white-space: nowrap;
+      animation: marquee-scroll 28s linear infinite;
+      padding-right: 30px;
+    }
+    .marquee-bar:hover .marquee-list { animation-play-state: paused; }
+    .marquee-item { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 600; }
+    .marquee-item i { font-size: 0.9rem; }
+    .marquee-item strong { font-weight: 800; }
+    @keyframes marquee-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+    @media (max-width: 768px) { .marquee-bar { padding: 6px 0; } .marquee-list { gap: 18px; animation-duration: 22s; padding-right: 18px; } .marquee-item { font-size: 0.73rem; gap: 5px; } .marquee-item i { font-size: 0.82rem; } }
+    @media (prefers-reduced-motion: reduce) { .marquee-list { animation: none; } }
+
+    .site-header {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--header-bg);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+    .main-nav { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; }
+    .logo {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-family: var(--font-display); font-weight: 900; font-size: 1.8rem; letter-spacing: -0.04em; color: var(--text);
+    }
+    .logo svg { height: 32px; width: auto; }
+    .nav-links { display: none; gap: 28px; align-items: center; font-size: 0.92rem; font-weight: 600; color: var(--text-muted); }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta { display: none; }
+    .menu-toggle { font-size: 1.6rem; padding: 6px; color: var(--text); }
+
+    @media (min-width: 992px) {
+      .nav-links, .nav-cta { display: flex; }
+      .menu-toggle { display: none; }
+    }
+
+    .mobile-menu {
+      position: fixed; inset: 0; z-index: 99; padding: 110px 24px 24px;
+      background: var(--menu-bg); backdrop-filter: blur(16px);
+      display: flex; flex-direction: column; gap: 18px;
+      transform: translateX(100%); transition: transform var(--transition);
+    }
+    .mobile-menu.open { transform: translateX(0); }
+    .mobile-menu a { font-family: var(--font-display); font-size: 1.4rem; font-weight: 700; }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 12px 22px; border-radius: 100px; font-weight: 700; font-size: 0.95rem;
+      transition: transform var(--transition), box-shadow var(--transition), filter var(--transition);
+    }
+    .btn-primary { background: var(--accent-gradient); color: #fff; box-shadow: 0 8px 24px rgba(1,157,244, 0.32); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(1,157,244, 0.42); }
+    .btn-secondary { background: var(--primary); color: #fff; }
+    .btn-secondary:hover { filter: brightness(1.12); transform: translateY(-2px); }
+    .btn-outline { border: 1.5px solid var(--outline-border); color: var(--text); background: transparent; }
+    .btn-outline:hover { background: var(--outline-hover-bg); border-color: var(--text); }
+    .btn-white { background: #fff; color: var(--primary); }
+    .btn-white:hover { filter: brightness(0.95); transform: translateY(-2px); }
+    .w-100 { width: 100%; }
+
+    .hero {
+      position: relative; padding: 0;
+      background:
+        linear-gradient(90deg, var(--hero-overlay-1) 0%, var(--hero-overlay-2) 55%, var(--hero-overlay-3) 100%),
+        url('https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=1920&q=80') center/cover no-repeat;
+      overflow: hidden;
+    }
+    .hero-slider { position: relative; min-height: 540px; display: flex; }
+    .hero-slide {
+      flex: 0 0 100%; min-width: 100%; padding: 70px 0 100px;
+      opacity: 0; pointer-events: none; transition: opacity 0.5s ease;
+      position: absolute; inset: 0;
+    }
+    .hero-slide.active { opacity: 1; pointer-events: auto; position: relative; }
+    .hero-nav {
+      position: absolute; top: 50%; transform: translateY(-50%); z-index: 20;
+      width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center;
+      background: var(--surface); border: 1px solid var(--border); color: var(--text);
+      backdrop-filter: blur(10px); font-size: 1.1rem; transition: var(--transition);
+    }
+    .hero-nav:hover { background: var(--surface-hover); transform: translateY(-50%) scale(1.1); }
+    .hero-prev { left: 16px; }
+    .hero-next { right: 16px; }
+    .hero-dots {
+      position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 20;
+      display: flex; gap: 8px;
+    }
+    .hero-dot {
+      width: 10px; height: 10px; border-radius: 50%; padding: 0;
+      background: var(--surface-hover); border: 1px solid var(--border); transition: var(--transition);
+    }
+    .hero-dot.active { background: var(--primary); border-color: var(--primary); width: 28px; border-radius: 100px; }
+    @media (max-width: 768px) {
+      .hero-slider { min-height: auto; }
+      .hero-slide { padding: 48px 0 90px; }
+      .hero-nav { width: 38px; height: 38px; font-size: 0.95rem; }
+      .hero-prev { left: 8px; } .hero-next { right: 8px; }
+    }
+    .hero::before {
+      content: ""; position: absolute; inset: 0;
+      background:
+        radial-gradient(circle at 75% 30%, rgba(1,157,244, 0.25), transparent 40%),
+        radial-gradient(circle at 90% 70%, rgba(11,39,57, 0.22), transparent 35%);
+      pointer-events: none;
+    }
+    .hero .container { position: relative; z-index: 1; }
+    .hero-grid { display: grid; gap: 48px; align-items: center; }
+    .badge-promo {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 7px 14px; border-radius: 100px; font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.03em;
+      background: rgba(1,157,244, 0.18); border: 1px solid rgba(1,157,244, 0.35); color: rgb(77,186,247); margin-bottom: 18px;
+    }
+    .hero h1 {
+      font-family: var(--font-display); font-weight: 900; font-size: clamp(2.2rem, 5vw, 3.6rem); line-height: 1.08; letter-spacing: -0.02em; margin-bottom: 18px;
+    }
+    .hero h1 span { color: var(--primary); }
+    .hero p { color: var(--text-muted); font-size: 1.05rem; max-width: 520px; margin-bottom: 28px; }
+    .hero-ctas { display: flex; flex-wrap: wrap; gap: 12px; }
+
+    .hero-card {
+      background: var(--surface); border: 1px solid var(--border); backdrop-filter: blur(16px); border-radius: var(--radius-lg);
+      padding: 28px; box-shadow: var(--shadow); max-width: 400px; margin-inline: auto;
+    }
+    .hero-card-title { font-family: var(--font-display); font-size: 1.5rem; font-weight: 900; margin-top: 8px; }
+    .hero-card-subtitle { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 14px; }
+    .hero-card-price { font-family: var(--font-display); font-size: 2.6rem; font-weight: 900; }
+    .hero-card-price span { font-size: 1rem; font-weight: 500; color: var(--text-muted); }
+    .hero-card-price-sub { font-size: 0.82rem; color: var(--text-dim); margin-bottom: 18px; }
+    .hero-card-features { display: flex; flex-direction: column; gap: 10px; margin-bottom: 22px; }
+    .hero-card-features li { display: flex; align-items: center; gap: 10px; font-size: 0.92rem; color: var(--text-muted); }
+    .hero-card-features i { color: var(--primary); font-size: 1.1rem; }
+
+    @media (min-width: 900px) {
+      .hero-grid { grid-template-columns: 1.1fr 0.9fr; gap: 60px; }
+      .hero-card { margin-inline: 0; margin-left: auto; }
+    }
+
+    .seller-section { padding: 80px 0; }
+    .seller-card {
+      display: grid; gap: 36px; align-items: center;
+      background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 36px;
+    }
+    .seller-avatar-wrapper {
+      position: relative; width: 180px; height: 180px; border-radius: 50%; overflow: hidden; margin-inline: auto;
+      background: linear-gradient(135deg, var(--secondary), var(--primary)); padding: 4px;
+    }
+    .seller-avatar-wrapper img { border-radius: 50%; object-fit: cover; width: 100%; height: 100%; }
+    .seller-badge {
+      position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+      padding: 5px 12px; border-radius: 100px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
+      background: var(--accent-gradient); color: #fff; white-space: nowrap;
+    }
+    .seller-info h4 { color: var(--primary); font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+    .seller-info h2 { font-family: var(--font-display); font-size: clamp(1.8rem, 4vw, 2.4rem); font-weight: 900; margin-bottom: 14px; }
+    .seller-info p { color: var(--text-muted); margin-bottom: 24px; }
+    .seller-stats { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 24px; }
+    .stat-item { text-align: center; }
+    .stat-num { display: block; font-family: var(--font-display); font-size: 1.4rem; font-weight: 900; color: var(--text); }
+    .stat-label { font-size: 0.78rem; color: var(--text-dim); }
+
+    @media (min-width: 768px) {
+      .seller-card { grid-template-columns: auto 1fr; }
+      .seller-avatar-wrapper { margin-inline: 0; }
+      .stat-item { text-align: left; }
+    }
+
+    .section-header { text-align: center; max-width: 640px; margin: 0 auto 42px; }
+    .section-header h2 { font-family: var(--font-display); font-size: clamp(1.8rem, 4vw, 2.5rem); font-weight: 900; margin-bottom: 10px; }
+    .section-header h2 span { background: var(--accent-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .section-header p { color: var(--text-muted); }
+
+    .planes-section { padding: 80px 0; background: var(--bg-2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .planes-tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 36px; }
+    .tab-btn {
+      padding: 10px 20px; border-radius: 100px; font-weight: 700; font-size: 0.9rem;
+      background: var(--surface); border: 1px solid var(--border); color: var(--text-muted);
+      transition: var(--transition);
+    }
+    .tab-btn:hover, .tab-btn.active { background: var(--accent-gradient); border-color: transparent; color: #fff; }
+    .planes-grid { display: grid; gap: 22px; grid-template-columns: 1fr; }
+    .plan-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 28px;
+      transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+      display: flex; flex-direction: column;
+    }
+    .plan-card:hover { transform: translateY(-5px); box-shadow: var(--shadow); border-color: rgba(1,157,244, 0.35); }
+    .plan-card.featured { border-color: rgba(1,157,244, 0.45); background: linear-gradient(180deg, rgba(1,157,244, 0.12), rgba(11,39,57, 0.08)); }
+    .plan-header { margin-bottom: 20px; }
+    .plan-title { font-family: var(--font-display); font-size: 1.25rem; font-weight: 900; margin-bottom: 6px; }
+    .plan-internet { font-family: var(--font-display); font-size: 2.2rem; font-weight: 900; line-height: 1; }
+    .plan-internet span { font-size: 0.95rem; font-weight: 500; color: var(--text-muted); }
+    .plan-price { font-family: var(--font-display); font-size: 2rem; font-weight: 900; margin-top: 12px; }
+    .plan-price span { font-size: 0.95rem; font-weight: 500; color: var(--text-muted); }
+    .plan-price-sub { font-size: 0.82rem; color: var(--text-dim); margin-top: 4px; }
+    .plan-features { display: flex; flex-direction: column; gap: 11px; margin-bottom: 24px; flex-grow: 1; }
+    .plan-features li { display: flex; align-items: center; gap: 10px; font-size: 0.93rem; color: var(--text-muted); }
+    .plan-features li i { color: var(--primary); font-size: 1.1rem; }
+    .plan-features li.unavailable { color: var(--text-dim); }
+    .plan-features li.unavailable i { color: var(--text-dim); }
+    .plan-cta { margin-top: auto; }
+
+    @media (min-width: 640px) { .planes-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1100px) { .planes-grid { grid-template-columns: repeat(4, 1fr); } }
+
+    .coverage-section { padding: 80px 0; }
+    .coverage-layout { display: grid; gap: 42px; align-items: start; }
+    .coverage-info h2 { font-family: var(--font-display); font-size: clamp(1.7rem, 4vw, 2.4rem); font-weight: 900; margin-bottom: 14px; }
+    .coverage-info h2 span { background: var(--accent-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .coverage-info > p { color: var(--text-muted); margin-bottom: 28px; }
+    .coverage-steps { display: flex; flex-direction: column; gap: 16px; }
+    .step-card { display: flex; gap: 16px; align-items: flex-start; }
+    .step-num {
+      flex-shrink: 0; width: 42px; height: 42px; border-radius: 50%;
+      display: grid; place-items: center; font-family: var(--font-display); font-weight: 900;
+      background: var(--accent-gradient); color: #fff;
+    }
+    .step-text h4 { font-size: 1.05rem; margin-bottom: 4px; }
+    .step-text p { font-size: 0.9rem; color: var(--text-muted); }
+
+    .coverage-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 30px;
+      backdrop-filter: blur(12px);
+    }
+    .coverage-card h3 { font-family: var(--font-display); font-size: 1.3rem; font-weight: 900; margin-bottom: 20px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 6px; color: var(--text-muted); }
+    .form-group input, .form-group select {
+      width: 100%; padding: 13px 16px; border-radius: var(--radius-sm);
+      border: 1px solid var(--border); background: var(--form-input-bg); color: var(--text); font-size: 0.95rem; outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .form-group input:focus, .form-group select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(1,157,244, 0.15); }
+    .form-group input::placeholder { color: var(--text-dim); }
+
+    @media (min-width: 900px) { .coverage-layout { grid-template-columns: 1fr 1fr; } }
+
+    .benefits-section { padding: 80px 0; background: var(--bg-2); border-top: 1px solid var(--border); }
+    .benefits-grid { display: grid; gap: 20px; grid-template-columns: 1fr; }
+    .benefit-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 28px;
+      transition: transform var(--transition), border-color var(--transition);
+    }
+    .benefit-card:hover { transform: translateY(-4px); border-color: rgba(1,157,244, 0.3); }
+    .benefit-icon {
+      width: 52px; height: 52px; border-radius: 14px; background: rgba(1,157,244, 0.12);
+      display: grid; place-items: center; font-size: 1.4rem; color: var(--primary); margin-bottom: 18px;
+    }
+    .benefit-card h3 { font-family: var(--font-display); font-size: 1.15rem; font-weight: 900; margin-bottom: 8px; }
+    .benefit-card p { font-size: 0.93rem; color: var(--text-muted); }
+
+    @media (min-width: 640px) { .benefits-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 992px) { .benefits-grid { grid-template-columns: repeat(4, 1fr); } }
+
+    .benefits-slider-section { padding: 28px 0; background: var(--bg-2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); overflow: hidden; }
+    .benefits-slider { display: flex; overflow: hidden; position: relative; }
+    .benefits-track { display: flex; flex-shrink: 0; gap: 18px; animation: benefits-scroll 32s linear infinite; }
+    .benefits-slider:hover .benefits-track { animation-play-state: paused; }
+    .benefit-slide {
+      flex: 0 0 170px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+      padding: 18px 14px; text-align: center; transition: transform var(--transition), border-color var(--transition);
+    }
+    .benefit-slide:hover { transform: translateY(-4px); border-color: rgba(1,157,244, 0.35); }
+    .benefit-slide-icon {
+      width: 46px; height: 46px; border-radius: 14px; background: rgba(1,157,244, 0.12);
+      display: grid; place-items: center; font-size: 1.25rem; color: var(--primary); margin: 0 auto 12px;
+    }
+    .benefit-slide-title { font-family: var(--font-display); font-size: 0.92rem; font-weight: 900; margin-bottom: 4px; color: var(--text); }
+    .benefit-slide-desc { font-size: 0.78rem; color: var(--text-muted); line-height: 1.35; }
+    @keyframes benefits-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+    @media (max-width: 768px) { .benefit-slide { flex: 0 0 150px; padding: 16px 12px; } .benefit-slide-icon { width: 42px; height: 42px; font-size: 1.1rem; } .benefit-slide-title { font-size: 0.85rem; } .benefit-slide-desc { font-size: 0.72rem; } .benefits-track { gap: 14px; animation-duration: 26s; } }
+    @media (prefers-reduced-motion: reduce) { .benefits-track { animation: none; } }
+
+    .site-footer { padding: 60px 0 30px; border-top: 1px solid var(--border); }
+    .footer-layout { display: grid; gap: 36px; grid-template-columns: 1fr; margin-bottom: 36px; }
+    .footer-about .logo { margin-bottom: 14px; }
+    .footer-about p { color: var(--text-muted); font-size: 0.92rem; max-width: 340px; }
+    .footer-links h4, .footer-contact h4 { font-family: var(--font-display); font-size: 1.1rem; font-weight: 900; margin-bottom: 14px; }
+    .footer-links li { margin-bottom: 8px; }
+    .footer-links a { color: var(--text-muted); font-size: 0.92rem; }
+    .footer-links a:hover { color: var(--text); }
+    .footer-contact li { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; color: var(--text-muted); font-size: 0.92rem; }
+    .footer-contact i { font-size: 1.1rem; color: var(--primary); margin-top: 2px; }
+    .footer-contact-title { display: block; font-weight: 700; color: var(--text); }
+    .footer-bottom { text-align: center; border-top: 1px solid var(--border); padding-top: 24px; }
+    .footer-bottom p { color: var(--text-dim); font-size: 0.82rem; }
+
+    @media (min-width: 768px) { .footer-layout { grid-template-columns: 2fr 1fr 1.3fr; } }
+
+    .whatsapp-float {
+      position: fixed; right: 20px; bottom: 20px; z-index: 90;
+      width: 58px; height: 58px; border-radius: 50%; display: grid; place-items: center;
+      background: #25d366; color: #fff; font-size: 1.8rem; box-shadow: 0 10px 26px rgba(37, 211, 102, 0.35);
+      transition: transform var(--transition), box-shadow var(--transition);
+      animation: wa-bounce 2s infinite;
+    }
+    .whatsapp-float:hover { transform: scale(1.08); box-shadow: 0 14px 34px rgba(37, 211, 102, 0.45); }
+    @keyframes wa-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+      html { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header-top">
+    <div class="container">
+      <div class="header-top-info">
+        <span><i class="bi bi-clock-fill"></i> Lun-Dom 9:00-21:00</span>
+        <span><i class="bi bi-geo-alt-fill"></i> Cobertura Chile</span>
+      </div>
+      <div><a href="tel:+56951234567"><i class="bi bi-telephone-fill"></i> +56 9 51234567</a></div>
+    </div>
+  </div>
+
+  <header class="site-header">
+    <div class="container">
+      <nav class="main-nav" aria-label="Navegación principal">
+        <a href="#inicio" class="logo" aria-label="Movistar Inicio">
+          <svg viewBox="0 0 140 40" aria-hidden="true" style="height:34px;width:auto"><defs><linearGradient id="logoGradMov" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#019DF4"/><stop offset="100%" style="stop-color:#0077C8"/></linearGradient></defs><rect x="2" y="4" width="34" height="32" rx="9" fill="url(#logoGradMov)"/><path d="M10 26c2-4 4-7 7-7s5 3 7 7c2-4 4-7 7-7s5 3 7 7" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/><text x="44" y="27" fill="#fff" font-family="Outfit, sans-serif" font-weight="900" font-size="20">Movistar</text></svg>
+        </a>
+        <ul class="nav-links">
+          <li><a href="#inicio">Inicio</a></li>
+          <li><a href="#asesor">Tu Ejecutivo</a></li>
+          <li><a href="#planes">Planes Hogar</a></li>
+          <li><a href="#cobertura">Consultar Cobertura</a></li>
+          <li><a href="#beneficios">Beneficios</a></li>
+        </ul>
+        <div class="nav-cta">
+          <a href="#cobertura" class="btn btn-secondary"><i class="bi bi-geo-fill"></i> Evaluar Factibilidad</a>
+        </div>
+        <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema"><i class="bi bi-sun-fill"></i></button>
+        <button class="menu-toggle" id="menuToggle" aria-label="Abrir Menú" aria-expanded="false"><i class="bi bi-list"></i></button>
+      </nav>
+    </div>
+  </header>
+
+  
+      <div class="marquee-bar">
+        <div class="marquee-list">
+            <span class="marquee-item"><i class="bi bi-lightning-charge-fill"></i> Contrata hoy Fibra Movistar: instalación sin costo, hasta 940 Mbps y 95 canales HD.</span>
+            <span class="marquee-item"><i class="bi bi-fire"></i> Promoción de invierno: Fibra 600 Megas a solo $14.990/mes por 6 meses.</span>
+            <span class="marquee-item"><i class="bi bi-gift"></i> Internet + TV con HBO Max: 600 Megas + 95 canales HD desde $28.990/mes.</span>
+            <span class="marquee-item"><i class="bi bi-lightning-charge-fill"></i> Contrata hoy Fibra Movistar: instalación sin costo, hasta 940 Mbps y 95 canales HD.</span>
+            <span class="marquee-item"><i class="bi bi-fire"></i> Promoción de invierno: Fibra 600 Megas a solo $14.990/mes por 6 meses.</span>
+            <span class="marquee-item"><i class="bi bi-gift"></i> Internet + TV con HBO Max: 600 Megas + 95 canales HD desde $28.990/mes.</span>
+        </div>
+      </div>
+
+  <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+    <a href="#inicio" class="mobile-link">Inicio</a>
+    <a href="#asesor" class="mobile-link">Tu Ejecutivo</a>
+    <a href="#planes" class="mobile-link">Planes Hogar</a>
+    <a href="#cobertura" class="mobile-link">Consultar Cobertura</a>
+    <a href="#beneficios" class="mobile-link">Beneficios</a>
+    <a href="#cobertura" class="btn btn-primary"><i class="bi bi-geo-fill"></i> Evaluar Factibilidad</a>
+  </div>
+
+  <main>
+    <button class="hero-nav hero-prev" id="heroPrev" aria-label="Anterior"><i class="bi bi-chevron-left"></i></button>
+    <button class="hero-nav hero-next" id="heroNext" aria-label="Siguiente"><i class="bi bi-chevron-right"></i></button>
+    <div class="hero-dots" id="heroDots"><button class="hero-dot active" data-index="0" aria-label="Diapositiva 1"></button><button class="hero-dot" data-index="1" aria-label="Diapositiva 2"></button><button class="hero-dot" data-index="2" aria-label="Diapositiva 3"></button><button class="hero-dot" data-index="3" aria-label="Diapositiva 4"></button></div>
+    <section id="inicio" class="hero" aria-label="Planes principales">
+      <div class="hero-slider" id="heroSlider">
+        
+      <div class="hero-slide active" data-index="0">
+        <div class="container hero-grid">
+          <div class="hero-content">
+            <span class="badge-promo"><i class="bi bi-lightning-charge-fill"></i> Promociones de Invierno</span>
+            <h1 class="hero-title">Conéctate con la Fibra <span>más rápida de Chile</span></h1>
+            <p>Contrata hoy con asesoría personalizada. Disfruta de la mejor relación precio-calidad, instalación express y soporte dedicado sin salir de casa.</p>
+            <div class="hero-ctas">
+              <a href="#planes" class="btn btn-secondary"><i class="bi bi-grid-fill"></i> Ver Planes</a>
+              <a href="#cobertura" class="btn btn-outline"><i class="bi bi-geo-fill"></i> Evaluar Cobertura</a>
+            </div>
+          </div>
+          <div class="hero-image-container">
+            <div class="hero-card">
+              <span class="badge-promo"><i class="bi bi-fire"></i> ¡El más vendido!</span>
+              <div class="hero-card-title">Movistar Fibra</div>
+              <div class="hero-card-subtitle">800 Megas</div>
+              <div class="hero-card-price">$19.990 <span>/ mes</span></div>
+              <div class="hero-card-price-sub">Precio único sin sorpresas en tu boleta.</div>
+              <ul class="hero-card-features">
+                <li><i class="bi bi-check-circle-fill"></i> 800 Megas simétricos</li>
+                <li><i class="bi bi-check-circle-fill"></i> Router Wi-Fi 6 de última generación</li>
+                <li><i class="bi bi-check-circle-fill"></i> Instalación fibra óptica directa al hogar</li>
+                <li><i class="bi bi-check-circle-fill"></i> Soporte técnico prioritario</li>
+              </ul>
+              <a href="https://wa.me/56951234567?text=Hola%20Carlos%20M%C3%A9ndez%2C%20quiero%20contratar%20Movistar%20Fibra" class="btn btn-primary plan-cta w-100" target="_blank" rel="noopener"><i class="bi bi-send-fill"></i> Solicitar este plan</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="hero-slide" data-index="1">
+        <div class="container hero-grid">
+          <div class="hero-content">
+            <span class="badge-promo"><i class="bi bi-lightning-charge-fill"></i> 21% DCTO</span>
+            <h1 class="hero-title">Fibra 600 Megas a solo <span>$14.990/mes</span></h1>
+            <p>Disfruta 600 Mbps simétricos con router WiFi 6. Promoción exclusiva por 6 meses, luego $18.990/mes.</p>
+            <div class="hero-ctas">
+              <a href="#planes" class="btn btn-secondary"><i class="bi bi-grid-fill"></i> Ver Planes</a>
+              <a href="#cobertura" class="btn btn-outline"><i class="bi bi-geo-fill"></i> Evaluar Cobertura</a>
+            </div>
+          </div>
+          <div class="hero-image-container">
+            <div class="hero-card">
+              <span class="badge-promo"><i class="bi bi-fire"></i> ¡El más vendido!</span>
+              <div class="hero-card-title">Fibra 600 Megas</div>
+              <div class="hero-card-subtitle">600 Megas</div>
+              <div class="hero-card-price">$14.990 <span>/ mes</span></div>
+              <div class="hero-card-price-sub">Por 6 meses, luego $18.990/mes.</div>
+              <ul class="hero-card-features">
+                <li><i class="bi bi-check-circle-fill"></i> 600 Megas simétricos</li>
+                <li><i class="bi bi-check-circle-fill"></i> Router Wi-Fi 6 de última generación</li>
+                <li><i class="bi bi-check-circle-fill"></i> Instalación fibra óptica directa al hogar</li>
+                <li><i class="bi bi-check-circle-fill"></i> Soporte técnico prioritario</li>
+              </ul>
+              <a href="https://wa.me/56951234567?text=Hola%20Carlos%20M%C3%A9ndez%2C%20quiero%20contratar%20Movistar%20Fibra" class="btn btn-primary plan-cta w-100" target="_blank" rel="noopener"><i class="bi bi-send-fill"></i> Solicitar este plan</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="hero-slide" data-index="2">
+        <div class="container hero-grid">
+          <div class="hero-content">
+            <span class="badge-promo"><i class="bi bi-lightning-charge-fill"></i> Internet + TV</span>
+            <h1 class="hero-title">Dúo Fibra 600 + TV con <span>95 canales HD</span></h1>
+            <p>Combina tu internet con Movistar TV y HBO Max. La entretención completa para toda la familia.</p>
+            <div class="hero-ctas">
+              <a href="#planes" class="btn btn-secondary"><i class="bi bi-grid-fill"></i> Ver Planes</a>
+              <a href="#cobertura" class="btn btn-outline"><i class="bi bi-geo-fill"></i> Evaluar Cobertura</a>
+            </div>
+          </div>
+          <div class="hero-image-container">
+            <div class="hero-card">
+              <span class="badge-promo"><i class="bi bi-fire"></i> ¡El más vendido!</span>
+              <div class="hero-card-title">Dúo Fibra 600 + TV</div>
+              <div class="hero-card-subtitle">600 Megas + TV</div>
+              <div class="hero-card-price">$28.990 <span>/ mes</span></div>
+              <div class="hero-card-price-sub">Por 6 meses, luego $36.990/mes.</div>
+              <ul class="hero-card-features">
+                <li><i class="bi bi-check-circle-fill"></i> 600 Megas + TV simétricos</li>
+                <li><i class="bi bi-check-circle-fill"></i> Router Wi-Fi 6 de última generación</li>
+                <li><i class="bi bi-check-circle-fill"></i> Instalación fibra óptica directa al hogar</li>
+                <li><i class="bi bi-check-circle-fill"></i> Soporte técnico prioritario</li>
+              </ul>
+              <a href="https://wa.me/56951234567?text=Hola%20Carlos%20M%C3%A9ndez%2C%20quiero%20contratar%20Movistar%20Fibra" class="btn btn-primary plan-cta w-100" target="_blank" rel="noopener"><i class="bi bi-send-fill"></i> Solicitar este plan</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="hero-slide" data-index="3">
+        <div class="container hero-grid">
+          <div class="hero-content">
+            <span class="badge-promo"><i class="bi bi-lightning-charge-fill"></i> Fibra Giga</span>
+            <h1 class="hero-title">Fibra Giga 940 Mbps <span>con extensor gratis</span></h1>
+            <p>La máxima velocidad de Movistar con router WiFi 6 y extensor de señal sin costo. Ideal para smart homes.</p>
+            <div class="hero-ctas">
+              <a href="#planes" class="btn btn-secondary"><i class="bi bi-grid-fill"></i> Ver Planes</a>
+              <a href="#cobertura" class="btn btn-outline"><i class="bi bi-geo-fill"></i> Evaluar Cobertura</a>
+            </div>
+          </div>
+          <div class="hero-image-container">
+            <div class="hero-card">
+              <span class="badge-promo"><i class="bi bi-fire"></i> ¡El más vendido!</span>
+              <div class="hero-card-title">Fibra Giga</div>
+              <div class="hero-card-subtitle">940 Megas</div>
+              <div class="hero-card-price">$18.990 <span>/ mes</span></div>
+              <div class="hero-card-price-sub">Por 12 meses, luego $26.990/mes.</div>
+              <ul class="hero-card-features">
+                <li><i class="bi bi-check-circle-fill"></i> 940 Megas simétricos</li>
+                <li><i class="bi bi-check-circle-fill"></i> Router Wi-Fi 6 de última generación</li>
+                <li><i class="bi bi-check-circle-fill"></i> Instalación fibra óptica directa al hogar</li>
+                <li><i class="bi bi-check-circle-fill"></i> Soporte técnico prioritario</li>
+              </ul>
+              <a href="https://wa.me/56951234567?text=Hola%20Carlos%20M%C3%A9ndez%2C%20quiero%20contratar%20Movistar%20Fibra" class="btn btn-primary plan-cta w-100" target="_blank" rel="noopener"><i class="bi bi-send-fill"></i> Solicitar este plan</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div>
+    </section>
+
+    <section id="asesor" class="seller-section" aria-labelledby="asesor-title">
+      <div class="container">
+        <div class="seller-card reveal">
+          <div class="seller-avatar-wrapper">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320' viewBox='0 0 320 320'%3E%3Crect width='320' height='320' fill='%230B2739'/%3E%3Ctext x='50%25' y='55%25' font-size='130' fill='%23fff' font-family='Outfit, sans-serif' font-weight='900' text-anchor='middle' dominant-baseline='middle'%3ECM%3C/text%3E%3C/svg%3E" alt="Carlos Méndez" />
+            <span class="seller-badge">Asesor Oficial</span>
+          </div>
+          <div class="seller-info">
+            <h4>Atención Personalizada</h4>
+            <h2 id="asesor-title">Carlos Méndez</h2>
+            <p>Como tu ejecutivo comercial especializado de Movistar, te ayudo a gestionar tu contrato de forma rápida y transparente. Olvídate de largas esperas en call centers. Analizo la cobertura de tu sector en minutos y agendo tu instalación en tiempo récord.</p>
+            <div class="seller-stats">
+              <div class="stat-item"><span class="stat-num">5 Min</span><span class="stat-label">Evaluación Cobertura</span></div>
+              <div class="stat-item"><span class="stat-num">24-48h</span><span class="stat-label">Tiempo Instalación</span></div>
+              <div class="stat-item"><span class="stat-num">100%</span><span class="stat-label">Gestión Digital</span></div>
+            </div>
+            <a href="https://wa.me/56951234567?text=Hola%20Carlos%20M%C3%A9ndez%2C%20quiero%20asesor%C3%ADa%20para%20contratar%20Movistar" class="btn btn-primary" target="_blank" rel="noopener"><i class="bi bi-chat-dots-fill"></i> Iniciar Consulta Gratis</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    
+    <section class="benefits-slider-section">
+      <div class="benefits-slider">
+        <div class="benefits-track">
+            <div class="benefit-slide">
+              <div class="benefit-slide-icon"><i class="bi bi-wifi"></i></div>
+              <p class="benefit-slide-title">Fibra Óptica</p>
+              <p class="benefit-slide-desc">Hasta 940 Mbps simétricos</p>
+            </div>
+            <div class="benefit-slide">
+              <div class="benefit-slide-icon"><i class="bi bi-arrow-down-up"></i></div>
+              <p class="benefit-slide-title">Subida y Bajada</p>
+              <p class="benefit-slide-desc">Velocidad simétrica real</p>
+            </div>
+            <div class="benefit-slide">
+              <div class="benefit-slide-icon"><i class="bi bi-currency-dollar"></i></div>
+              <p class="benefit-slide-title">Precio Fijo</p>
+              <p class="benefit-slide-desc">Sin sorpresas en tu boleta</p>
+            </div>
+            <div class="benefit-slide">
+              <div class="benefit-slide-icon"><i class="bi bi-tv"></i></div>
+              <p class="benefit-slide-title">TV Online</p>
+              <p class="benefit-slide-desc">95 canales HD + HBO Max</p>
+            </div>
+            <div class="benefit-slide">
+              <div class="benefit-slide-icon"><i class="bi bi-shield-check"></i></div>
+              <p class="benefit-slide-title">Instalación</p>
+              <p class="benefit-slide-desc">Técnicos certificados</p>
+            </div>
+            <div class="benefit-slide">
+              <div class="benefit-slide-icon"><i class="bi bi-headset"></i></div>
+              <p class="benefit-slide-title">Soporte</p>
+              <p class="benefit-slide-desc">Atención prioritaria</p>
+            </div>
+            <div class="benefit-slide">
+              <div class="benefit-slide-icon"><i class="bi bi-wifi"></i></div>
+              <p class="benefit-slide-title">Fibra Óptica</p>
+              <p class="benefit-slide-desc">Hasta 940 Mbps simétricos</p>
+            </div>
+            <div class="benefit-slide">
+              <div class="benefit-slide-icon"><i class="bi bi-arrow-down-up"></i></div>
+              <p class="benefit-slide-title">Subida y Bajada</p>
+              <p class="benefit-slide-desc">Velocidad simétrica real</p>
+            </div>
+            <div class="benefit-slide">
+              <div class="benefit-slide-icon"><i class="bi bi-currency-dollar"></i></div>
+              <p class="benefit-slide-title">Precio Fijo</p>
+              <p class="benefit-slide-desc">Sin sorpresas en tu boleta</p>
+            </div>
+            <div class="benefit-slide">
+              <div class="benefit-slide-icon"><i class="bi bi-tv"></i></div>
+              <p class="benefit-slide-title">TV Online</p>
+              <p class="benefit-slide-desc">95 canales HD + HBO Max</p>
+            </div>
+            <div class="benefit-slide">
+              <div class="benefit-slide-icon"><i class="bi bi-shield-check"></i></div>
+              <p class="benefit-slide-title">Instalación</p>
+              <p class="benefit-slide-desc">Técnicos certificados</p>
+            </div>
+            <div class="benefit-slide">
+              <div class="benefit-slide-icon"><i class="bi bi-headset"></i></div>
+              <p class="benefit-slide-title">Soporte</p>
+              <p class="benefit-slide-desc">Atención prioritaria</p>
+            </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="planes" class="planes-section" aria-labelledby="planes-title">
+      <div class="container">
+        <div class="section-header reveal">
+          <h2 id="planes-title">Elige el <span>Plan Perfecto</span> para Ti</h2>
+          <p>Explora nuestras mejores ofertas en Internet Fibra Óptica Movistar con velocidades desde 600 hasta 940 Mbps.</p>
+        </div>
+        <div class="planes-tabs reveal" role="tablist" aria-label="Filtro de planes">
+          
+          <button class="tab-btn active" data-filter="all" role="tab" aria-selected="true">Todos los Planes</button>
+          <button class="tab-btn" data-filter="basico" role="tab" aria-selected="false">Fibra 600</button>
+          <button class="tab-btn" data-filter="plus" role="tab" aria-selected="false">Fibra 800</button>
+          <button class="tab-btn" data-filter="tv" role="tab" aria-selected="false">Internet + TV</button>
+          <button class="tab-btn" data-filter="ultra" role="tab" aria-selected="false">Fibra Giga</button>
+        </div>
+        <div class="planes-grid">
+          
+          <article class="plan-card reveal" data-category="basico">
+            <div class="plan-header">
+              <h3 class="plan-title">Fibra 600 Megas</h3>
+              <div class="plan-internet">600 <span>Mbps simétricos</span></div>
+              <div class="plan-price">$14.990 <span>/ mes</span></div>
+              <p class="plan-price-sub">Por 6 meses, luego $18.990/mes.</p>
+            </div>
+            <ul class="plan-features">
+              <li><i class="bi bi-check-circle-fill"></i> 600 Mbps simétricos</li>
+              <li><i class="bi bi-check-circle-fill"></i> Router WiFi 6</li>
+              <li><i class="bi bi-check-circle-fill"></i> Instalación sin costo</li>
+              <li><i class="bi bi-check-circle-fill"></i> Navegación ilimitada</li>
+            </ul>
+            <div class="plan-cta">
+              <a href="https://wa.me/56951234567?text=Hola%20Carlos%20M%C3%A9ndez%2C%20quiero%20el%20plan%20Fibra%20600%20Megas%20Movistar" class="btn btn-outline w-100" target="_blank" rel="noopener"><i class="bi bi-send-fill"></i> Contratar Plan</a>
+            </div>
+          </article>
+          <article class="plan-card reveal" data-category="plus">
+            <div class="plan-header">
+              <h3 class="plan-title">Fibra 800 Megas</h3>
+              <div class="plan-internet">800 <span>Mbps simétricos</span></div>
+              <div class="plan-price">$19.990 <span>/ mes</span></div>
+              <p class="plan-price-sub">Precio único sin sorpresas.</p>
+            </div>
+            <ul class="plan-features">
+              <li><i class="bi bi-check-circle-fill"></i> 800 Mbps simétricos</li>
+              <li><i class="bi bi-check-circle-fill"></i> Router WiFi 6</li>
+              <li><i class="bi bi-check-circle-fill"></i> Paramount+ incluido</li>
+              <li><i class="bi bi-check-circle-fill"></i> Soporte prioritario</li>
+            </ul>
+            <div class="plan-cta">
+              <a href="https://wa.me/56951234567?text=Hola%20Carlos%20M%C3%A9ndez%2C%20quiero%20el%20plan%20Fibra%20800%20Megas%20Movistar" class="btn btn-outline w-100" target="_blank" rel="noopener"><i class="bi bi-send-fill"></i> Contratar Plan</a>
+            </div>
+          </article>
+          <article class="plan-card reveal featured" data-category="tv">
+            <div class="plan-header">
+              <h3 class="plan-title">Fibra 600 + TV</h3>
+              <div class="plan-internet">600 <span>Mbps simétricos</span></div>
+              <div class="plan-price">$28.990 <span>/ mes</span></div>
+              <p class="plan-price-sub">Por 6 meses, luego $36.990/mes.</p>
+            </div>
+            <ul class="plan-features">
+              <li><i class="bi bi-check-circle-fill"></i> 600 Mbps simétricos</li>
+              <li><i class="bi bi-check-circle-fill"></i> 95 canales (83 HD)</li>
+              <li><i class="bi bi-check-circle-fill"></i> HBO Max con anuncios</li>
+              <li><i class="bi bi-check-circle-fill"></i> Deco Movistar TV</li>
+            </ul>
+            <div class="plan-cta">
+              <a href="https://wa.me/56951234567?text=Hola%20Carlos%20M%C3%A9ndez%2C%20quiero%20el%20plan%20Fibra%20600%20%2B%20TV%20Movistar" class="btn btn-primary w-100" target="_blank" rel="noopener"><i class="bi bi-send-fill"></i> Contratar Plan</a>
+            </div>
+          </article>
+          <article class="plan-card reveal" data-category="ultra">
+            <div class="plan-header">
+              <h3 class="plan-title">Fibra Giga</h3>
+              <div class="plan-internet">940 <span>Mbps simétricos</span></div>
+              <div class="plan-price">$18.990 <span>/ mes</span></div>
+              <p class="plan-price-sub">Por 12 meses, luego $26.990/mes.</p>
+            </div>
+            <ul class="plan-features">
+              <li><i class="bi bi-check-circle-fill"></i> 940 Mbps simétricos</li>
+              <li><i class="bi bi-check-circle-fill"></i> Router WiFi 6</li>
+              <li><i class="bi bi-check-circle-fill"></i> Extensor sin costo</li>
+              <li><i class="bi bi-check-circle-fill"></i> Máxima velocidad</li>
+            </ul>
+            <div class="plan-cta">
+              <a href="https://wa.me/56951234567?text=Hola%20Carlos%20M%C3%A9ndez%2C%20quiero%20el%20plan%20Fibra%20Giga%20Movistar" class="btn btn-outline w-100" target="_blank" rel="noopener"><i class="bi bi-send-fill"></i> Contratar Plan</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="cobertura" class="coverage-section" aria-labelledby="cobertura-title">
+      <div class="container">
+        <div class="coverage-layout">
+          <div class="coverage-info reveal">
+            <h2 id="cobertura-title">¿Tienes Cobertura en tu Sector? <span>¡Compruébalo Gratis!</span></h2>
+            <p>Completa el siguiente formulario con tus datos de ubicación. Evaluaremos inmediatamente la cobertura de fibra óptica Movistar en tu zona y tu ejecutivo te contactará con las ofertas disponibles.</p>
+            <div class="coverage-steps">
+              <div class="step-card">
+                <div class="step-num">1</div>
+                <div class="step-text"><h4>Ingresa tus datos</h4><p>Escribe tu nombre, comuna y dirección completa.</p></div>
+              </div>
+              <div class="step-card">
+                <div class="step-num">2</div>
+                <div class="step-text"><h4>Selecciona tu plan</h4><p>Indícanos cuál es el plan de tu interés o si buscas asesoría.</p></div>
+              </div>
+              <div class="step-card">
+                <div class="step-num">3</div>
+                <div class="step-text"><h4>¡Listo para contactar!</h4><p>Presiona enviar y recibe una respuesta personalizada de Carlos Méndez.</p></div>
+              </div>
+            </div>
+          </div>
+          <div class="coverage-card reveal">
+            <h3><i class="bi bi-geo-alt-fill" style="color:var(--primary)"></i> Consultar Factibilidad Técnica</h3>
+            <form id="coverageForm">
+              <div class="form-group">
+                <label for="client-name">Nombre y Apellido *</label>
+                <input type="text" id="client-name" required placeholder="Ej. Juan Pérez" />
+              </div>
+              <div class="form-group">
+                <label for="client-phone">Número de Contacto *</label>
+                <input type="tel" id="client-phone" required placeholder="Ej. +569 1234 5678" />
+              </div>
+              <div class="form-group">
+                <label for="client-email">Correo Electrónico</label>
+                <input type="email" id="client-email" placeholder="Ej. juan@correo.cl" />
+              </div>
+              <div class="form-group">
+                <label for="client-city">Comuna / Ciudad *</label>
+                <input type="text" id="client-city" required placeholder="Ej. Santiago, Concepción" />
+              </div>
+              <div class="form-group">
+                <label for="client-address">Dirección y Numeración *</label>
+                <input type="text" id="client-address" required placeholder="Ej. Av. Principal 1234" />
+              </div>
+              <div class="form-group">
+                <label for="client-plan">Plan de Interés</label>
+                <select id="client-plan">
+                  
+                  <option value="Fibra 600 Megas ($14.990/mes)" selected>Fibra 600 Megas ($14.990/mes)</option>
+                  <option value="Fibra 800 Megas ($19.990/mes)">Fibra 800 Megas ($19.990/mes)</option>
+                  <option value="Fibra 600 + TV ($28.990/mes)">Fibra 600 + TV ($28.990/mes)</option>
+                  <option value="Fibra Giga ($18.990/mes)">Fibra Giga ($18.990/mes)</option>
+                  <option value="Necesito Asesoría / Otro">Necesito Asesoría / Otro</option>
+                </select>
+              </div>
+              <button type="submit" class="btn btn-primary w-100"><i class="bi bi-send-fill"></i> Enviar solicitud</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="beneficios" class="benefits-section" aria-labelledby="beneficios-title">
+      <div class="container">
+        <div class="section-header reveal">
+          <h2 id="beneficios-title">¿Por qué contratar <span>Movistar</span>?</h2>
+          <p>Únete a la red de fibra óptica líder en conectividad para el hogar.</p>
+        </div>
+        <div class="benefits-grid">
+          
+          <article class="benefit-card reveal">
+            <div class="benefit-icon"><i class="bi bi-speedometer"></i></div>
+            <h3>La Red más Veloz</h3>
+            <p>Fibra óptica hasta 940 Mbps simétricos para navegar, streamear y jugar sin límites.</p>
+          </article>
+          <article class="benefit-card reveal">
+            <div class="benefit-icon"><i class="bi bi-arrow-down-up"></i></div>
+            <h3>Velocidad Simétrica</h3>
+            <p>Misma velocidad de subida y bajada. Sube archivos, haz videollamadas y juega online.</p>
+          </article>
+          <article class="benefit-card reveal">
+            <div class="benefit-icon"><i class="bi bi-currency-dollar"></i></div>
+            <h3>Precio Justo y Fijo</h3>
+            <p>Planes 800 Megas y Giga con precio estable. Sin tarifas sorpresa ni cobros adicionales.</p>
+          </article>
+          <article class="benefit-card reveal">
+            <div class="benefit-icon"><i class="bi bi-shield-check"></i></div>
+            <h3>Instalación Certificada</h3>
+            <p>Técnicos calificados que aseguran el correcto funcionamiento e instalación óptima en tu hogar.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-layout">
+        <div class="footer-about">
+          <a href="#inicio" class="logo" aria-label="Movistar">
+            <svg viewBox="0 0 140 40" aria-hidden="true" style="height:34px;width:auto"><defs><linearGradient id="logoGradMov" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#019DF4"/><stop offset="100%" style="stop-color:#0077C8"/></linearGradient></defs><rect x="2" y="4" width="34" height="32" rx="9" fill="url(#logoGradMov)"/><path d="M10 26c2-4 4-7 7-7s5 3 7 7c2-4 4-7 7-7s5 3 7 7" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/><text x="44" y="27" fill="#fff" font-family="Outfit, sans-serif" font-weight="900" font-size="20">Movistar</text></svg>
+          </a>
+          <p>Tu ejecutivo comercial autorizado de Movistar. Gestión ágil, directa y transparente de tus planes de internet fibra óptica.</p>
+        </div>
+        <div class="footer-links">
+          <h4>Navegación</h4>
+          <ul>
+            <li><a href="#inicio">Inicio</a></li>
+            <li><a href="#asesor">Tu Ejecutivo</a></li>
+            <li><a href="#planes">Planes Hogar</a></li>
+            <li><a href="#cobertura">Evaluar Cobertura</a></li>
+          </ul>
+        </div>
+        <div class="footer-contact">
+          <h4>Contacto Ejecutivo</h4>
+          <ul>
+            <li><i class="bi bi-person-fill"></i><div><span class="footer-contact-title">Nombre Ejecutivo</span><span>Carlos Méndez</span></div></li>
+            <li><i class="bi bi-whatsapp"></i><div><span class="footer-contact-title">WhatsApp de Ventas</span><span>+56 9 5123 4567</span></div></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 Movistar Telecomunicaciones. Página web de Ejecutivo de Ventas Oficial Independiente.</p>
+        <p style="margin-top:0.5rem;font-size:0.75rem">Los logotipos, marcas comerciales y nombres de servicios exhibidos son propiedad exclusiva de Movistar S.A. y sus filiales. Este sitio tiene propósitos informativos y de captación comercial por parte de un ejecutivo oficial independiente.</p>
+      </div>
+    </div>
+  </footer>
+
+  <a class="whatsapp-float" href="https://wa.me/56951234567?text=Hola%20Carlos%20M%C3%A9ndez%2C%20quiero%20contratar%20Fibra%20Movistar" target="_blank" rel="noopener" aria-label="Hablar por WhatsApp">
+    <i class="bi bi-whatsapp"></i>
+  </a>
+
+  <script>
+    const menuToggle = document.getElementById('menuToggle');
+    const mobileMenu = document.getElementById('mobileMenu');
+    function toggleMenu() {
+      const open = mobileMenu.classList.toggle('open');
+      menuToggle.setAttribute('aria-expanded', open);
+      mobileMenu.setAttribute('aria-hidden', !open);
+      document.body.style.overflow = open ? 'hidden' : '';
+    }
+    menuToggle.addEventListener('click', toggleMenu);
+    document.querySelectorAll('.mobile-link').forEach(a => a.addEventListener('click', toggleMenu));
+
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = themeToggle.querySelector('i');
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      themeIcon.className = theme === 'light' ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
+      try { localStorage.setItem('theme', theme); } catch(e) {}
+    }
+    let savedTheme = 'dark';
+    try { savedTheme = localStorage.getItem('theme') || 'dark'; } catch(e) {}
+    setTheme(savedTheme);
+    themeToggle.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      setTheme(current === 'light' ? 'dark' : 'light');
+    });
+
+    const heroSlider = document.getElementById('heroSlider');
+    const heroSlides = document.querySelectorAll('.hero-slide');
+    const heroDots = document.querySelectorAll('.hero-dot');
+    const heroPrev = document.getElementById('heroPrev');
+    const heroNext = document.getElementById('heroNext');
+    let heroCurrent = 0;
+    let heroAutoplay = null;
+    function heroGo(index) {
+      heroCurrent = (index + heroSlides.length) % heroSlides.length;
+      heroSlides.forEach((s, i) => s.classList.toggle('active', i === heroCurrent));
+      heroDots.forEach((d, i) => d.classList.toggle('active', i === heroCurrent));
+    }
+    function heroStart() { heroStop(); heroAutoplay = setInterval(() => heroGo(heroCurrent + 1), 5500); }
+    function heroStop() { if (heroAutoplay) { clearInterval(heroAutoplay); heroAutoplay = null; } }
+    if (heroNext) heroNext.addEventListener('click', () => { heroGo(heroCurrent + 1); heroStart(); });
+    if (heroPrev) heroPrev.addEventListener('click', () => { heroGo(heroCurrent - 1); heroStart(); });
+    heroDots.forEach(dot => dot.addEventListener('click', () => { heroGo(parseInt(dot.dataset.index, 10)); heroStart(); }));
+    if (heroSlider) {
+      let touchX = 0;
+      heroSlider.addEventListener('touchstart', (e) => { touchX = e.touches[0].clientX; heroStop(); }, { passive: true });
+      heroSlider.addEventListener('touchend', (e) => {
+        const diff = e.changedTouches[0].clientX - touchX;
+        if (Math.abs(diff) > 40) { heroGo(heroCurrent + (diff < 0 ? 1 : -1)); }
+        heroStart();
+      }, { passive: true });
+      heroSlider.addEventListener('mouseenter', heroStop);
+      heroSlider.addEventListener('mouseleave', heroStart);
+    }
+    heroStart();
+
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const planCards = document.querySelectorAll('.plan-card');
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabBtns.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+        btn.classList.add('active'); btn.setAttribute('aria-selected', 'true');
+        const filter = btn.dataset.filter;
+        planCards.forEach(card => {
+          const show = filter === 'all' || card.dataset.category === filter;
+          card.style.display = show ? 'flex' : 'none';
+          if (show) card.classList.add('visible');
+        });
+      });
+    });
+
+    document.getElementById('coverageForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const name = document.getElementById('client-name').value.trim();
+      const phone = document.getElementById('client-phone').value.trim();
+      const email = document.getElementById('client-email').value.trim();
+      const city = document.getElementById('client-city').value.trim();
+      const address = document.getElementById('client-address').value.trim();
+      const plan = document.getElementById('client-plan').value;
+      const msg = 'Hola Carlos Méndez, soy ' + name + '. Quiero consultar cobertura Movistar.%0A%0ADirección: ' + address + '%0AComuna: ' + city + '%0ATeléfono: ' + phone + '%0ACorreo: ' + (email || 'no indicado') + '%0APlan de interés: ' + plan;
+      window.open('https://wa.me/56951234567?text=' + msg, '_blank', 'noopener');
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -30px 0px' });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  </script>
+<script src="/landings/seller-dynamic.js"></script>
+</body>
+</html>

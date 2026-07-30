@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { updateSession } from "@/lib/supabase/proxy";
 import { getRootDomain, getSellerSubdomain } from "@/lib/urls";
-import { getOfficialDemoCompanySlug, getOfficialDemoHash } from "@/lib/demo-landings";
+import { getOfficialDemoCompanySlug, getOfficialDemoPath } from "@/lib/demo-landings";
 
 function buildRootUrl(request, pathname) {
   const appOrigin = String(process.env.NEXT_PUBLIC_APP_URL || "").replace(/\/$/, "");
@@ -40,16 +40,6 @@ export async function proxy(request) {
   }
 
 const isPublicRootPath = pathname === "/";
-  const obsoleteLandingPaths = new Set([
-    "/landings/GA9CU9o.html",
-    "/landings/cJKWAcQ.html",
-    "/landings/oOn6PS8.html",
-    "/landings/v1Lz_Yo.html",
-  ]);
-  if (obsoleteLandingPaths.has(pathname)) {
-    return NextResponse.redirect(new URL("/landings/ohxZn08.html?slug=demo-claro", request.url), 308);
-  }
-
   const isProtectedOrSystemPath =
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/api") ||
@@ -70,10 +60,10 @@ const isPublicRootPath = pathname === "/";
 
   if (sellerSubdomain?.startsWith("demo-") && isPublicRootPath) {
     const companySlug = getOfficialDemoCompanySlug(sellerSubdomain);
-    const landingHash = getOfficialDemoHash(companySlug);
-    if (landingHash) {
+    const landingPath = getOfficialDemoPath(companySlug);
+    if (landingPath) {
       const rewriteUrl = request.nextUrl.clone();
-      rewriteUrl.pathname = `/landings/${landingHash}.html`;
+      rewriteUrl.pathname = landingPath;
       rewriteUrl.searchParams.set("slug", sellerSubdomain);
       return NextResponse.rewrite(rewriteUrl);
     }
