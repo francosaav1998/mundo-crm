@@ -13,11 +13,6 @@ export default async function SellerLandingPage({ params }) {
     notFound();
   }
 
-  // Las demos oficiales solo se sirven desde sus landings clasicas.
-  if (getDemoCompanySlug(slug)) {
-    notFound();
-  }
-
   let seller = await prisma.seller.findUnique({
     where: { slug },
     include: { company: true },
