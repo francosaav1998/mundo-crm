@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import SellerLandingReact from "@/components/landing/SellerLandingReact";
 import { getOfficialDemoHash } from "@/lib/demo-landings";
@@ -10,6 +10,11 @@ export default async function SellerLandingPage({ params, searchParams }) {
   const { slug } = await params;
   const { preview } = await searchParams;
   const isPreview = preview === "1";
+
+  // Las demos oficiales solo se sirven desde sus landings clasicas.
+  if (getDemoCompanySlug(slug)) {
+    notFound();
+  }
 
   let seller = await prisma.seller.findUnique({
     where: { slug },
