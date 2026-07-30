@@ -11,7 +11,10 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [oauthLoading, setOauthLoading] = useState(false);
-  const supabase = useMemo(() => createClient(), []);
+  const supabase = useMemo(() => {
+    if (typeof window === "undefined") return null;
+    return createClient();
+  }, []);
 
   const hardRedirect = (path) => {
     const target = `${window.location.origin}${path}`;
@@ -145,6 +148,7 @@ export default function LoginPage() {
               setOauthLoading(true);
               setError("");
               try {
+                if (!supabase) throw new Error("Supabase no está configurado");
                 const { error: err } = await supabase.auth.signInWithOAuth({
                   provider: "google",
            options: { redirectTo: `${window.location.origin}/auth/callback?from=login` },

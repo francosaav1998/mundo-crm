@@ -9,10 +9,10 @@ export const dynamic = "force-dynamic";
 export default function AuthCallback() {
   const [status, setStatus] = useState("Autenticando...");
   const router = useRouter();
-  const supabase = useMemo(
-    () => createClient({ auth: { detectSessionInUrl: false } }),
-    []
-  );
+  const supabase = useMemo(() => {
+    if (typeof window === "undefined") return null;
+    return createClient({ auth: { detectSessionInUrl: false } });
+  }, []);
 
   const hardRedirect = useCallback((path) => {
     const target = `${window.location.origin}${path}`;
@@ -26,6 +26,7 @@ export default function AuthCallback() {
   useEffect(() => {
     async function handleCallback() {
       try {
+        if (!supabase) return;
         const callbackParams = new URLSearchParams(window.location.search);
         const oauthError = callbackParams.get("error_description") || callbackParams.get("error");
         if (oauthError) {
