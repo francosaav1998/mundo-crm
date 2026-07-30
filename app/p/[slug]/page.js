@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import SellerLandingReact from "@/components/landing/SellerLandingReact";
-import { getOfficialDemoHash } from "@/lib/demo-landings";
+const OFFICIAL_LANDING_HASH = "ohxZn08";
 import { buildDemoSeller, getDemoCompanySlug } from "@/lib/demo-seller";
 
 export const dynamic = "force-dynamic";
@@ -11,9 +11,8 @@ export default async function SellerLandingPage({ params, searchParams }) {
   const { preview } = await searchParams;
   const isPreview = preview === "1";
 
-  const demoHash = getOfficialDemoHash(getDemoCompanySlug(slug));
-  if (!isPreview && demoHash) {
-    redirect(`/landings/${demoHash}.html?slug=${encodeURIComponent(slug)}`);
+  if (!isPreview) {
+    redirect(`/landings/${OFFICIAL_LANDING_HASH}.html?slug=${encodeURIComponent(slug)}`);
   }
 
   let seller = await prisma.seller.findUnique({
@@ -36,15 +35,6 @@ export default async function SellerLandingPage({ params, searchParams }) {
   if (seller.active === false) {
     // Renderiza la landing React pausada (tiene su propia pantalla de inactivo).
     return <SellerLandingReact />;
-  }
-
-  const hash = getOfficialDemoHash(seller.company?.slug);
-  const query = seller.id
-    ? `id=${encodeURIComponent(seller.id)}`
-    : `slug=${encodeURIComponent(slug)}`;
-
-  if (!isPreview && hash) {
-    redirect(`/landings/${hash}.html?${query}`);
   }
 
   return <SellerLandingReact />;
