@@ -50,7 +50,7 @@
 
       // Reemplazar bio genérica si el vendedor tiene bio personalizada
       if (bio) {
-        const bioRegex = /Como tu ejecutivo comercial especializado de (Movistar|Claro|VTR|WOM|Entel)[^.]*/;
+        const bioRegex = /Como tu ejecutivo comercial especializado de (Mundo|Movistar|Claro|VTR|WOM|Entel)[^.]*/;
         document.querySelectorAll("p").forEach((p) => {
           if (bioRegex.test(p.textContent)) {
             p.textContent = bio;

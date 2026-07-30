@@ -1,63 +1,50 @@
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import SellerLandingReact from "@/components/landing/SellerLandingReact";
-import { buildDemoSeller, getDemoCompanySlug } from "@/lib/demo-seller";
-import { getOfficialDemoPath, getOfficialDemoCompanySlug } from "@/lib/demo-landings";
+import { getOfficialDemoCompanySlug } from "@/lib/demo-landings";
+
+// Mapa de companySlug → archivo HTML estático
+const COMPANY_LANDING_MAP = {
+  claro: "/landings/ohxZn08.html",
+  entel: "/landings/GA9CU9o.html",
+  movistar: "/landings/cJKWAcQ.html",
+  vtr: "/landings/oOn6PS8.html",
+  wom: "/landings/v1Lz_Yo.html",
+  mundo: "/landings/mundo-fibra.html",
+};
 
 export const dynamic = "force-dynamic";
 
 export default async function SellerLandingPage({ params }) {
   const { slug } = await params;
+  let companySlug = null;
 
-  // Las demos con HTML estático se redirigen a su archivo HTML
-  const demoCompanySlug = getOfficialDemoCompanySlug(slug);
-  if (demoCompanySlug && demoCompanySlug !== "mundo") {
-    const path = getOfficialDemoPath(demoCompanySlug);
-    if (path) {
-      redirect(`${path}?slug=${encodeURIComponent(slug)}`);
+  // 1. Si es slug demo (demo-claro, demo-mundo, etc.) → compañía directo
+  const demoCompany = getOfficialDemoCompanySlug(slug);
+  if (demoCompany) {
+    companySlug = demoCompany;
+  }
+
+  // 2. Si no es demo, buscar vendedor real en BD
+  if (!companySlug) {
+    const seller = await prisma.seller.findUnique({
+      where: { slug },
+      include: { company: true },
+    });
+    if (seller) {
+      // Vendedor inactivo → landing React con pantalla de pausa
+      if (seller.active === false) {
+        return <SellerLandingReact />;
+      }
+      companySlug = seller.company?.slug || null;
     }
   }
 
-  if (slug === "demo-mundo") {
-    // Redirige a la landing HTML de Mundo
-    redirect(`/landings/mundo-fibra.html?slug=${encodeURIComponent(slug)}`);
+  // 3. Si tenemos compañía y existe HTML para ella → redirigir
+  if (companySlug && COMPANY_LANDING_MAP[companySlug]) {
+    redirect(`${COMPANY_LANDING_MAP[companySlug]}?slug=${encodeURIComponent(slug)}`);
   }
 
-  // Para vendedores reales registrados, también mostrar HTML si tienen plantilla asignada
-  let seller = await prisma.seller.findUnique({
-    where: { slug },
-    include: { company: true },
-  });
-
-  if (!seller) {
-    const companySlug = getDemoCompanySlug(slug);
-    if (companySlug) {
-      const company =
-        (await prisma.company.findUnique({ where: { slug: companySlug } })) ||
-        (companySlug === "mundo"
-          ? {
-              slug: "mundo",
-              name: "Mundo",
-              brandColor: "#00748E",
-              brandColorDark: "#005A6F",
-              secondaryColor: "#FDDC02",
-              accentColor: "#FF8000",
-              logoUrl: "https://www.tumundo.cl/wp-content/uploads/2022/12/logo-mundo-negative.svg",
-              websiteUrl: "https://www.tumundo.cl",
-            }
-          : null);
-      if (company) seller = buildDemoSeller(slug, company);
-    }
-  }
-
-  if (!seller) {
-    redirect("/");
-  }
-
-  if (seller.active === false) {
-    // Renderiza la landing React pausada (tiene su propia pantalla de inactivo).
-    return <SellerLandingReact />;
-  }
-
-  return <SellerLandingReact />;
+  // 4. Sin compañía conocida → homepage
+  redirect("/");
 }
