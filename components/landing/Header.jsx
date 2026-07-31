@@ -77,7 +77,7 @@ export default function Header({ menuOpen, setMenuOpen, onScrollTo, sellerLabels
                 }}
               />
             </a>
-            <ul className={`nav-links ${menuOpen ? "mobile-active" : ""}`}>
+            <ul id="seller-navigation" className={`nav-links ${menuOpen ? "mobile-active" : ""}`}>
               {navLinks.map((link, idx) => (
                 <li key={link.id}>
                   <a
@@ -101,6 +101,8 @@ export default function Header({ menuOpen, setMenuOpen, onScrollTo, sellerLabels
             <button
               className="menu-toggle"
               aria-label="Abrir Menú"
+              aria-controls="seller-navigation"
+              aria-expanded={menuOpen}
               onClick={() => setMenuOpen(!menuOpen)}
             >
               <i className={menuOpen ? "bi bi-x-lg" : "bi bi-list"}></i>

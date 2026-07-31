@@ -21,59 +21,56 @@ export default function Hero({
   const allBackgroundImages = backgroundImageUrl
     ? [backgroundImageUrl, ...backgroundImages]
     : backgroundImages;
+  const configuredSlides = Array.isArray(c.slides) ? c.slides.filter(Boolean) : [];
+  const slides = configuredSlides.length > 0 ? configuredSlides : [{ ...c }];
 
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
-    if (allBackgroundImages.length <= 1) return;
+    if (slides.length <= 1 || isPaused) return;
     const interval = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % allBackgroundImages.length);
-    }, 5000);
+      setActiveIndex((prev) => (prev + 1) % slides.length);
+    }, 5500);
     return () => clearInterval(interval);
-  }, [allBackgroundImages.length]);
+  }, [isPaused, slides.length]);
+
+  const activeSlideIndex = Math.min(activeIndex, slides.length - 1);
+  const activeSlide = slides[activeSlideIndex] || slides[0];
+  const activeBackground = allBackgroundImages[activeSlideIndex % Math.max(allBackgroundImages.length, 1)];
+  const slideStyle = activeBackground
+    ? { backgroundImage: `linear-gradient(135deg, rgba(15, 23, 42, 0.84) 0%, rgba(0, 116, 142, 0.62) 100%), url("${activeBackground}")` }
+    : undefined;
 
   return (
-    <section id="inicio" className="hero">
-      {allBackgroundImages.length > 0 && (
-        <div className="hero-backgrounds" aria-hidden="true">
-          {allBackgroundImages.map((url, idx) => (
-            <div
-              key={url + idx}
-              className={`hero-background-slide ${idx === activeIndex ? "active" : ""}`}
-              style={{
-                backgroundImage: `linear-gradient(135deg, rgba(15, 23, 42, 0.82) 0%, rgba(15, 23, 42, 0.55) 100%), url("${url}")`,
-              }}
-            />
-          ))}
-        </div>
-      )}
+    <section id="inicio" className={`hero hero-slide-${activeSlideIndex + 1}`} onMouseEnter={() => setIsPaused(true)} onMouseLeave={() => setIsPaused(false)}>
+      <div className="hero-backgrounds" aria-hidden="true">
+        <div className="hero-background-slide active" style={slideStyle} />
+      </div>
       <div className="container">
         <div className="hero-content">
           <span className="badge-promo">
-            <i className="bi bi-lightning-charge-fill"></i>{" "}
-            <EditableText path="hero.badge">{c.badge || "Promociones de Invierno"}</EditableText>
+            <i className={`bi ${activeSlide.icon || "bi-lightning-charge-fill"}`}></i>{" "}
+            <EditableText path={`hero.slides.${activeIndex}.badge`}>{activeSlide.badge || c.badge || "Promociones de Invierno"}</EditableText>
           </span>
-          <h1>
-            <EditableText path="hero.title">{c.title || "Conéctate con la Fibra"}</EditableText>{" "}
-            <EditableText path="hero.titleHighlight" tag="span">{c.titleHighlight || "más rápida de Chile"}</EditableText>
-          </h1>
-          <p>
-            <EditableText path="hero.description" multiline>
-              {c.description ||
-                "Contrata hoy con asesoría personalizada. Disfruta de la mejor relación precio-calidad, instalación express y soporte dedicado sin salir de casa."}
-            </EditableText>
-          </p>
-          <div className="hero-ctas">
-            <button onClick={() => onScrollTo("planes")} className="btn btn-secondary">
-              <EditableText path="hero.ctaPrimary">{c.ctaPrimary || "Ver Planes"}</EditableText>
-            </button>
-            <button
-              onClick={onOpenModal}
-              className="btn btn-outline"
-              style={{ borderColor: "#fff", color: "#fff" }}
-            >
-              <EditableText path="hero.ctaSecondary">{c.ctaSecondary || "Evaluar Cobertura"}</EditableText>
-            </button>
+          <div key={activeSlideIndex} className="hero-slide-copy">
+            <h1>
+              <EditableText path={`hero.slides.${activeSlideIndex}.title`}>{activeSlide.title || c.title || "Conéctate con la Fibra"}</EditableText>{" "}
+              <EditableText path={`hero.slides.${activeSlideIndex}.titleHighlight`} tag="span">{activeSlide.titleHighlight || c.titleHighlight || "más rápida de Chile"}</EditableText>
+            </h1>
+            <p>
+              <EditableText path={`hero.slides.${activeSlideIndex}.description`} multiline>
+                {activeSlide.description || c.description || "Contrata hoy con asesoría personalizada."}
+              </EditableText>
+            </p>
+            <div className="hero-ctas">
+              <button onClick={() => onScrollTo("planes")} className="btn btn-secondary">
+                <EditableText path={`hero.slides.${activeSlideIndex}.ctaPrimary`}>{activeSlide.ctaPrimary || c.ctaPrimary || "Ver Planes"}</EditableText>
+              </button>
+              <button onClick={onOpenModal} className="btn btn-outline" style={{ borderColor: "#fff", color: "#fff" }}>
+                <EditableText path={`hero.slides.${activeSlideIndex}.ctaSecondary`}>{activeSlide.ctaSecondary || c.ctaSecondary || "Evaluar Cobertura"}</EditableText>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -148,6 +145,17 @@ export default function Hero({
           </div>
         </div>
       </div>
+      {slides.length > 1 && (
+        <div className="hero-carousel-controls" aria-label="Selector de diapositiva">
+          <button className="hero-carousel-arrow" onClick={() => setActiveIndex((activeIndex - 1 + slides.length) % slides.length)} aria-label="Diapositiva anterior">←</button>
+          <div className="hero-carousel-dots">
+            {slides.map((_, index) => (
+              <button key={index} className={`hero-carousel-dot ${index === activeSlideIndex ? "active" : ""}`} onClick={() => setActiveIndex(index)} aria-label={`Ver diapositiva ${index + 1}`} aria-current={index === activeSlideIndex ? "true" : undefined} />
+            ))}
+          </div>
+          <button className="hero-carousel-arrow" onClick={() => setActiveIndex((activeIndex + 1) % slides.length)} aria-label="Diapositiva siguiente">→</button>
+        </div>
+      )}
     </section>
   );
 }
