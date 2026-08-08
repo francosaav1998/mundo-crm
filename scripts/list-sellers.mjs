@@ -1,4 +1,5 @@
 import { prisma } from "../lib/prisma.js";
+import { buildSellerLandingUrl } from "../lib/urls.js";
 
 async function main() {
   const sellers = await prisma.seller.findMany({
@@ -7,7 +8,6 @@ async function main() {
     include: { company: { select: { name: true, slug: true } } },
   });
 
-  const baseUrl = "http://localhost:3000";
   const list = sellers.map((s) => ({
     id: s.id,
     name: s.name,
@@ -15,7 +15,9 @@ async function main() {
     email: s.email,
     phone: s.phone,
     company: s.company?.name || "Sin compañía",
-    landingUrl: `${baseUrl}/p/${s.slug}`,
+    landingUrl: buildSellerLandingUrl(s.slug, {
+      origin: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+    }),
   }));
 
   console.log(JSON.stringify(list, null, 2));

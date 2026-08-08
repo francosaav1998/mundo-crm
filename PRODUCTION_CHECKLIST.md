@@ -117,8 +117,21 @@ Notas:
 - [ ] Confirmar activacion automatica.
 - [ ] Confirmar desactivacion al cancelar o fallar.
 - [ ] Probar desktop y mobile.
+- [ ] Probar al menos 2 subdominios reales de vendedores en el dominio final.
 
-## 10. Siguiente implementacion recomendada
+## 10. Anti-spam y proteccion de formularios
+
+- [ ] Definir si usaras solo rate limit o también captcha opcional.
+- [ ] Si decides usar captcha, configurar proveedor y variables:
+
+```env
+NEXT_PUBLIC_TURNSTILE_SITE_KEY=...
+TURNSTILE_SECRET_KEY=...
+```
+
+- [ ] Confirmar que el formulario público responda bien bajo tráfico real.
+
+## 11. Siguiente implementacion recomendada
 
 Orden sugerido:
 

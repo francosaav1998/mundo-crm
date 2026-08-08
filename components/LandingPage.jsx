@@ -13,6 +13,7 @@ import BenefitsSection from "./landing/BenefitsSection";
 import Footer from "./landing/Footer";
 import WhatsAppFloat from "./landing/WhatsAppFloat";
 import LeadModal from "./landing/LeadModal";
+import { isTurnstileEnabled } from "@/lib/turnstile";
 
 export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -34,6 +35,10 @@ export default function LandingPage() {
   const [sellerName, setSellerName] = useState(SELLER_CONFIG.name);
   const [sellerGender, setSellerGender] = useState("");
   const [metaPixelId, setMetaPixelId] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const [turnstileResetKey, setTurnstileResetKey] = useState(0);
+
+  const turnstileEnabled = isTurnstileEnabled();
 
   const sellerLabels = getSellerLabels(sellerGender || inferGender(sellerName));
 
@@ -116,7 +121,7 @@ export default function LandingPage() {
       const res = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, turnstileToken }),
       });
 
       if (!res.ok) {
@@ -125,9 +130,19 @@ export default function LandingPage() {
       }
 
       setFormStatus({ type: "success", message: `¡Solicitud enviada! Tu ${sellerLabels.executive} te contactará pronto.` });
+      setFormData({
+        name: "",
+        phone: "",
+        email: "",
+        city: "",
+        address: "",
+        plan: formData.plan,
+      });
     } catch (error) {
       setFormStatus({ type: "error", message: error.message });
     } finally {
+      setTurnstileToken("");
+      setTurnstileResetKey((value) => value + 1);
       setSubmitting(false);
     }
   };
@@ -152,6 +167,10 @@ export default function LandingPage() {
           submitting={submitting}
           onSubmit={handleSubmit}
           sellerLabels={sellerLabels}
+          turnstileEnabled={turnstileEnabled}
+          turnstileToken={turnstileToken}
+          onTurnstileChange={setTurnstileToken}
+          turnstileResetKey={turnstileResetKey}
         />
         <BenefitsSection />
       </main>

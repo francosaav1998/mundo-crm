@@ -1,6 +1,7 @@
 "use client";
 
 import EditableText from "./EditableText";
+import TurnstileWidget from "./TurnstileWidget";
 
 const DEFAULT_OPTIONS = [
   "Necesito Asesoría / Otro",
@@ -15,6 +16,10 @@ export default function CoverageSection({
   sellerLabels = {},
   plans = [],
   content = {},
+  turnstileEnabled = false,
+  turnstileToken = "",
+  onTurnstileChange = () => {},
+  turnstileResetKey = 0,
 }) {
   const c = content || {};
   const steps = Array.isArray(c.steps) && c.steps.length > 0 ? c.steps : [
@@ -140,12 +145,26 @@ export default function CoverageSection({
                   ))}
                 </select>
               </div>
+              {turnstileEnabled && (
+                <div className="form-group">
+                  <label>Verificación anti-spam</label>
+                  <TurnstileWidget onTokenChange={onTurnstileChange} resetKey={turnstileResetKey} />
+                  <p style={{ marginTop: 8, fontSize: 12, color: "var(--muted-color, #64748B)" }}>
+                    Confirma la verificación para enviar tu solicitud.
+                  </p>
+                </div>
+              )}
               <button type="submit" className="btn btn-primary w-100" disabled={submitting}>
                 <i className="bi bi-send-fill"></i>{" "}
                 <EditableText path="coverage.header.submitLabel">
                   {submitting ? "Enviando..." : (c.submitLabel || "Enviar solicitud")}
                 </EditableText>
               </button>
+              {turnstileEnabled && !turnstileToken && !submitting && (
+                <p style={{ marginTop: 10, fontSize: 12, color: "#DC2626" }}>
+                  Debes completar la verificación anti-spam antes de enviar.
+                </p>
+              )}
             </form>
           </div>
         </div>

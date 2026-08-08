@@ -3,9 +3,16 @@ const { createClient } = require("@supabase/supabase-js");
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const adminEmail = process.env.ADMIN_EMAIL || "admin@mundo-crm.local";
+const adminPassword = process.env.ADMIN_PASSWORD;
 
 if (!url || !serviceKey) {
   console.error("Faltan NEXT_PUBLIC_SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY");
+  process.exit(1);
+}
+
+if (!adminPassword) {
+  console.error("Falta ADMIN_PASSWORD para crear el usuario administrador");
   process.exit(1);
 }
 
@@ -33,8 +40,8 @@ async function main() {
 
   // Create admin user
   const { data: user, error: userError } = await supabase.auth.admin.createUser({
-    email: "admin@mundo-crm.local",
-    password: "mundo2026",
+    email: adminEmail,
+    password: adminPassword,
     email_confirm: true,
   });
 

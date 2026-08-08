@@ -83,6 +83,35 @@ export default function Billing({ T, isMobile, showToast, locked = false }) {
     }
   }
 
+  async function handleCancelSubscription() {
+    const confirmed = window.confirm(
+      "Se cancelará la suscripción y tu landing quedará pausada hasta que vuelvas a activar un método de pago. ¿Quieres continuar?"
+    );
+    if (!confirmed) return;
+
+    setProcessing(true);
+    try {
+      const res = await fetch("/api/subscription", { method: "DELETE" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "No se pudo cancelar la suscripción");
+      setSubscription((current) => ({
+        ...current,
+        status: "cancelled",
+        label: "Cancelada",
+        isActive: false,
+        isTrial: false,
+        isExpired: true,
+      }));
+      showToast("Suscripción cancelada. Tu cuenta quedó pausada.");
+      if (!locked) {
+        setTimeout(() => window.location.reload(), 1200);
+      }
+    } catch (err) {
+      showToast(err.message || "No se pudo cancelar la suscripción");
+      setProcessing(false);
+    }
+  }
+
   if (loading) {
     return (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 300 }}>
@@ -256,6 +285,23 @@ export default function Billing({ T, isMobile, showToast, locked = false }) {
               Pago pendiente. Completá el proceso en MercadoPago.
             </div>
           )}
+
+          {subscription?.status === "cancelled" && (
+            <div
+              style={{
+                padding: 14,
+                borderRadius: 12,
+                background: "rgba(239, 68, 68, 0.10)",
+                border: "1px solid rgba(239, 68, 68, 0.25)",
+                color: "#DC2626",
+                fontSize: 14,
+                fontWeight: 700,
+              }}
+            >
+              <i className="bi bi-slash-circle-fill" style={{ marginRight: 8 }} />
+              Suscripción cancelada. Para reactivar tu landing debes volver a configurar tu tarjeta.
+            </div>
+          )}
         </div>
 
         {!isPaidSubscription && (
@@ -314,6 +360,29 @@ export default function Billing({ T, isMobile, showToast, locked = false }) {
             >
               <i className="bi bi-arrow-repeat" />
               Actualizar tarjeta
+            </RippleButton>
+            <RippleButton
+              onClick={handleCancelSubscription}
+              disabled={processing}
+              style={{
+                marginTop: 12,
+                marginLeft: isMobile ? 0 : 12,
+                width: isMobile ? "100%" : "auto",
+                padding: "12px 20px",
+                borderRadius: 12,
+                border: "1px solid rgba(239, 68, 68, 0.25)",
+                background: "rgba(239, 68, 68, 0.08)",
+                color: "#DC2626",
+                fontWeight: 700,
+                fontSize: 13,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+              }}
+            >
+              <i className="bi bi-x-circle" />
+              Cancelar suscripción
             </RippleButton>
           </div>
         )}
