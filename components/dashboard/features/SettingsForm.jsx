@@ -6,6 +6,7 @@ import RippleButton from "@/components/ui/RippleButton";
 import SectionHeader from "@/components/dashboard/ui/SectionHeader";
 import { normalizeWhatsAppNumber } from "@/lib/seller";
 import { uploadFileBrowser } from "@/lib/upload/browser";
+import { uploadImage } from "@/lib/upload-image";
 
 export default function SettingsForm({
   settings,
@@ -20,6 +21,7 @@ export default function SettingsForm({
   isAdmin = false,
 }) {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [uploadingHeroBackground, setUploadingHeroBackground] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const handleSave = async (e) => {
@@ -51,6 +53,41 @@ export default function SettingsForm({
       showToast(err.message || "Error al subir foto");
     } finally {
       setUploadingPhoto(false);
+    }
+  };
+
+  const heroContent = settings.landingContent?.hero || {};
+  const heroImages = Array.from(new Set([
+    heroContent.backgroundImageUrl,
+    ...(Array.isArray(heroContent.backgroundImages) ? heroContent.backgroundImages : []),
+  ].filter((url) => typeof url === "string" && url.trim())));
+
+  const updateHeroImages = (images) => {
+    onUpdateSettings({
+      landingContent: {
+        ...(settings.landingContent || {}),
+        hero: {
+          ...heroContent,
+          backgroundImageUrl: images[0] || "",
+          backgroundImages: images,
+        },
+      },
+    });
+  };
+
+  const handleHeroBackgroundUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingHeroBackground(true);
+    try {
+      const data = await uploadImage(file, "seller");
+      updateHeroImages([...heroImages, data.url]);
+      showToast("Fondo de diapositiva actualizado");
+    } catch (err) {
+      showToast(err.message || "Error al subir fondo");
+    } finally {
+      setUploadingHeroBackground(false);
+      e.target.value = "";
     }
   };
 
@@ -353,6 +390,40 @@ export default function SettingsForm({
               style={textareaStyle}
             />
           </div>
+        </div>
+        )}
+
+        {!isAdmin && (
+        <div style={{ borderTop: `1px solid ${T.border}`, paddingTop: 20 }}>
+          <h3 style={sectionTitleStyle}>
+            <i className="bi bi-images" style={{ marginRight: 6 }}></i>
+            Fondo de las diapositivas
+          </h3>
+          <p style={{ color: T.muted, fontSize: 12, lineHeight: 1.5, margin: "0 0 14px" }}>
+            Estas imágenes aparecen como fondo del carrusel principal de tu landing. Puedes cambiar, agregar o eliminar fondos aquí.
+          </p>
+          {heroImages.length > 0 && (
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(3, 1fr)", gap: 10, marginBottom: 14 }}>
+              {heroImages.map((url, index) => (
+                <div key={`${url}-${index}`} style={{ position: "relative", aspectRatio: "16 / 9", borderRadius: 12, overflow: "hidden", border: `1px solid ${T.border}`, background: T.inputBg }}>
+                  <Image src={url} alt={`Fondo de diapositiva ${index + 1}`} fill unoptimized sizes="(max-width: 768px) 50vw, 180px" style={{ objectFit: "cover" }} />
+                  <button
+                    type="button"
+                    onClick={() => updateHeroImages(heroImages.filter((_, imageIndex) => imageIndex !== index))}
+                    title="Eliminar fondo"
+                    style={{ position: "absolute", top: 6, right: 6, width: 28, height: 28, border: "none", borderRadius: 7, background: "rgba(239, 68, 68, 0.92)", color: "#fff", cursor: "pointer" }}
+                  >
+                    <i className="bi bi-trash3-fill" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          <label style={{ ...uploadBtnStyle, opacity: uploadingHeroBackground ? 0.6 : 1, cursor: uploadingHeroBackground ? "not-allowed" : "pointer" }}>
+            <i className={`bi ${uploadingHeroBackground ? "bi-arrow-repeat" : "bi-upload"}`} />
+            {uploadingHeroBackground ? "Subiendo..." : heroImages.length ? "Agregar o cambiar imagen" : "Subir fondo de diapositivas"}
+            <input type="file" accept="image/*" disabled={uploadingHeroBackground} onChange={handleHeroBackgroundUpload} style={{ display: "none" }} />
+          </label>
         </div>
         )}
 

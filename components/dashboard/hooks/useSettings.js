@@ -47,6 +47,7 @@ function getDefaultSettings(isAdmin = false) {
     footerText: DEFAULT_SETTINGS.footerText,
     whatsappNumber: DEFAULT_SETTINGS.whatsappNumber,
     metaPixelId: DEFAULT_SETTINGS.metaPixelId,
+    landingContent: null,
   };
 }
 
@@ -66,6 +67,7 @@ function sellerToSettings(seller) {
     whatsappNumber: normalizeWhatsAppNumber(seller.phone || ""),
     metaPixelId: seller.metaPixelId || DEFAULT_SETTINGS.metaPixelId,
     sellerMsg: seller.defaultMessage || DEFAULT_SETTINGS.sellerMsg,
+    landingContent: seller.landingContent || null,
   };
 }
 
@@ -81,6 +83,7 @@ function settingsToSellerPayload(settings) {
     footerText: settings.footerText,
     metaPixelId: settings.metaPixelId.trim(),
     defaultMessage: settings.sellerMsg,
+    ...(settings.landingContent ? { landingContent: settings.landingContent } : {}),
   };
 }
 

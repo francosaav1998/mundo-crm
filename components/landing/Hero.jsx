@@ -18,9 +18,9 @@ export default function Hero({
   const backgroundImages = Array.isArray(c.backgroundImages)
     ? c.backgroundImages.filter((url) => typeof url === "string" && url.trim() !== "")
     : [];
-  const allBackgroundImages = backgroundImageUrl
-    ? [backgroundImageUrl, ...backgroundImages]
-    : backgroundImages;
+  const allBackgroundImages = Array.from(new Set(
+    [backgroundImageUrl, ...backgroundImages].filter(Boolean)
+  ));
   const configuredSlides = Array.isArray(c.slides) ? c.slides.filter(Boolean) : [];
   const slides = configuredSlides.length > 0 ? configuredSlides : [{ ...c }];
 
