@@ -9,6 +9,29 @@ import { OFFICIAL_DEMO_COMPANIES, getOfficialDemoCompanySlug } from "@/lib/demo-
 
 export const dynamic = "force-dynamic";
 
+async function pauseExpiredTrial(seller) {
+  if (!seller?.id || !seller.active) return seller;
+  const subscription = await prisma.subscription.findUnique({
+    where: { sellerId: seller.id },
+    select: { status: true, trialEndsAt: true },
+  });
+  const expired =
+    subscription?.status === "trial" &&
+    subscription.trialEndsAt &&
+    new Date(subscription.trialEndsAt) < new Date();
+  if (!expired) return seller;
+
+  return prisma.seller.update({
+    where: { id: seller.id },
+    data: { active: false },
+    include: {
+      company: true,
+      planOverrides: { include: { plan: true } },
+      _count: { select: { leads: true } },
+    },
+  });
+}
+
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -25,7 +48,8 @@ export async function GET(request) {
         },
       });
       if (!seller) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
-      return NextResponse.json(seller);
+      const pausedSeller = await pauseExpiredTrial(seller);
+      return NextResponse.json(pausedSeller);
     }
 
     if (slug) {
@@ -45,7 +69,8 @@ export async function GET(request) {
         }
       }
       if (!seller) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
-      return NextResponse.json(seller);
+      const pausedSeller = await pauseExpiredTrial(seller);
+      return NextResponse.json(pausedSeller);
     }
 
     await requireAdminFromSession();
