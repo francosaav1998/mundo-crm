@@ -5,7 +5,7 @@ import { PreApproval, Payment } from "mercadopago";
 
 function isWebhookAuthorized(request) {
   const expectedToken = process.env.MERCADOPAGO_WEBHOOK_TOKEN;
-  if (!expectedToken) return true;
+  if (!expectedToken) return false;
 
   const url = new URL(request.url);
   const receivedToken = url.searchParams.get("token") || request.headers.get("x-webhook-token");

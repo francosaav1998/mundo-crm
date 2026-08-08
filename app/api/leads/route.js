@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth, isAdmin } from "@/lib/auth";
 import { rateLimit, getClientKey } from "@/lib/rate-limit";
+import { hasTurnstileConfig, verifyTurnstileToken } from "@/lib/turnstile.server";
+import { sendNewLeadNotification } from "@/lib/lead-notifications.server";
 
 const MAX_LENGTHS = {
   name: 200,
@@ -151,7 +153,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { name, phone, email, city, address, plan, sellerId, planId } = body;
+    const { name, phone, email, city, address, plan, sellerId, planId, turnstileToken } = body;
 
     if (!name || !phone || !city || !address || !plan) {
       return NextResponse.json(
@@ -167,15 +169,43 @@ export async function POST(request) {
       );
     }
 
+    if (hasTurnstileConfig()) {
+      if (!turnstileToken) {
+        return NextResponse.json(
+          { error: "Completa la verificación anti-spam" },
+          { status: 400 }
+        );
+      }
+
+      const verified = await verifyTurnstileToken(turnstileToken, getClientKey(request));
+      if (!verified) {
+        return NextResponse.json(
+          { error: "No se pudo validar la verificación anti-spam" },
+          { status: 400 }
+        );
+      }
+    }
+
     let assignedTo = process.env.ADMIN_EMAIL || "";
-    let sellerSlug = "";
 
     if (sellerId) {
-      const seller = await prisma.seller.findUnique({ where: { id: sellerId } });
-      if (seller) {
-        assignedTo = seller.email || seller.name;
-        sellerSlug = seller.slug;
+      const seller = await prisma.seller.findUnique({
+        where: { id: sellerId },
+        include: { subscription: true },
+      });
+      if (!seller) {
+        return NextResponse.json({ error: "Vendedor no encontrado" }, { status: 404 });
       }
+
+      const trialExpired =
+        seller.subscription?.status === "trial" &&
+        seller.subscription.trialEndsAt &&
+        new Date(seller.subscription.trialEndsAt) < new Date();
+      if (seller.active === false || trialExpired) {
+        return NextResponse.json({ error: "Esta landing no está disponible" }, { status: 403 });
+      }
+
+      assignedTo = seller.email || seller.name;
     }
 
     const lead = await prisma.lead.create({
@@ -191,6 +221,15 @@ export async function POST(request) {
         planId: planId || null,
       },
     });
+
+    // El correo es una notificación secundaria: nunca debe impedir guardar el lead.
+    if (sellerId && assignedTo && isValidEmail(assignedTo)) {
+      try {
+        await sendNewLeadNotification({ sellerEmail: assignedTo, lead });
+      } catch (notificationError) {
+        console.error("No se pudo enviar la notificación del nuevo lead:", notificationError);
+      }
+    }
 
     return NextResponse.json(lead, { status: 201 });
   } catch (error) {

@@ -29,6 +29,22 @@ export default async function DashboardPage() {
       include: { company: true },
     });
 
+    const subscription = await prisma.subscription.findUnique({
+      where: { sellerId: seller.id },
+      select: { status: true, trialEndsAt: true },
+    });
+    const trialExpired =
+      subscription?.status === "trial" &&
+      subscription.trialEndsAt &&
+      new Date(subscription.trialEndsAt) < new Date();
+    if (trialExpired && seller.active) {
+      seller = await prisma.seller.update({
+        where: { id: seller.id },
+        data: { active: false },
+        include: { company: true },
+      });
+    }
+
     // Si el usuario vino por OAuth y no ha completado su perfil, mandarlo a registro
     if (!seller.phone || !seller.companyId) {
       redirect("/registro?oauth=true");

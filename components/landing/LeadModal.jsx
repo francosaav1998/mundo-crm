@@ -4,10 +4,13 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import RippleButton from "@/components/ui/RippleButton";
 import { modalOverlay, modalContent } from "@/lib/animations";
+import { isTurnstileEnabled } from "@/lib/turnstile";
+import { getWhatsAppUrl } from "@/lib/seller";
+import TurnstileWidget from "./TurnstileWidget";
 
 const DEFAULT_OPTIONS = ["Necesito Asesoría / Otro"];
 
-export default function LeadModal({ isOpen, onClose, sellerId, sellerName, initialPlan = "", plans = [], companySlug = "mundo" }) {
+export default function LeadModal({ isOpen, onClose, sellerId, sellerName, sellerPhone = "", initialPlan = "", plans = [], companySlug = "mundo" }) {
   const planOptions = plans.length > 0
     ? [...plans.map((p) => p.value), ...DEFAULT_OPTIONS]
     : DEFAULT_OPTIONS;
@@ -24,6 +27,9 @@ export default function LeadModal({ isOpen, onClose, sellerId, sellerName, initi
   });
   const [status, setStatus] = useState({ type: "", message: "" });
   const [submitting, setSubmitting] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const [turnstileResetKey, setTurnstileResetKey] = useState(0);
+  const turnstileEnabled = isTurnstileEnabled();
 
   useEffect(() => {
     if (isOpen) {
@@ -59,13 +65,14 @@ export default function LeadModal({ isOpen, onClose, sellerId, sellerName, initi
     e.preventDefault();
     setSubmitting(true);
     setStatus({ type: "", message: "" });
+    const whatsappWindow = typeof window !== "undefined" ? window.open("", "_blank") : null;
 
     try {
       const selectedPlan = plans.find((p) => p.value === formData.plan);
       const res = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, sellerId, planId: selectedPlan?.id }),
+        body: JSON.stringify({ ...formData, sellerId, planId: selectedPlan?.id, turnstileToken }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Error al enviar");
@@ -73,6 +80,20 @@ export default function LeadModal({ isOpen, onClose, sellerId, sellerName, initi
       if (typeof window !== "undefined" && window.fbq) {
         window.fbq("track", "Lead");
       }
+
+      const whatsappMessage = [
+        `Hola ${sellerName || ""}, quiero consultar por un plan.`,
+        "",
+        `Nombre: ${formData.name}`,
+        `Teléfono: ${formData.phone}`,
+        `Correo: ${formData.email || "No informado"}`,
+        `Ciudad/Comuna: ${formData.city}`,
+        `Dirección: ${formData.address}`,
+        `Plan de interés: ${formData.plan}`,
+      ].join("\n");
+      const whatsappUrl = getWhatsAppUrl(whatsappMessage, sellerPhone);
+      if (whatsappWindow) whatsappWindow.location.href = whatsappUrl;
+      else if (typeof window !== "undefined") window.open(whatsappUrl, "_blank");
 
       setStatus({
         type: "success",
@@ -89,8 +110,11 @@ export default function LeadModal({ isOpen, onClose, sellerId, sellerName, initi
         plan: defaultPlan,
       });
     } catch (err) {
+      if (whatsappWindow) whatsappWindow.close();
       setStatus({ type: "error", message: err.message });
     } finally {
+      setTurnstileToken("");
+      setTurnstileResetKey((value) => value + 1);
       setSubmitting(false);
     }
   };
@@ -317,9 +341,18 @@ export default function LeadModal({ isOpen, onClose, sellerId, sellerName, initi
             </select>
           </div>
 
+          {turnstileEnabled && (
+            <div>
+              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#1E293B", marginBottom: "6px" }}>
+                Verificación anti-spam
+              </label>
+              <TurnstileWidget onTokenChange={setTurnstileToken} resetKey={turnstileResetKey} />
+            </div>
+          )}
+
           <RippleButton
             type="submit"
-            disabled={submitting}
+            disabled={submitting || (turnstileEnabled && !turnstileToken)}
             loading={submitting}
             loadingText="Enviando..."
             style={{
@@ -343,6 +376,7 @@ export default function LeadModal({ isOpen, onClose, sellerId, sellerName, initi
           </RippleButton>
 
           <p style={{ fontSize: "11px", color: "#94A3B8", textAlign: "center" }}>
+            {turnstileEnabled && !turnstileToken ? "Completa la verificación anti-spam. " : ""}
             Al enviar, aceptas nuestra{" "}
             <a href={`/politica-de-privacidad?company=${companySlug}`} style={{ color: "#00748E", fontWeight: 700 }}>
               Política de Privacidad

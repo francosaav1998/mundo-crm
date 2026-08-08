@@ -31,6 +31,28 @@ export async function GET(request) {
         }
       }
       if (!seller) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
+
+      const subscription = seller.id
+        ? await prisma.subscription.findUnique({
+            where: { sellerId: seller.id },
+            select: { status: true, trialEndsAt: true },
+          })
+        : null;
+      const trialExpired =
+        subscription?.status === "trial" &&
+        subscription.trialEndsAt &&
+        new Date(subscription.trialEndsAt) < new Date();
+      if (trialExpired && seller.active) {
+        seller = await prisma.seller.update({
+          where: { id: seller.id },
+          data: { active: false },
+          include: {
+            company: true,
+            planOverrides: { include: { plan: true } },
+            _count: { select: { leads: true } },
+          },
+        });
+      }
       return NextResponse.json(seller);
     }
 

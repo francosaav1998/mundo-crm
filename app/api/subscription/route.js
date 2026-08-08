@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { findOrCreateSellerForUser } from "@/lib/seller.server";
 import {
+  cancelPreapproval,
   createPreapproval,
   formatAmount,
   getPreapproval,
@@ -92,6 +93,13 @@ export async function GET(request) {
     const isActive = normalizedSubscription.status === "active";
     const isExpired =
       isTrial && normalizedSubscription.trialEndsAt && new Date(normalizedSubscription.trialEndsAt) < now;
+
+    if (isExpired && seller.active) {
+      await prisma.seller.update({
+        where: { id: seller.id },
+        data: { active: false },
+      });
+    }
 
     return NextResponse.json({
       id: normalizedSubscription.id,
@@ -202,6 +210,43 @@ export async function POST(request) {
       scheduledStartDate: startDate,
       scheduledStartDateLabel: firstChargeDateLabel,
     });
+  } catch (error) {
+    const status = error.message === "Unauthorized" ? 401 : 500;
+    return NextResponse.json({ error: error.message }, { status });
+  }
+}
+
+export async function DELETE() {
+  try {
+    const session = await requireAuth();
+    const sellerRecord = await findOrCreateSellerForUser(session.user);
+    const subscription = await prisma.subscription.findUnique({
+      where: { sellerId: sellerRecord.id },
+      select: { id: true, preapprovalId: true, status: true },
+    });
+
+    if (!subscription) {
+      return NextResponse.json({ error: "No se encontró la suscripción" }, { status: 404 });
+    }
+
+    if (subscription.preapprovalId && hasMercadoPagoConfig()) {
+      await cancelPreapproval(subscription.preapprovalId);
+    }
+
+    await prisma.subscription.update({
+      where: { id: subscription.id },
+      data: {
+        status: "cancelled",
+        currentPeriodEnd: new Date(),
+      },
+    });
+
+    await prisma.seller.update({
+      where: { id: sellerRecord.id },
+      data: { active: false },
+    });
+
+    return NextResponse.json({ ok: true });
   } catch (error) {
     const status = error.message === "Unauthorized" ? 401 : 500;
     return NextResponse.json({ error: error.message }, { status });
