@@ -4,12 +4,13 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { DEFAULT_B2B_LANDING_CSS, DEFAULT_B2B_LANDING_BODY } from "@/lib/b2b-landing";
 import RippleButton from "@/components/ui/RippleButton";
 import SectionHeader from "@/components/dashboard/ui/SectionHeader";
+import { normalizeB2BBranding } from "@/lib/b2b-branding";
 
 export default function B2BLandingEditor({ T, isMobile, showToast }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [css, setCss] = useState(DEFAULT_B2B_LANDING_CSS);
-  const [body, setBody] = useState(DEFAULT_B2B_LANDING_BODY);
+  const [body, setBody] = useState(() => normalizeB2BBranding(DEFAULT_B2B_LANDING_BODY));
   const [previewMode, setPreviewMode] = useState("desktop");
   const [mobileTab, setMobileTab] = useState("edit");
   const [activeTab, setActiveTab] = useState("visual");
@@ -22,7 +23,7 @@ export default function B2BLandingEditor({ T, isMobile, showToast }) {
         if (res.ok) {
           const data = await res.json();
           if (data.css) setCss(data.css);
-          if (data.body) setBody(data.body);
+          if (data.body) setBody(normalizeB2BBranding(data.body));
         }
       } catch (err) {
         showToast(err.message || "Error al cargar landing");
@@ -54,7 +55,7 @@ export default function B2BLandingEditor({ T, isMobile, showToast }) {
   const handleReset = useCallback(() => {
     if (confirm("¿Restaurar el contenido por defecto? Se perderán los cambios no guardados.")) {
       setCss(DEFAULT_B2B_LANDING_CSS);
-      setBody(DEFAULT_B2B_LANDING_BODY);
+      setBody(normalizeB2BBranding(DEFAULT_B2B_LANDING_BODY));
     }
   }, []);
 
