@@ -704,33 +704,8 @@ function PlanCardEditor({ plan, idx, updatePlan, removePlan, updatePlanFeature, 
 }
 
 export function BenefitsControls({ content, updateContent, updateArrayItem, addArrayItem, removeArrayItem, T, isMobile = false }) {
-  const [uploadingBg, setUploadingBg] = useState(false);
-
-  const handleBackgroundUpload = async (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    setUploadingBg(true);
-    try {
-      const data = await uploadImage(file, "seller");
-      updateContent({ backgroundImageUrl: data.url });
-    } catch (err) {
-      alert(err.message || "Error al subir imagen");
-    } finally {
-      setUploadingBg(false);
-      event.target.value = "";
-    }
-  };
-
   return (
     <>
-      <SectionBlock title="Imagen de fondo" T={T}>
-        <Field label="URL de la imagen" help="Personaliza el fondo de la sección de beneficios. Déjala vacía para usar el color por defecto." T={T}>
-          <Input type="text" T={T} value={content.backgroundImageUrl || ""} onChange={(e) => updateContent({ backgroundImageUrl: e.target.value })} placeholder="https://.../mi-imagen.jpg" />
-        </Field>
-        <Field label="Subir imagen" help={uploadingBg ? "Subiendo imagen..." : "También puedes subir una imagen desde tu computador."} T={T}>
-          <input type="file" accept="image/*" onChange={handleBackgroundUpload} disabled={uploadingBg} style={{ width: "100%", padding: 12, background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: 12, color: T.text }} />
-        </Field>
-      </SectionBlock>
       <SectionBlock title="Encabezado" T={T}>
         <Field label="Título" T={T}>
           <Input type="text" T={T} value={content.title || ""} onChange={(e) => updateContent({ title: e.target.value })} />
