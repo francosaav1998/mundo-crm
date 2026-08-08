@@ -2,6 +2,7 @@ import { getB2BLandingContent, B2B_LANDING_CSS_KEY } from "@/lib/b2b-landing.ser
 import { DEFAULT_B2B_LANDING_CSS, DEFAULT_B2B_LANDING_BODY } from "@/lib/b2b-landing";
 import Script from "next/script";
 import { normalizeB2BBranding } from "@/lib/b2b-branding";
+import { B2B_MOBILE_CSS } from "@/lib/b2b-mobile";
 
 export const metadata = {
   title: "GestionVendedores.com | CRM y landings para equipos comerciales",
@@ -20,6 +21,7 @@ export default async function Home() {
   return (
     <>
       <style key={B2B_LANDING_CSS_KEY} dangerouslySetInnerHTML={{ __html: landingCss }} />
+      <style dangerouslySetInnerHTML={{ __html: B2B_MOBILE_CSS }} />
       <div dangerouslySetInnerHTML={{ __html: landingBody }} />
       <Script id="b2b-landing-menu" strategy="afterInteractive">
         {`

@@ -5,6 +5,7 @@ import { DEFAULT_B2B_LANDING_CSS, DEFAULT_B2B_LANDING_BODY } from "@/lib/b2b-lan
 import RippleButton from "@/components/ui/RippleButton";
 import SectionHeader from "@/components/dashboard/ui/SectionHeader";
 import { normalizeB2BBranding } from "@/lib/b2b-branding";
+import { B2B_MOBILE_CSS } from "@/lib/b2b-mobile";
 
 export default function B2BLandingEditor({ T, isMobile, showToast }) {
   const [loading, setLoading] = useState(true);
@@ -75,7 +76,7 @@ export default function B2BLandingEditor({ T, isMobile, showToast }) {
 
   const previewSrcDoc = getB2BPreviewDocument({
     body,
-    css,
+    css: `${css}${B2B_MOBILE_CSS}`,
     editable: activeTab === "visual",
   });
 
