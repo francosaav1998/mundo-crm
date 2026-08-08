@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { isValidPlanPrice } from "@/lib/landing";
 
 export async function GET(request) {
   try {
@@ -45,7 +46,7 @@ export async function GET(request) {
       },
     });
 
-    return NextResponse.json(plans);
+    return NextResponse.json(plans.filter((plan) => isValidPlanPrice(plan.price)));
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { findOrCreateSellerForUser } from "@/lib/seller.server";
+import { isValidPlanPrice } from "@/lib/landing";
 
 export async function POST(request) {
   try {
@@ -22,6 +23,11 @@ export async function POST(request) {
     });
 
     const value = `custom-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const price = String(body.price || "").trim();
+    if (!isValidPlanPrice(price)) {
+      return NextResponse.json({ error: "El precio del plan debe ser mayor que 0" }, { status: 400 });
+    }
+
     const plan = await prisma.plan.create({
       data: {
         companyId: sellerRecord.companyId,
@@ -29,7 +35,7 @@ export async function POST(request) {
         title: body.title || "Nuevo plan",
         speed: body.speed || "",
         speedLabel: body.speedLabel || "Megas",
-        price: body.price || "",
+        price,
         priceSubtitle: body.priceSubtitle || "",
         features: body.features || [{ icon: "bi-check-circle-fill", text: "Característica" }],
         featured: false,
@@ -106,9 +112,10 @@ export async function GET(request) {
       };
     });
 
-    merged.sort((a, b) => a.sellerOrder - b.sellerOrder);
+    const validPlans = merged.filter((plan) => isValidPlanPrice(plan.price));
+    validPlans.sort((a, b) => a.sellerOrder - b.sellerOrder);
 
-    return NextResponse.json(merged);
+    return NextResponse.json(validPlans);
   } catch (error) {
     const status = error.message === "Unauthorized" ? 401 : 500;
     return NextResponse.json({ error: error.message }, { status });
@@ -135,7 +142,17 @@ export async function DELETE(request) {
       return NextResponse.json({ error: "Plan no encontrado" }, { status: 404 });
     }
 
-    await prisma.plan.delete({ where: { id } });
+    await prisma.sellerPlanOverride.upsert({
+      where: { sellerId_planId: { sellerId: sellerRecord.id, planId: id } },
+      create: {
+        sellerId: sellerRecord.id,
+        planId: id,
+        active: false,
+        order: plan.planOrder,
+        overrides: {},
+      },
+      update: { active: false },
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -117,6 +117,11 @@ const STATEMENTS = [
   `UPDATE "Seller" SET "bgVideoUrl" = '' WHERE "bgVideoUrl" IS NOT NULL AND "bgVideoUrl" != ''`,
   `DELETE FROM "Setting" WHERE key = 'bg_video_url'`,
 
+  // Desactiva planes heredados sin precio para que nunca se publiquen.
+  `UPDATE "Plan"
+   SET "active" = false
+   WHERE regexp_replace(COALESCE("price", ''), '[^0-9]', '', 'g') IN ('', '0')`,
+
   // Suscripciones y pagos
   `CREATE TABLE IF NOT EXISTS "Subscription" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),

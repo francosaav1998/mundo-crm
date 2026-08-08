@@ -602,7 +602,7 @@ function PlanCardEditor({ plan, idx, updatePlan, removePlan, updatePlanFeature, 
                 removePlan(idx);
               }
             }}
-            title="Eliminar plan"
+                     title="Ocultar plan de esta web"
             style={{
               width: 28,
               height: 28,

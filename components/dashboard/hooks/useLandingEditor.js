@@ -146,7 +146,7 @@ export function useLandingEditor({ showToast }) {
           category: "internet",
           speed: "200",
           speedLabel: "Megas",
-          price: "$0",
+          price: "$12.990",
           features: [{ icon: "bi-check-circle-fill", text: "Característica del plan" }],
         }),
       });
@@ -166,8 +166,10 @@ export function useLandingEditor({ showToast }) {
     const plan = plans[index];
     if (!plan?.id) return;
     try {
-      const res = await fetch(`/api/me/plans?id=${encodeURIComponent(plan.id)}`, {
-        method: "DELETE",
+      const res = await fetch("/api/me/plans", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ planId: plan.id, active: false }),
       });
       if (!res.ok) throw new Error("Error al eliminar plan");
       setPlans((prev) => prev.filter((_, i) => i !== index));
