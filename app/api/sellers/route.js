@@ -5,14 +5,28 @@ import { prisma } from "@/lib/prisma";
 import { normalizeWhatsAppNumber, inferGender, slugify } from "@/lib/seller";
 import { getSafeSellerSlug } from "@/lib/seller-slugs";
 import { buildDemoSeller, getDemoCompanySlug } from "@/lib/demo-seller";
-import { OFFICIAL_DEMO_COMPANIES } from "@/lib/demo-landings";
+import { OFFICIAL_DEMO_COMPANIES, getOfficialDemoCompanySlug } from "@/lib/demo-landings";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
     const slug = searchParams.get("slug");
+
+    if (id) {
+      const seller = await prisma.seller.findUnique({
+        where: { id },
+        include: {
+          company: true,
+          planOverrides: { include: { plan: true } },
+          _count: { select: { leads: true } },
+        },
+      });
+      if (!seller) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
+      return NextResponse.json(seller);
+    }
 
     if (slug) {
       let seller = await prisma.seller.findUnique({
@@ -31,28 +45,6 @@ export async function GET(request) {
         }
       }
       if (!seller) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
-
-      const subscription = seller.id
-        ? await prisma.subscription.findUnique({
-            where: { sellerId: seller.id },
-            select: { status: true, trialEndsAt: true },
-          })
-        : null;
-      const trialExpired =
-        subscription?.status === "trial" &&
-        subscription.trialEndsAt &&
-        new Date(subscription.trialEndsAt) < new Date();
-      if (trialExpired && seller.active) {
-        seller = await prisma.seller.update({
-          where: { id: seller.id },
-          data: { active: false },
-          include: {
-            company: true,
-            planOverrides: { include: { plan: true } },
-            _count: { select: { leads: true } },
-          },
-        });
-      }
       return NextResponse.json(seller);
     }
 
@@ -65,12 +57,17 @@ export async function GET(request) {
       },
     });
     const companies = await prisma.company.findMany({ where: { active: true } });
-    const sellerSlugs = new Set(sellers.map((seller) => seller.slug));
+    // Only official demo slugs are exposed in the company landing manager.
+    const visibleSellers = sellers.filter((seller) => {
+      if (!seller.slug.startsWith("demo-")) return true;
+      return Boolean(getOfficialDemoCompanySlug(seller.slug));
+    });
+    const sellerSlugs = new Set(visibleSellers.map((seller) => seller.slug));
     const demos = companies
       .filter((company) => OFFICIAL_DEMO_COMPANIES.includes(company.slug))
       .map((company) => buildDemoSeller(`demo-${company.slug}`, company))
       .filter((demo) => !sellerSlugs.has(demo.slug));
-    return NextResponse.json([...sellers, ...demos]);
+    return NextResponse.json([...visibleSellers, ...demos]);
   } catch (error) {
     const status = error.message === "Unauthorized" ? 401 : error.message === "Forbidden" ? 403 : 500;
     return NextResponse.json({ error: error.message }, { status });

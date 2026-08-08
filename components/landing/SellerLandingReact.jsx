@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
-import { updateSellerConfig, getSellerLabels, getWhatsAppUrl } from "@/lib/seller";
+import { updateSellerConfig, getSellerLabels } from "@/lib/seller";
 import { getCompanyVars } from "@/lib/company";
 import { getLandingContent, getMergedPlans } from "@/lib/landing";
 import MetaPixel from "@/components/landing/MetaPixel";
@@ -20,7 +20,6 @@ import WhatsAppFloat from "@/components/landing/WhatsAppFloat";
 import LeadModal from "@/components/landing/LeadModal";
 import PreviewWrapper from "@/components/landing/PreviewWrapper";
 import PreviewEditBootstrap from "@/components/landing/PreviewEditBootstrap";
-import { isTurnstileEnabled } from "@/lib/turnstile";
 
 export default function SellerLandingReact() {
   const params = useParams();
@@ -48,10 +47,6 @@ export default function SellerLandingReact() {
   const [modalPlan, setModalPlan] = useState("");
   const [previewState, setPreviewState] = useState(null);
   const [previewActiveSection, setPreviewActiveSection] = useState(null);
-  const [turnstileToken, setTurnstileToken] = useState("");
-  const [turnstileResetKey, setTurnstileResetKey] = useState(0);
-
-  const turnstileEnabled = !isPreview && isTurnstileEnabled();
 
   useEffect(() => {
     if (!isPreview || typeof window === "undefined") return;
@@ -89,7 +84,6 @@ export default function SellerLandingReact() {
     async function loadSeller() {
       try {
         const res = await fetch(`/api/sellers?slug=${encodeURIComponent(slug)}`, { cache: "no-store" });
-
         if (!res.ok) {
           if (res.status === 404) setError("Ejecutiva no encontrada");
           else setError("Error al cargar");
@@ -234,7 +228,6 @@ export default function SellerLandingReact() {
     e.preventDefault();
     setSubmitting(true);
     setFormStatus({ type: "", message: "" });
-    const whatsappWindow = typeof window !== "undefined" ? window.open("", "_blank") : null;
 
     try {
       const selectedPlan = plans.find((p) => p.value === formData.plan);
@@ -245,7 +238,6 @@ export default function SellerLandingReact() {
           ...formData,
           sellerId: seller?.id,
           planId: selectedPlan?.id,
-          turnstileToken,
         }),
       });
 
@@ -255,35 +247,10 @@ export default function SellerLandingReact() {
       }
 
       const labels = getSellerLabels(seller?.gender || "");
-      const whatsappMessage = [
-        `Hola ${seller?.name || ""}, quiero consultar por un plan.`,
-        "",
-        `Nombre: ${formData.name}`,
-        `Teléfono: ${formData.phone}`,
-        `Correo: ${formData.email || "No informado"}`,
-        `Ciudad/Comuna: ${formData.city}`,
-        `Dirección: ${formData.address}`,
-        `Plan de interés: ${formData.plan}`,
-      ].join("\n");
-      const whatsappUrl = getWhatsAppUrl(whatsappMessage, seller?.phone);
-      if (whatsappWindow) whatsappWindow.location.href = whatsappUrl;
-      else if (typeof window !== "undefined") window.open(whatsappUrl, "_blank");
-
       setFormStatus({ type: "success", message: `¡Solicitud enviada! Tu ${labels.executive} te contactará pronto.` });
-      setFormData((prev) => ({
-        ...prev,
-        name: "",
-        phone: "",
-        email: "",
-        city: "",
-        address: "",
-      }));
     } catch (error) {
-      if (whatsappWindow) whatsappWindow.close();
       setFormStatus({ type: "error", message: error.message });
     } finally {
-      setTurnstileToken("");
-      setTurnstileResetKey((value) => value + 1);
       setSubmitting(false);
     }
   };
@@ -413,10 +380,6 @@ export default function SellerLandingReact() {
             sellerLabels={sellerLabels}
             plans={mergedPlans}
             content={landingContent.coverage}
-            turnstileEnabled={turnstileEnabled}
-            turnstileToken={turnstileToken}
-            onTurnstileChange={setTurnstileToken}
-            turnstileResetKey={turnstileResetKey}
           />
         ))}
         {wrapPreview("benefits", "Beneficios", (
@@ -442,7 +405,6 @@ export default function SellerLandingReact() {
           initialPlan={modalPlan}
           sellerId={displaySeller?.id}
           sellerName={displaySeller?.name}
-          sellerPhone={displaySeller?.phone}
           plans={plans}
           companySlug={displayCompany?.slug || "mundo"}
         />

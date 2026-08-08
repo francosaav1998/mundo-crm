@@ -60,7 +60,10 @@ function RegistroFallback() {
 function RegistroPageInner() {
   const T = NEON_THEME.dark;
   const searchParams = useSearchParams();
-  const supabase = useMemo(() => createClient(), []);
+  const supabase = useMemo(() => {
+    if (typeof window === "undefined") return null;
+    return createClient();
+  }, []);
 
   const [form, setForm] = useState({
     name: "",
@@ -100,6 +103,7 @@ function RegistroPageInner() {
   // Si viene de OAuth, precargar datos del usuario
   useEffect(() => {
     if (searchParams.get("oauth") !== "true") return;
+    if (!supabase) return;
 
     let cancelled = false;
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -120,7 +124,7 @@ function RegistroPageInner() {
     return () => {
       cancelled = true;
     };
-  }, [searchParams, supabase.auth]);
+  }, [searchParams, supabase]);
 
   useEffect(() => {
     async function loadCompanies() {
@@ -142,7 +146,8 @@ function RegistroPageInner() {
   async function handleOAuth(provider) {
     setOauthLoading(true);
     setError("");
-    try {
+      try {
+      if (!supabase) throw new Error("Supabase no está configurado");
         const { error: err } = await supabase.auth.signInWithOAuth({
           provider,
           options: { redirectTo: `${window.location.origin}/auth/callback` },

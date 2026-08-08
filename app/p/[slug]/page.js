@@ -1,64 +1,56 @@
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import SellerLandingReact from "@/components/landing/SellerLandingReact";
-import { getOfficialDemoHash } from "@/lib/demo-landings";
-import { buildDemoSeller, getDemoCompanySlug } from "@/lib/demo-seller";
+import { getOfficialDemoCompanySlug } from "@/lib/demo-landings";
+
+// Mapa de companySlug → archivo HTML estático (Mundo usa React)
+const COMPANY_LANDING_MAP = {
+  claro: "/landings/ohxZn08.html",
+  entel: "/landings/GA9CU9o.html",
+  movistar: "/landings/cJKWAcQ.html",
+  vtr: "/landings/oOn6PS8.html",
+  wom: "/landings/v1Lz_Yo.html",
+};
 
 export const dynamic = "force-dynamic";
 
-export default async function SellerLandingPage({ params, searchParams }) {
+export default async function SellerLandingPage({ params }) {
   const { slug } = await params;
-  const { preview } = await searchParams;
-  const isPreview = preview === "1";
+  let companySlug = null;
+  let seller = null;
 
-  // Las demos antiguas quedan bloqueadas; Mundo conserva la landing de vendedor.
-  if (getDemoCompanySlug(slug) && getDemoCompanySlug(slug) !== "mundo") {
-    notFound();
+  // 1. Si es slug demo (demo-claro, demo-mundo, etc.) → compañía directo
+  const demoCompany = getOfficialDemoCompanySlug(slug);
+  if (demoCompany) {
+    companySlug = demoCompany;
   }
 
-  let seller = await prisma.seller.findUnique({
-    where: { slug },
-    include: { company: true },
-  });
-
-  if (!seller) {
-    const companySlug = getDemoCompanySlug(slug);
-    if (companySlug) {
-      const company =
-        (await prisma.company.findUnique({ where: { slug: companySlug } })) ||
-        (companySlug === "mundo"
-          ? {
-              slug: "mundo",
-              name: "Mundo",
-              brandColor: "#00748E",
-              brandColorDark: "#005A6F",
-              secondaryColor: "#FDDC02",
-              accentColor: "#FF8000",
-              logoUrl: "https://www.tumundo.cl/wp-content/uploads/2022/12/logo-mundo-negative.svg",
-              websiteUrl: "https://www.tumundo.cl",
-            }
-          : null);
-      if (company) seller = buildDemoSeller(slug, company);
+  // 2. Si no es demo, buscar vendedor real en BD
+  if (!companySlug) {
+    seller = await prisma.seller.findUnique({
+      where: { slug },
+      include: { company: true },
+    });
+    if (seller) {
+      companySlug = seller.company?.slug || null;
     }
   }
 
-  if (!seller) {
-    redirect("/");
-  }
-
-  if (seller.active === false) {
-    // Renderiza la landing React pausada (tiene su propia pantalla de inactivo).
+  // 3. Mundo siempre usa React (demo-mundo y vendedores reales de Mundo)
+  if (companySlug === "mundo") {
     return <SellerLandingReact />;
   }
 
-  const hash = getOfficialDemoHash(seller.company?.slug);
-  const query = seller.id
-    ? `id=${encodeURIComponent(seller.id)}`
-    : `slug=${encodeURIComponent(slug)}`;
-
-  if (!isPreview && hash) {
-    redirect(`/landings/${hash}.html?${query}`);
+  // 4. Vendedor inactivo (no Mundo) → pantalla de pausa en React
+  if (seller && seller.active === false) {
+    return <SellerLandingReact />;
   }
 
-  return <SellerLandingReact />;
+  // 5. Si tenemos compañía y existe HTML para ella → redirigir
+  if (companySlug && COMPANY_LANDING_MAP[companySlug]) {
+    redirect(`${COMPANY_LANDING_MAP[companySlug]}?slug=${encodeURIComponent(slug)}`);
+  }
+
+  // 6. Sin compañía conocida → homepage
+  redirect("/");
 }

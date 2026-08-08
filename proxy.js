@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { updateSession } from "@/lib/supabase/proxy";
 import { getRootDomain, getSellerSubdomain } from "@/lib/urls";
-import { getOfficialDemoCompanySlug, getOfficialDemoHash } from "@/lib/demo-landings";
+import { getOfficialDemoCompanySlug, getOfficialDemoPath } from "@/lib/demo-landings";
 
 function buildRootUrl(request, pathname) {
   const appOrigin = String(process.env.NEXT_PUBLIC_APP_URL || "").replace(/\/$/, "");
@@ -39,7 +39,7 @@ export async function proxy(request) {
     return NextResponse.redirect(new URL("/dashboard/login", request.url));
   }
 
-  const isPublicRootPath = pathname === "/";
+const isPublicRootPath = pathname === "/";
   const isProtectedOrSystemPath =
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/api") ||
@@ -60,10 +60,10 @@ export async function proxy(request) {
 
   if (sellerSubdomain?.startsWith("demo-") && isPublicRootPath) {
     const companySlug = getOfficialDemoCompanySlug(sellerSubdomain);
-    const landingHash = getOfficialDemoHash(companySlug);
-    if (landingHash) {
+    const landingPath = getOfficialDemoPath(companySlug);
+    if (landingPath) {
       const rewriteUrl = request.nextUrl.clone();
-      rewriteUrl.pathname = `/landings/${landingHash}.html`;
+      rewriteUrl.pathname = landingPath;
       rewriteUrl.searchParams.set("slug", sellerSubdomain);
       return NextResponse.rewrite(rewriteUrl);
     }
