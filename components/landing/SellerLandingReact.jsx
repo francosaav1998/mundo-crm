@@ -376,6 +376,7 @@ export default function SellerLandingReact() {
             featuredPlan={featuredPlan}
             plans={mergedPlans}
             content={landingContent.hero}
+            sellerPhotoUrl={sellerPhoto}
           />
         ))}
         {wrapPreview("seller", "Vendedor", (

@@ -243,33 +243,8 @@ export function HeroControls({ content, updateContent, T, isMobile = false }) {
 }
 
 export function BenefitsSliderControls({ content, updateContent, updateArrayItem, addArrayItem, removeArrayItem, T, isMobile = false }) {
-  const [uploadingBg, setUploadingBg] = useState(false);
-
-  const handleBackgroundUpload = async (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    setUploadingBg(true);
-    try {
-      const data = await uploadImage(file, "seller");
-      updateContent({ backgroundImageUrl: data.url });
-    } catch (err) {
-      alert(err.message || "Error al subir imagen");
-    } finally {
-      setUploadingBg(false);
-      event.target.value = "";
-    }
-  };
-
   return (
     <>
-      <SectionBlock title="Fondo de la franja" T={T}>
-        <Field label="URL de la imagen" help="Se aplica detrás de las diapositivas de beneficios. Déjala vacía para usar el fondo normal." T={T}>
-          <Input type="text" T={T} value={content.backgroundImageUrl || ""} onChange={(e) => updateContent({ backgroundImageUrl: e.target.value })} placeholder="https://.../mi-imagen.jpg" />
-        </Field>
-        <Field label="Subir imagen" help="También puedes subir una imagen desde tu computador." T={T}>
-          <FilePicker onChange={handleBackgroundUpload} disabled={uploadingBg} uploading={uploadingBg} T={T} />
-        </Field>
-      </SectionBlock>
       <SectionBlock title="Diapositivas" T={T}>
         {(content.items || []).map((item, idx) => (
           <div

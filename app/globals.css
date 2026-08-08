@@ -614,6 +614,8 @@ button, a, input, select, textarea {
   margin-bottom: var(--space-fluid-sm);
 }
 
+.hero-seller-mobile-photo { display: none; }
+
 .hero-content h1 span {
   color: var(--color-secondary);
   display: block;
@@ -1463,6 +1465,17 @@ button, a, input, select, textarea {
 }
 
 @media (max-width: 768px) {
+  .hero-seller-mobile-photo {
+    display: block;
+    width: 96px;
+    height: 96px;
+    margin: 0 auto 1rem;
+    position: relative;
+    overflow: hidden;
+    border: 3px solid var(--color-secondary);
+    border-radius: 50%;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .35);
+  }
   .container { padding: 0 1rem; }
   html { scroll-padding-top: 70px; }
   .nav-links {

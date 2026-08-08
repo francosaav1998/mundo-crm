@@ -15,20 +15,11 @@ export default function BenefitsSlider({ content = {} }) {
   const c = content || {};
   const items = Array.isArray(c.items) && c.items.length > 0 ? c.items : DEFAULT_ITEMS;
   const loop = [...items, ...items];
-  const backgroundImageUrl = String(c.backgroundImageUrl || "").trim();
-  const sectionStyle = backgroundImageUrl
-    ? {
-        backgroundImage: `linear-gradient(135deg, rgba(10, 14, 26, 0.88) 0%, rgba(10, 14, 26, 0.68) 100%), url("${backgroundImageUrl}")`,
-        backgroundPosition: "center",
-        backgroundSize: "cover",
-      }
-    : undefined;
 
   return (
     <section
-      className={`benefits-slider-section${backgroundImageUrl ? " benefits-slider-section--photo" : ""}`}
+      className="benefits-slider-section"
       aria-label="Beneficios destacados"
-      style={sectionStyle}
     >
       <div className="benefits-slider">
         <div className="benefits-track">
