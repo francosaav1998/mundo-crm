@@ -205,6 +205,21 @@ export default function SettingsForm({
               {uploadingPhoto ? "Subiendo..." : "Subir Foto"}
               <input type="file" accept="image/*" disabled={uploadingPhoto} onChange={handlePhotoUpload} style={{ display: "none" }} />
             </label>
+            {settings.sellerPhoto && (
+              <button
+                type="button"
+                onClick={() => onUpdateSettings({ sellerPhoto: "" })}
+                style={{
+                  ...uploadBtnStyle,
+                  background: "rgba(239, 68, 68, 0.10)",
+                  borderColor: "rgba(239, 68, 68, 0.28)",
+                  color: "#EF4444",
+                }}
+              >
+                <i className="bi bi-trash3-fill"></i>
+                Eliminar foto
+              </button>
+            )}
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
