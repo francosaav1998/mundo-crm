@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import EditableText from "./EditableText";
 
 export default function Hero({
@@ -12,7 +11,6 @@ export default function Hero({
   featuredPlan = null,
   plans = [],
   content = {},
-  sellerPhotoUrl = "",
 }) {
   const companyName = company?.name || "Mundo";
   const c = content || {};
@@ -51,11 +49,6 @@ export default function Hero({
       </div>
       <div className="container">
         <div className="hero-content">
-          {sellerPhotoUrl && (
-            <div className="hero-seller-mobile-photo">
-              <Image src={sellerPhotoUrl} alt="Foto del vendedor" fill sizes="96px" unoptimized style={{ objectFit: "cover" }} />
-            </div>
-          )}
           <span className="badge-promo">
             <i className={`bi ${activeSlide.icon || "bi-lightning-charge-fill"}`}></i>{" "}
             <EditableText path={`hero.slides.${activeIndex}.badge`}>{activeSlide.badge || c.badge || "Promociones de Invierno"}</EditableText>
