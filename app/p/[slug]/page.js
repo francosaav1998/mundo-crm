@@ -13,8 +13,9 @@ const COMPANY_LANDING_MAP = {
 
 export const dynamic = "force-dynamic";
 
-export default async function SellerLandingPage({ params }) {
+export default async function SellerLandingPage({ params, searchParams }) {
   const { slug } = await params;
+  const preview = (await searchParams)?.preview === "1";
   let companySlug = null;
   let seller = null;
 
@@ -43,7 +44,9 @@ export default async function SellerLandingPage({ params }) {
   if (seller && seller.active === false) return <SellerLandingReact />;
 
   if (companySlug && COMPANY_LANDING_MAP[companySlug]) {
-    redirect(`${COMPANY_LANDING_MAP[companySlug]}?slug=${encodeURIComponent(slug)}`);
+    const query = new URLSearchParams({ slug });
+    if (preview) query.set("preview", "1");
+    redirect(`${COMPANY_LANDING_MAP[companySlug]}?${query.toString()}`);
   }
 
   // Sin compañía conocida → homepage
