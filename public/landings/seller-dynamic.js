@@ -47,6 +47,19 @@
           setHeroBackground(Number(active?.dataset.index || 0));
         });
         observer.observe(hero, { subtree: true, attributes: true, attributeFilter: ["class"] });
+
+        let touchStartX = null;
+        hero.addEventListener("touchstart", (event) => {
+          touchStartX = event.touches[0]?.clientX ?? null;
+        }, { passive: true });
+        hero.addEventListener("touchend", (event) => {
+          if (touchStartX === null) return;
+          const delta = event.changedTouches[0]?.clientX - touchStartX;
+          touchStartX = null;
+          if (Math.abs(delta) < 45) return;
+          const control = delta < 0 ? document.getElementById("heroNext") : document.getElementById("heroPrev");
+          control?.click();
+        }, { passive: true });
       }
 
       function formatPhone(p) {

@@ -13,8 +13,9 @@ const COMPANY_LANDING_MAP = {
 
 export const dynamic = "force-dynamic";
 
-export default async function SellerLandingPage({ params }) {
+export default async function SellerLandingPage({ params, searchParams }) {
   const { slug } = await params;
+  const preview = (await searchParams)?.preview === "1";
   let companySlug = null;
   let seller = null;
 
@@ -37,6 +38,10 @@ export default async function SellerLandingPage({ params }) {
 
   // Mundo usa React; las otras compañías conservan su frontend original.
   if (companySlug === "mundo") {
+    return <SellerLandingReact />;
+  }
+
+  if (preview && (companySlug || seller)) {
     return <SellerLandingReact />;
   }
 

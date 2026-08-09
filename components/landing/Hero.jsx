@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import EditableText from "./EditableText";
 
 export default function Hero({
@@ -27,6 +27,19 @@ export default function Hero({
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const touchStartX = useRef(null);
+
+  const handleTouchStart = (event) => {
+    touchStartX.current = event.touches[0]?.clientX ?? null;
+  };
+
+  const handleTouchEnd = (event) => {
+    if (touchStartX.current === null) return;
+    const delta = event.changedTouches[0]?.clientX - touchStartX.current;
+    touchStartX.current = null;
+    if (Math.abs(delta) < 45 || slides.length < 2) return;
+    setActiveIndex((previous) => (previous + (delta < 0 ? 1 : -1) + slides.length) % slides.length);
+  };
 
   useEffect(() => {
     if (isPreview || slides.length <= 1 || isPaused) return;
@@ -44,7 +57,7 @@ export default function Hero({
     : undefined;
 
   return (
-    <section id="inicio" className={`hero hero-slide-${activeSlideIndex + 1}`} onMouseEnter={() => setIsPaused(true)} onMouseLeave={() => setIsPaused(false)}>
+    <section id="inicio" className={`hero hero-slide-${activeSlideIndex + 1}`} onMouseEnter={() => setIsPaused(true)} onMouseLeave={() => setIsPaused(false)} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
       <div className="hero-backgrounds" aria-hidden="true">
         <div className="hero-background-slide active" style={slideStyle} />
       </div>
