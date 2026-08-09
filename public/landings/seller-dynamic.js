@@ -24,6 +24,30 @@
       const name = seller.name || "Ejecutivo";
       const photo = seller.photo || "";
       const bio = seller.bio || "";
+      const heroContent = seller.landingContent?.hero || {};
+      const heroImages = Array.from(new Set([
+        heroContent.backgroundImageUrl,
+        ...(Array.isArray(heroContent.backgroundImages) ? heroContent.backgroundImages : []),
+      ].filter((url) => typeof url === "string" && url.trim())));
+
+      const hero = document.querySelector(".hero");
+      const heroSlides = Array.from(document.querySelectorAll(".hero-slide"));
+      const setHeroBackground = (index = 0) => {
+        if (!hero) return;
+        const image = heroImages.length ? heroImages[index % heroImages.length] : "";
+        hero.style.backgroundImage = image
+          ? `linear-gradient(90deg, var(--hero-overlay-1) 0%, var(--hero-overlay-2) 55%, var(--hero-overlay-3) 100%), url("${image}")`
+          : "none";
+        hero.style.backgroundColor = "var(--bg-2)";
+      };
+      setHeroBackground(0);
+      if (hero && heroSlides.length > 0) {
+        const observer = new MutationObserver(() => {
+          const active = hero.querySelector(".hero-slide.active");
+          setHeroBackground(Number(active?.dataset.index || 0));
+        });
+        observer.observe(hero, { subtree: true, attributes: true, attributeFilter: ["class"] });
+      }
 
       function formatPhone(p) {
         if (!p || p.length < 11) return "+56 9 0000 0000";
