@@ -6,6 +6,7 @@ import RippleButton from "@/components/ui/RippleButton";
 import SectionHeader from "@/components/dashboard/ui/SectionHeader";
 import { normalizeB2BBranding } from "@/lib/b2b-branding";
 import { B2B_MOBILE_CSS } from "@/lib/b2b-mobile";
+import { B2B_HERO_SCRIPT } from "@/lib/b2b-hero";
 
 export default function B2BLandingEditor({ T, isMobile, showToast }) {
   const [loading, setLoading] = useState(true);
@@ -548,13 +549,15 @@ function getB2BPreviewDocument({ body, css, editable }) {
         if (!${editable ? "true" : "false"}) return;
 
         const marqueeItems = Array.from(root.querySelectorAll('.marquee-item')).filter((el) => el.textContent && el.textContent.trim());
+        const heroElements = Array.from(root.querySelectorAll('.hero-content h1,.hero-content p,.hero-card-title,.hero-card-subtitle,.hero-card-price,.hero-card-price-sub,.hero-card-features li,.hero-ctas a')).filter((el) => el.textContent && el.textContent.trim());
         const textElements = Array.from(root.querySelectorAll(EDITABLE_SELECTOR)).filter((el) => {
           if (el.classList.contains('marquee-item')) return false;
           if (el.closest('.marquee-item')) return false;
+          if (el.closest('.hero')) return false;
           if (!el.textContent || !el.textContent.trim()) return false;
           return !el.querySelector('h1,h2,h3,h4,h5,h6,p,span,a,button,li,strong,small,label');
         });
-        const elements = [...marqueeItems, ...textElements];
+        const elements = [...new Set([...marqueeItems, ...heroElements, ...textElements])];
 
         elements.forEach((el) => {
           el.setAttribute("data-b2b-editable", "true");
@@ -608,7 +611,7 @@ function getB2BPreviewDocument({ body, css, editable }) {
     </head>
     <body>
       <div id="b2b-preview-root">${body}</div>
-      <script>${previewScript}</script>
+         <script>${B2B_HERO_SCRIPT}${previewScript}</script>
     </body>
   </html>`;
 }
