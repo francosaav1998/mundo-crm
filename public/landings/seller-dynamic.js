@@ -32,6 +32,40 @@
 
       const hero = document.querySelector(".hero");
       const heroSlides = Array.from(document.querySelectorAll(".hero-slide"));
+      const setTextWithIcon = (element, value) => {
+        if (!element || value === undefined || value === null) return;
+        const icon = element.querySelector("i");
+        element.textContent = "";
+        if (icon) element.appendChild(icon);
+        element.appendChild(document.createTextNode(` ${value}`));
+      };
+      const applyHeroContent = (content) => {
+        const heroData = content?.hero || {};
+        const slides = Array.isArray(heroData.slides) && heroData.slides.length > 0 ? heroData.slides : [heroData];
+        heroSlides.forEach((slide, index) => {
+          const data = slides[index];
+          if (!data) return;
+          const title = slide.querySelector(".hero-title, h1");
+          const description = slide.querySelector(".hero-content p");
+          const buttons = slide.querySelectorAll(".hero-ctas a");
+          const badge = slide.querySelector(".badge-promo");
+          const highlight = data.titleHighlight || "";
+          if (title && data.title) {
+            title.textContent = "";
+            title.appendChild(document.createTextNode(data.title + " "));
+            if (highlight) {
+              const span = document.createElement("span");
+              span.textContent = highlight;
+              title.appendChild(span);
+            }
+          }
+          if (description && data.description) description.textContent = data.description;
+          if (badge && data.badge) setTextWithIcon(badge, data.badge);
+          if (buttons[0] && data.ctaPrimary) buttons[0].textContent = data.ctaPrimary;
+          if (buttons[1] && data.ctaSecondary) buttons[1].textContent = data.ctaSecondary;
+        });
+      };
+      applyHeroContent(seller.landingContent);
       const setHeroBackground = (index = 0) => {
         if (!hero) return;
         const image = heroImages.length ? heroImages[index % heroImages.length] : "";
@@ -60,6 +94,21 @@
           const control = delta < 0 ? document.getElementById("heroNext") : document.getElementById("heroPrev");
           control?.click();
         }, { passive: true });
+      }
+
+      if (new URLSearchParams(window.location.search).get("preview") === "1") {
+        window.parent?.postMessage({ type: "LANDING_PREVIEW_READY" }, window.location.origin);
+        window.addEventListener("message", (event) => {
+          if (event.origin !== window.location.origin || event.source !== window.parent) return;
+          if (event.data?.type === "LANDING_PREVIEW_UPDATE") {
+            applyHeroContent(event.data.payload?.content);
+            if (event.data.payload?.profile?.photo) {
+              document.querySelectorAll(".seller-avatar-wrapper img").forEach((image) => {
+                image.src = event.data.payload.profile.photo;
+              });
+            }
+          }
+        });
       }
 
       function formatPhone(p) {
