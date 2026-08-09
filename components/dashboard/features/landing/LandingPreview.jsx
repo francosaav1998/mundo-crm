@@ -251,6 +251,7 @@ export default function LandingPreview({
                   company={company}
                   featuredPlan={featuredPlan}
                   content={content.hero}
+                  isPreview
                 />
               </SectionFrame>
 

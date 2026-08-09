@@ -24,6 +24,10 @@ export default function PreviewEditBootstrap() {
       a, button {
         pointer-events: none !important;
       }
+      .hero-carousel-controls,
+      .hero-carousel-controls button {
+        pointer-events: auto !important;
+      }
       [data-edit] {
         pointer-events: auto !important;
       }
@@ -67,15 +71,22 @@ export default function PreviewEditBootstrap() {
       }
     };
 
-    const elements = Array.from(document.querySelectorAll("[data-edit]"));
-    elements.forEach((el) => {
+    const elements = new Set();
+    const bindElement = (el) => {
+      if (elements.has(el)) return;
+      elements.add(el);
       el.contentEditable = "true";
       el.addEventListener("focus", handleFocus);
       el.addEventListener("blur", handleBlur);
       el.addEventListener("keydown", handleKeyDown);
-    });
+    };
+    const bindAll = () => document.querySelectorAll("[data-edit]").forEach(bindElement);
+    bindAll();
+    const observer = new MutationObserver(bindAll);
+    observer.observe(document.body, { childList: true, subtree: true });
 
     return () => {
+      observer.disconnect();
       elements.forEach((el) => {
         el.contentEditable = "false";
         el.removeEventListener("focus", handleFocus);

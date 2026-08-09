@@ -11,6 +11,7 @@ export default function Hero({
   featuredPlan = null,
   plans = [],
   content = {},
+  isPreview = false,
 }) {
   const companyName = company?.name || "Mundo";
   const c = content || {};
@@ -28,12 +29,12 @@ export default function Hero({
   const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
-    if (slides.length <= 1 || isPaused) return;
+    if (isPreview || slides.length <= 1 || isPaused) return;
     const interval = setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % slides.length);
     }, 5500);
     return () => clearInterval(interval);
-  }, [isPaused, slides.length]);
+  }, [isPaused, isPreview, slides.length]);
 
   const activeSlideIndex = Math.min(activeIndex, slides.length - 1);
   const activeSlide = slides[activeSlideIndex] || slides[0];
@@ -80,7 +81,7 @@ export default function Hero({
               <EditableText path="hero.cardBadge">{c.cardBadge || "¡El más vendido!"}</EditableText>
             </span>
             <div className="hero-card-title">
-              {companyName.toUpperCase()}{" "}
+              <EditableText path="hero.cardCompanyName">{c.cardCompanyName || companyName.toUpperCase()}</EditableText>{" "}
               <EditableText path="hero.cardTitleSuffix">{c.cardTitleSuffix || "FIBRA"}</EditableText>
             </div>
             <div className="hero-card-subtitle">
@@ -99,7 +100,7 @@ export default function Hero({
               ) : (
                 <EditableText path="hero.cardFallbackPrice">{c.cardFallbackPrice || "Desde $12.990"}</EditableText>
               )}{" "}
-              <span>/ mes</span>
+              <EditableText path="hero.cardPricePeriod">{c.cardPricePeriod || "/ mes"}</EditableText>
             </div>
             <div className="hero-card-price-sub">
               {featuredPlan ? (
@@ -128,10 +129,10 @@ export default function Hero({
               })}
               {!featuredPlan && (
                 <>
-                  <li><i className="bi bi-check-circle-fill"></i> Velocidad simétrica de alta capacidad</li>
-                  <li><i className="bi bi-check-circle-fill"></i> Router Wi-Fi de última generación</li>
-                  <li><i className="bi bi-check-circle-fill"></i> Instalación fibra óptica directa al hogar</li>
-                  <li><i className="bi bi-check-circle-fill"></i> Soporte técnico prioritario</li>
+                   <li><i className="bi bi-check-circle-fill"></i> <EditableText path="hero.cardFallbackFeature1">{c.cardFallbackFeature1 || "Velocidad simétrica de alta capacidad"}</EditableText></li>
+                   <li><i className="bi bi-check-circle-fill"></i> <EditableText path="hero.cardFallbackFeature2">{c.cardFallbackFeature2 || "Router Wi-Fi de última generación"}</EditableText></li>
+                   <li><i className="bi bi-check-circle-fill"></i> <EditableText path="hero.cardFallbackFeature3">{c.cardFallbackFeature3 || "Instalación fibra óptica directa al hogar"}</EditableText></li>
+                   <li><i className="bi bi-check-circle-fill"></i> <EditableText path="hero.cardFallbackFeature4">{c.cardFallbackFeature4 || "Soporte técnico prioritario"}</EditableText></li>
                 </>
               )}
             </ul>
