@@ -290,6 +290,11 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
       setActiveSection("seller");
       return;
     }
+    if (parts[0] === "staticText" && parts[1]) {
+      updateContent("staticText", { [parts[1]]: value });
+      setActiveSection("hero");
+      return;
+    }
     if (parts[0] === "plan" && !Number.isNaN(Number(parts[1]))) {
       const planIndex = Number(parts[1]);
       const field = parts[2];
