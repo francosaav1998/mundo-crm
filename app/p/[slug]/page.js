@@ -3,15 +3,6 @@ import { prisma } from "@/lib/prisma";
 import SellerLandingReact from "@/components/landing/SellerLandingReact";
 import { getOfficialDemoCompanySlug } from "@/lib/demo-landings";
 
-// Mapa de companySlug → archivo HTML estático (Mundo usa React)
-const COMPANY_LANDING_MAP = {
-  claro: "/landings/ohxZn08.html",
-  entel: "/landings/GA9CU9o.html",
-  movistar: "/landings/cJKWAcQ.html",
-  vtr: "/landings/oOn6PS8.html",
-  wom: "/landings/v1Lz_Yo.html",
-};
-
 export const dynamic = "force-dynamic";
 
 export default async function SellerLandingPage({ params }) {
@@ -36,21 +27,12 @@ export default async function SellerLandingPage({ params }) {
     }
   }
 
-  // 3. Mundo siempre usa React (demo-mundo y vendedores reales de Mundo)
-  if (companySlug === "mundo") {
+  // Todas las compañías usan la landing React para compartir la configuración
+  // del dashboard, incluido el fondo opcional del hero.
+  if (companySlug || seller) {
     return <SellerLandingReact />;
   }
 
-  // 4. Vendedor inactivo (no Mundo) → pantalla de pausa en React
-  if (seller && seller.active === false) {
-    return <SellerLandingReact />;
-  }
-
-  // 5. Si tenemos compañía y existe HTML para ella → redirigir
-  if (companySlug && COMPANY_LANDING_MAP[companySlug]) {
-    redirect(`${COMPANY_LANDING_MAP[companySlug]}?slug=${encodeURIComponent(slug)}`);
-  }
-
-  // 6. Sin compañía conocida → homepage
+  // Sin compañía conocida → homepage
   redirect("/");
 }
