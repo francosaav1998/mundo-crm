@@ -14,8 +14,7 @@ const VARS = [
   { tag: "{{ciudad}}", label: "Ciudad" },
   { tag: "{{direccion}}", label: "Dirección" },
   { tag: "{{plan}}", label: "Plan" },
-  { tag: "{{estado}}", label: "Estado" },
-  { tag: "{{link}}", label: "Link registro" },
+  { tag: "{{link}}", label: "Link de tu landing" },
 ];
 
 const SELLER_DEFAULT_TEMPLATES = [
@@ -119,7 +118,7 @@ function getInitialWhatsAppState(isAdmin = false) {
   };
 }
 
-export default function BulkWhatsApp({ leads, T, isMobile, showToast, defaultMessage = "", isAdmin = false }) {
+export default function BulkWhatsApp({ leads, T, isMobile, showToast, defaultMessage = "", isAdmin = false, sellerLandingUrl = "/" }) {
   const initial = useMemo(() => getInitialWhatsAppState(isAdmin), [isAdmin]);
   const [templates, setTemplates] = useState(initial.templates);
   const [selectedTemplateId, setSelectedTemplateId] = useState(initial.selectedTemplateId);
@@ -133,8 +132,10 @@ export default function BulkWhatsApp({ leads, T, isMobile, showToast, defaultMes
   const [newTemplateName, setNewTemplateName] = useState("");
   const [showAddTemplate, setShowAddTemplate] = useState(false);
 
-  const signupUrl = `${getAppOrigin() || (typeof window !== "undefined" ? window.location.origin : "")}/registro`;
-  const enrichLead = (lead) => (lead ? { ...lead, link: signupUrl } : lead);
+  const appOrigin = getAppOrigin() || (typeof window !== "undefined" ? window.location.origin : "");
+  const landingUrl = isAdmin ? `${appOrigin}/` : sellerLandingUrl || `${appOrigin}/`;
+  const enrichLead = (lead) => (lead ? { ...lead, link: landingUrl } : lead);
+  const renderMessage = (template, lead) => renderTemplate(String(template || "").replace(/\{\{estado\}\}/gi, ""), enrichLead(lead));
 
   useEffect(() => {
     localStorage.setItem(getStorageKey(isAdmin), JSON.stringify(templates));
@@ -201,13 +202,13 @@ export default function BulkWhatsApp({ leads, T, isMobile, showToast, defaultMes
   };
 
   const sendToLead = (lead) => {
-    openLink(getWhatsAppUrl(lead.phone, renderTemplate(bulkTemplate, enrichLead(lead))));
+    openLink(getWhatsAppUrl(lead.phone, renderMessage(bulkTemplate, lead)));
     setSentIds((prev) => (prev.includes(lead.id) ? prev : [...prev, lead.id]));
     showToast(`WhatsApp abierto para ${lead.name}`);
   };
 
   const copyBulkLinks = async () => {
-    const lines = selectedBulkLeads.map((lead) => `${lead.name} (+56 ${lead.phone}): ${getWhatsAppUrl(lead.phone, renderTemplate(bulkTemplate, enrichLead(lead)))}`);
+    const lines = selectedBulkLeads.map((lead) => `${lead.name} (+56 ${lead.phone}): ${getWhatsAppUrl(lead.phone, renderMessage(bulkTemplate, lead))}`);
     await navigator.clipboard.writeText(lines.join("\n"));
     showToast(`${lines.length} enlaces personalizados copiados al portapapeles`);
   };
@@ -291,7 +292,7 @@ export default function BulkWhatsApp({ leads, T, isMobile, showToast, defaultMes
                 <div style={{ fontSize: "11px", color: "#8696A0", marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>
                   <i className="bi bi-person-fill"></i> {bulkPreviewLead.name} · +56 {bulkPreviewLead.phone} · {bulkPreviewLead.city}
                 </div>
-                {renderTemplate(bulkTemplate, enrichLead(bulkPreviewLead)) || <span style={{ opacity: 0.5 }}>Escribe la plantilla para ver el resultado...</span>}
+                {renderMessage(bulkTemplate, bulkPreviewLead) || <span style={{ opacity: 0.5 }}>Escribe la plantilla para ver el resultado...</span>}
               </>
             ) : (
               <span style={{ opacity: 0.5, fontStyle: "italic" }}>Selecciona clientes para previsualizar el mensaje.</span>

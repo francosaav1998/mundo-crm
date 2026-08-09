@@ -9,6 +9,7 @@ import { useMediaQuery } from "./dashboard/hooks/useMediaQuery";
 import { useSettings } from "./dashboard/hooks/useSettings";
 import { useLeads } from "./dashboard/hooks/useLeads";
 import { NEON_THEME } from "@/lib/dashboard/constants";
+import { buildSellerLandingUrl } from "@/lib/urls";
 import { pageTransition } from "@/lib/animations";
 import DashboardLayout from "./dashboard/DashboardLayout";
 import DashboardOverview from "./dashboard/DashboardOverview";
@@ -102,6 +103,7 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
   } = useSettings({ isAdmin });
 
   const onboardingNeeded = !isAdmin && !lockedToBilling && (!sellerInfo?.photo || !sellerInfo?.bio || !sellerInfo?.phone);
+  const sellerLandingUrl = !isAdmin && sellerSlug ? buildSellerLandingUrl(sellerSlug) : "/";
 
   const {
     leads,
@@ -319,6 +321,7 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
                   T={T}
                   isMobile={isMobile}
                   sellerName={sellerInfo?.name || settings.sellerName || username}
+                  sellerLandingUrl={sellerLandingUrl}
                   showToast={showToast}
                   isAdmin={isAdmin}
                 />
@@ -331,6 +334,7 @@ export default function DashboardClient({ initialLeads = [], initialTotal = 0, i
                   isMobile={isMobile}
                   showToast={showToast}
                   defaultMessage={settings.sellerMsg}
+                  sellerLandingUrl={sellerLandingUrl}
                   isAdmin={isAdmin}
                 />
               )}

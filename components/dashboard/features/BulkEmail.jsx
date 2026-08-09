@@ -18,8 +18,7 @@ const VARS = [
   { tag: "{{ciudad}}", label: "Ciudad" },
   { tag: "{{direccion}}", label: "Dirección" },
   { tag: "{{plan}}", label: "Plan" },
-  { tag: "{{estado}}", label: "Estado" },
-  { tag: "{{link}}", label: "Link registro" },
+  { tag: "{{link}}", label: "Link de tu landing" },
 ];
 
 const SELLER_DEFAULT_TEMPLATES = [
@@ -116,7 +115,7 @@ function getInitialEmailState(isAdmin = false) {
   };
 }
 
-export default function BulkEmail({ leads, T, isMobile, sellerName, showToast, isAdmin = false }) {
+export default function BulkEmail({ leads, T, isMobile, sellerName, showToast, isAdmin = false, sellerLandingUrl = "/" }) {
   const initial = useMemo(() => getInitialEmailState(isAdmin), [isAdmin]);
   const [templates, setTemplates] = useState(initial.templates);
   const [selectedTemplateId, setSelectedTemplateId] = useState(initial.selectedTemplateId);
@@ -130,8 +129,10 @@ export default function BulkEmail({ leads, T, isMobile, sellerName, showToast, i
   const [newTemplateName, setNewTemplateName] = useState("");
   const [showAddTemplate, setShowAddTemplate] = useState(false);
 
-  const signupUrl = `${getAppOrigin() || (typeof window !== "undefined" ? window.location.origin : "")}/registro`;
-  const enrichLead = (lead) => (lead ? { ...lead, link: signupUrl } : lead);
+  const appOrigin = getAppOrigin() || (typeof window !== "undefined" ? window.location.origin : "");
+  const landingUrl = isAdmin ? `${appOrigin}/` : sellerLandingUrl || `${appOrigin}/`;
+  const enrichLead = (lead) => (lead ? { ...lead, link: landingUrl } : lead);
+  const renderMessage = (template, lead) => renderTemplate(String(template || "").replace(/\{\{estado\}\}/gi, ""), enrichLead(lead));
 
   useEffect(() => {
     localStorage.setItem(getStorageKey(isAdmin), JSON.stringify(templates));
@@ -221,10 +222,9 @@ export default function BulkEmail({ leads, T, isMobile, sellerName, showToast, i
   };
 
   const getRendered = (lead) => {
-    const enriched = enrichLead(lead);
     return {
-      subject: renderTemplate(subject, enriched),
-      body: renderTemplate(body, enriched) + `\n\n— ${sellerName || (isAdmin ? "Equipo CRM Vendedor Mundo" : "Tu ejecutivo/a Mundo")}`,
+      subject: renderMessage(subject, lead),
+      body: renderMessage(body, lead) + `\n\n— ${sellerName || (isAdmin ? "Equipo CRM Vendedor Mundo" : "Tu ejecutivo/a Mundo")}`,
     };
   };
 
