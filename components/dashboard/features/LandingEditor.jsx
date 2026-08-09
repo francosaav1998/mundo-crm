@@ -303,7 +303,7 @@ export default function LandingEditor({ sellerInfo, T, isMobile, showToast }) {
       setActiveSection("plans");
       return;
     }
-    const arrayKeys = new Set(["stats", "items", "steps", "navLinks", "links"]);
+    const arrayKeys = new Set(["stats", "items", "steps", "navLinks", "links", "slides"]);
     const section = parts[0];
     const sub = parts[1];
     if (sub === "header") {

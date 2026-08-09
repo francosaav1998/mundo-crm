@@ -65,7 +65,51 @@
           if (buttons[1] && data.ctaSecondary) buttons[1].textContent = data.ctaSecondary;
         });
       };
+      const enablePreviewEditing = () => {
+        if (new URLSearchParams(window.location.search).get("preview") !== "1") return;
+        if (!document.getElementById("static-preview-edit-style")) {
+          const style = document.createElement("style");
+          style.id = "static-preview-edit-style";
+          style.textContent = `[data-static-edit]{cursor:text;outline:none;border-radius:4px;transition:background .2s,box-shadow .2s}[data-static-edit]:hover{background:rgba(37,99,235,.1)}[data-static-edit]:focus{background:rgba(37,99,235,.15);box-shadow:0 0 0 2px rgba(37,99,235,.35)}`;
+          document.head.appendChild(style);
+        }
+        const makeEditable = (element, path, multiline = false) => {
+          if (!element || element.dataset.staticEdit === path) return;
+          element.dataset.staticEdit = path;
+          element.contentEditable = "true";
+          element.addEventListener("blur", () => {
+            window.parent?.postMessage({ type: "LANDING_PREVIEW_TEXT_EDIT", payload: { path, value: element.innerText.trim() } }, window.location.origin);
+          });
+          element.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" && !multiline) {
+              event.preventDefault();
+              element.blur();
+            }
+          });
+          element.addEventListener("click", (event) => event.stopPropagation());
+        };
+        heroSlides.forEach((slide, index) => {
+          const title = slide.querySelector(".hero-title, h1");
+          const highlight = title?.querySelector("span");
+          if (title && highlight && (!title.dataset.staticTitleReady || !title.querySelector("[data-static-edit]"))) {
+            title.dataset.staticTitleReady = "true";
+            const titleText = document.createElement("span");
+            titleText.textContent = title.childNodes[0]?.textContent?.trim() || "";
+            title.insertBefore(titleText, highlight);
+            makeEditable(titleText, `hero.slides.${index}.title`);
+            makeEditable(highlight, `hero.slides.${index}.titleHighlight`);
+          } else if (title && !highlight) {
+            makeEditable(title, `hero.slides.${index}.title`);
+          }
+          makeEditable(slide.querySelector(".hero-content p"), `hero.slides.${index}.description`, true);
+          makeEditable(slide.querySelector(".badge-promo"), `hero.slides.${index}.badge`);
+          slide.querySelectorAll(".hero-ctas a").forEach((button, buttonIndex) => {
+            makeEditable(button, `hero.slides.${index}.${buttonIndex === 0 ? "ctaPrimary" : "ctaSecondary"}`);
+          });
+        });
+      };
       applyHeroContent(seller.landingContent);
+      enablePreviewEditing();
       const setHeroBackground = (index = 0) => {
         if (!hero) return;
         const image = heroImages.length ? heroImages[index % heroImages.length] : "";
@@ -102,6 +146,7 @@
           if (event.origin !== window.location.origin || event.source !== window.parent) return;
           if (event.data?.type === "LANDING_PREVIEW_UPDATE") {
             applyHeroContent(event.data.payload?.content);
+            enablePreviewEditing();
             if (event.data.payload?.profile?.photo) {
               document.querySelectorAll(".seller-avatar-wrapper img").forEach((image) => {
                 image.src = event.data.payload.profile.photo;
